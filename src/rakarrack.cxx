@@ -844,7 +844,7 @@ void RKRGUI::cb_Load_Skin(Fl_Menu_* o, void* v) {
 void RKRGUI::cb_Save_Skin_i(Fl_Menu_*, void*) {
   char *filename;
 #define EXT ".rkrs"
-filename=fl_file_chooser("Save Skin:","(*"EXT")","",0);
+filename=fl_file_chooser("Save Skin:","(*" EXT ")","",0);
 if (filename==NULL) return;
 filename=fl_filename_setext(filename,EXT);
 #undef EXT
@@ -878,7 +878,7 @@ void RKRGUI::cb_Load_MTable(Fl_Menu_* o, void* v) {
 void RKRGUI::cb_Save_MTable_i(Fl_Menu_*, void*) {
   char *filename;
 #define EXT ".rmt"
-filename=fl_file_chooser("Save MIDI Table:","(*"EXT")","",0);
+filename=fl_file_chooser("Save MIDI Table:","(*" EXT ")","",0);
 if (filename==NULL) return;
 filename=fl_filename_setext(filename,EXT);
 #undef EXT
@@ -9610,7 +9610,7 @@ void RKRGUI::cb_MIDI_LABEL_i(Fl_Box*, void*) {
 char *filename;
 
 #define EXT ".rkrb"
-filename=fl_file_chooser("Save Bank File:","(*"EXT")",rkr->Bank_Saved,0);
+filename=fl_file_chooser("Save Bank File:","(*" EXT ")",rkr->Bank_Saved,0);
 if (filename==NULL) return;
 filename=fl_filename_setext(filename,EXT);
 #undef EXT
@@ -9813,7 +9813,7 @@ void RKRGUI::cb_L_preset(Fl_Button* o, void* v) {
 void RKRGUI::cb_S_preset_i(Fl_Button*, void*) {
   char *filename;
 #define EXT ".rkr"
-filename=fl_file_chooser("Save Preset:","(*"EXT")",rkr->Preset_Name,0);
+filename=fl_file_chooser("Save Preset:","(*" EXT ")",rkr->Preset_Name,0);
 if (filename==NULL) return;
 filename=fl_filename_setext(filename,EXT);
 #undef EXT
@@ -23543,8 +23543,7 @@ inline void RKRGUI::preset_click_i(Fl_Button* o, void*) {
   int num; 
   int tecla = Fl::event_key();
   long long kk = (long long) o->user_data();
-  char temp2[128];
-  
+
   
   num = (int) kk;
   
@@ -23582,8 +23581,7 @@ inline void RKRGUI::preset_click_i(Fl_Button* o, void*) {
   { 
     Fl_Widget *m = fl_message_icon();
     m->parent()->copy_label(rkr->jackcliname);
-    sprintf(temp2,"Overwrite \"%s\"?",w->label());
-    ok=fl_choice(temp2, "No","Yes", NULL);
+    ok=fl_choice("Overwrite \"%s\"?","No","Yes", NULL, w->label());
    if (!ok)
    { 
    o->value(0);
@@ -23646,7 +23644,7 @@ void RKRGUI::make_window_banks() {
         butX->labelcolor(label_color);
         butX->labelsize(14);
         butX->align(68|FL_ALIGN_INSIDE);
-        butX->user_data((void*) (num));
+        butX->user_data(reinterpret_cast<void*>(num));
         butX->value(0);
         butX->when(FL_WHEN_CHANGED |FL_WHEN_RELEASE_ALWAYS);
         butX->callback((Fl_Callback *)preset_click);
@@ -27734,8 +27732,8 @@ int RKRGUI::search_but(int x, int y) {
 }
 
 void RKRGUI::ScanDir() {
-  char nombre[64];
-    char *nombank;
+  char nombre[256];
+    char nombank[256];
     DIR *dir;
     struct dirent *fs;
   
@@ -27749,15 +27747,16 @@ void RKRGUI::ScanDir() {
     {
     if (strstr(fs->d_name,".rkrb")!=NULL)
       {
-        nombank = (char *)calloc(1, 256);
         sprintf(nombank,"%s/%s",DATADIR, fs->d_name);
         AddBankName(nombank);
         if(rkr->CheckOldBank(nombank)==0)
         {
-         memset(nombre,0,sizeof(nombre));
-         strncpy(nombre,fs->d_name,strlen(fs->d_name)-5);
-         if(nombre != NULL)
+         size_t namelen = strlen(fs->d_name);
+         strncpy(nombre,fs->d_name, 254);
+         namelen = (namelen > 5) ? namelen - 5 : 0;
+         if(namelen > 0)
          {
+            nombre[namelen] = 0;
             CH_UB->add((const char *)nombre, 0, (Fl_Callback *)cb_CH_UB, (void *)nombank, 0);
          }
         }
@@ -27773,15 +27772,16 @@ void RKRGUI::ScanDir() {
     {
     if (strstr(fs->d_name,".rkrb")!=NULL)
       {
-        nombank = (char *)calloc(1, 256);
         sprintf(nombank,"%s/%s",rkr->UDirFilename,fs->d_name);
         AddBankName(nombank);
         if(rkr->CheckOldBank(nombank)==0)
         {
-         memset(nombre,0,sizeof(nombre));
-         strncpy(nombre,fs->d_name,strlen(fs->d_name)-5);
-         if(nombre != NULL)
+         strncpy(nombre,fs->d_name, sizeof(nombre));
+         size_t namelen = strlen(fs->d_name);
+         namelen = (namelen > 5) ? namelen - 5 : 0;
+         if(namelen > 0)
          {
+            nombre[namelen] = 0;
             CH_UB->add((const char *)nombre, 0, (Fl_Callback *)cb_CH_UB, (void *)nombank, 0);
          }
         }
@@ -27998,7 +27998,6 @@ void RKRGUI::ReadIntPresets() {
 inline void RKRGUI::delpreset(Fl_Widget *w, int num) {
   if(num==12) return;
   int ok;
-  char temp2[128];
   char Rname[128];
   Fl_Choice *s = (Fl_Choice * ) w;
   if(strncmp(s->text(),"*",1)!=0) 
@@ -28007,8 +28006,7 @@ inline void RKRGUI::delpreset(Fl_Widget *w, int num) {
    return;
   } 
   
-  sprintf(temp2,"Delete? \"%s\"",s->text());
-  ok=fl_choice("%d",temp2,"No","Yes",NULL);
+  ok=fl_choice("Delete? \"%s\"","No","Yes",NULL,s->text());
   if (!ok) return;
   memset(Rname,0,sizeof(Rname));
   sprintf(Rname,"%s",s->text());
@@ -28041,7 +28039,7 @@ void RKRGUI::make_table_window() {
       b->box(FL_DOWN_BOX);
       b->copy_label(buf);
       b->labelcolor(FL_WHITE);
-      b->user_data((void *) 8000);
+      b->user_data(reinterpret_cast<void*>(8000));
       
       Fl_Choice* cb = new Fl_Choice(120,y*25+25,60,20);
       cb->copy_label("Bank");
@@ -28050,14 +28048,14 @@ void RKRGUI::make_table_window() {
       cb->add("2");
       cb->add("3");
       cb->add("U");
-      cb->user_data((void *) (1000+y));
+      cb->user_data(reinterpret_cast<void*>(1000+y));
       cb->callback((Fl_Callback *)bank_click); 
       scroll->add(cb);
       
       Fl_Choice* cp = new Fl_Choice(260,y*25+25,220,20);
       cp->copy_label("Preset");
       cp->labelcolor(FL_WHITE);
-      cp->user_data((void *) (2000+y));
+      cp->user_data(reinterpret_cast<void*>(2000+y));
       cp->callback((Fl_Callback *)p_click); 
       scroll->add(cp);
     
