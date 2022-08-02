@@ -255,16 +255,14 @@ void
 RBFilter::filterout (float * smp)
 {
     int i;
-    float *ismp = NULL;
+    float ismp[PERIOD];
 
     if (needsinterpolation != 0) {
-        ismp = new float[PERIOD];
         for (i = 0; i < PERIOD; i++)
-            ismp[i] = smp[i];
+            {ismp[i] = smp[i];}
         for (i = 0; i < stages + 1; i++)
-            singlefilterout (ismp, st[i], ipar);
+            {singlefilterout (ismp, st[i], ipar);}
 
-        delete (ismp);
         needsinterpolation = 0;
     };
 

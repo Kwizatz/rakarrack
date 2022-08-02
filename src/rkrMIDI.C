@@ -40,7 +40,7 @@ RKR::InitMIDI ()
 
 
 
-    char portname[50];
+    char portname[128];
 
     // Create Alsa Seq Client
 
@@ -712,14 +712,10 @@ void
 RKR::conectaaconnect ()
 {
     char tempi[128];
-
-    if (MID != NULL) {
-        memset (tempi, 0, sizeof (tempi));
-        sprintf (tempi, "aconnect %d:%d  %d:%d", Ccin, Pcin, Cyoin, Pyoin);
-        system (tempi);
-        IsCoIn = 1;
-    }
-
+    memset (tempi, 0, sizeof (tempi));
+    sprintf (tempi, "aconnect %d:%d  %d:%d", Ccin, Pcin, Cyoin, Pyoin);
+    system (tempi);
+    IsCoIn = 1;
 };
 
 
@@ -727,15 +723,10 @@ void
 RKR::disconectaaconnect ()
 {
     char tempi[128];
-
-    if (MID != NULL) {
-        memset (tempi, 0, sizeof (tempi));
-        sprintf (tempi, "aconnect -d %d:%d  %d:%d", Ccin, Pcin, Cyoin, Pyoin);
-        system (tempi);
-        IsCoIn = 0;
-    }
-
-
+    memset (tempi, 0, sizeof (tempi));
+    sprintf (tempi, "aconnect -d %d:%d  %d:%d", Ccin, Pcin, Cyoin, Pyoin);
+    system (tempi);
+    IsCoIn = 0;
 };
 
 

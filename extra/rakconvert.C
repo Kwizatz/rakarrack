@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <string>
 #include <strings.h>
 #include <getopt.h>
 #include <math.h>
@@ -371,7 +372,7 @@ for(j=0;j<80;j++)
 
 
 int
-savebank (char *filename)
+savebank (const char *filename)
 {
 
  FILE *fn;
@@ -464,9 +465,9 @@ main (int argc, char *argv[])
  int i,j,k,y;
  int option_index = 0, opt;
  int exitwithhelp = 0;
- char *OldBankFile = NULL;
- char NewFile1[256];
- char NewFile2[256];
+ std::string OldBankFile{};
+ std::string NewFile1{};
+ std::string NewFile2{};
 
 // Read command Line
 
@@ -496,7 +497,7 @@ main (int argc, char *argv[])
        	case 'c':
         if (optarguments != NULL)
 	    {
-	      OldBankFile=strdup(optarguments);
+	      OldBankFile = optarguments;
 	      y=loadbank(optarguments);
 	      if(!y) return(0);
 	      break;
@@ -519,17 +520,13 @@ main (int argc, char *argv[])
 }    
 
 
-printf("converting: %s\n\n",OldBankFile);
+printf("converting: %s\n\n",OldBankFile.c_str());
 
-memset(NewFile1,0, sizeof(NewFile1));
-memset(NewFile2,0, sizeof(NewFile2));
+OldBankFile.erase(OldBankFile.size()-5,5);
+NewFile1 = OldBankFile + "01_050.rkrb";
+NewFile2 = OldBankFile + "02_050.rkrb";
 
-strncpy(NewFile1, OldBankFile, strlen(OldBankFile)-5);
-strncpy(NewFile2, OldBankFile, strlen(OldBankFile)-5);
-sprintf(NewFile1, "%s01_050.rkrb",NewFile1);
-sprintf(NewFile2, "%s02_050.rkrb",NewFile2);
-
-printf("generating %s\n",NewFile1);
+printf("generating %s\n",NewFile1.c_str());
 
 New_Bank();
 
@@ -606,10 +603,10 @@ for (i=1; i<61; i++)
 
 }
 
-printf("saving %s\n\n",NewFile1);
-savebank(NewFile1);
+printf("saving %s\n\n",NewFile1.c_str());
+savebank(NewFile1.c_str());
 
-printf("generating %s\n",NewFile2);
+printf("generating %s\n",NewFile2.c_str());
 
 New_Bank();
 
@@ -687,12 +684,11 @@ for (i=61; i<81; i++)
 
 }
 
-printf("saving %s\n",NewFile2);
-savebank(NewFile2);
+printf("saving %s\n",NewFile2.c_str());
+savebank(NewFile2.c_str());
 
 printf("Done.\n");
 
 return(0);
 
 };
-

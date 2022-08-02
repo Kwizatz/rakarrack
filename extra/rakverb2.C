@@ -134,7 +134,8 @@ main(int argc, char *argv[])
 
 if(!have_output)
 {
- strncpy(tempfile, Inputfile, strlen(Inputfile)-4);
+ strncpy(tempfile, Inputfile, 128);
+ tempfile[strlen(tempfile)-4] = 0;
  sprintf(Outputfile, "%s.rvb",tempfile);
 }
 

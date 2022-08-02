@@ -56,10 +56,11 @@ else
 ac_altivec="no"
 fi
 
+# JACK Session is deprecated.
 AC_ARG_ENABLE(jack-session,
-  AS_HELP_STRING([--enable-jack-session],[enable JACK session support (default=yes)]),
+  AS_HELP_STRING([--enable-jack-session],[enable JACK session support (default=no)]),
   [ac_jack_session="$enableval"],
-  [ac_jack_session="yes"])
+  [ac_jack_session="no"])
 
 
 
@@ -335,7 +336,7 @@ fi
 
 
 LIBS="`$FLTKCONFIG --use-images --ldflags` $LIBS"
-CXXFLAGS="-Wall $SSE $ALTIVEC -ffast-math $VECTOR -pipe $ADDS -fsigned-char `$FLTKCONFIG --use-images --cxxflags` `pkg-config --cflags sndfile` `pkg-config --cflags jack` $CXXFLAGS"
+CXXFLAGS="-Wall -Werror -Wfatal-errors -Wno-warn_unused_result -Wno-unused-result $SSE $ALTIVEC -ffast-math $VECTOR -pipe $ADDS -fsigned-char `$FLTKCONFIG --use-images --cxxflags` `pkg-config --cflags sndfile` `pkg-config --cflags jack` $CXXFLAGS"
 AC_CONFIG_FILES([Makefile src/Makefile man/Makefile data/Makefile icons/Makefile doc/Makefile doc/help/Makefile doc/help/imagenes/Makefile doc/help/css/Makefile extra/Makefile])
 AC_OUTPUT
 

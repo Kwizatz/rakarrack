@@ -890,8 +890,7 @@ void RKRGUI::cb_Save_MTable(Fl_Menu_* o, void* v) {
 
 void RKRGUI::cb_ConvertReverb_i(Fl_Menu_*, void*) {
   char *filename;
-char name[64];
-memset(name,0, sizeof(name));
+char name[128];
 sprintf(name,"%s %s",rkr->jackcliname, VERSION);
 
 filename=fl_file_chooser("Convert Reverb IR File:","(*.wav)",NULL,0);
@@ -10082,9 +10081,8 @@ if(rkr->CheckOldBank(filename)==0)
 {
         char nombre[64];
         char *filepart;
-        memset(nombre,0,sizeof(nombre));
-        filepart = strrchr(filename,'/')+1;
-        strncpy(nombre,filepart,strlen(filepart)-5);
+        filepart = basename(filename);
+        strncpy(nombre,filepart, sizeof(nombre) - 1);
         CH_UB->add((const char *)nombre, 0, (Fl_Callback *)cb_CH_UB, (void *)filename, 0);
 }
 };
@@ -10102,8 +10100,7 @@ void RKRGUI::cb_Save_Bank(Fl_Menu_* o, void* v) {
 
 void RKRGUI::cb_Convert_Old_Bank_i(Fl_Menu_*, void*) {
   char *filename;
-char name[64];
-memset(name,0, sizeof(name));
+char name[128];
 sprintf(name,"%s %s",rkr->jackcliname, VERSION);
 
 filename=fl_file_chooser("Convert Old Bank File:","(*.rkrb)",NULL,0);
@@ -11125,7 +11122,7 @@ void RKRGUI::cb_D_IJ_Connect(Fl_Check_Button* o, void* v) {
 }
 
 void RKRGUI::cb_Username_i(Fl_Input* o, void*) {
-  rkr->UserRealName=(char*) o->value();
+  strncpy(rkr->UserRealName, o->value(),sizeof(rkr->UserRealName)-1);
 }
 void RKRGUI::cb_Username(Fl_Input* o, void* v) {
   ((RKRGUI*)(o->parent()->parent()->parent()->user_data()))->cb_Username_i(o,v);
@@ -27733,7 +27730,7 @@ int RKRGUI::search_but(int x, int y) {
 
 void RKRGUI::ScanDir() {
   char nombre[256];
-    char nombank[256];
+    char nombank[1024];
     DIR *dir;
     struct dirent *fs;
   

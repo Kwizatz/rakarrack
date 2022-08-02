@@ -25,8 +25,7 @@
 
 void RKR::putbuf(char *buf, int j)
 {
-    char *cfilename;
-    cfilename = (char *) malloc (sizeof (char) * 128);
+    char cfilename[128];
 
     switch (j) {
 
@@ -413,11 +412,6 @@ void RKR::putbuf(char *buf, int j)
 
 
     }
-
-
-    free(cfilename);
-
-
 }
 
 
@@ -983,10 +977,11 @@ RKR::savefile (char *filename)
     //Autor
 
     memset (buf, 0, sizeof (buf));
-    if (strlen (Author) != 0)
+    if (Author[0] != 0){
         sprintf (buf, "%s\n", Author);
+    }
     else {
-        if (UserRealName != NULL)
+        if (UserRealName[0] != 0)
             sprintf (buf, "%s\n", UserRealName);
         else
             sprintf (buf, "%s\n", getenv ("USER"));
@@ -1683,7 +1678,7 @@ RKR::loadbank (char *filename)
 {
 
     int err_message=1;
-    char meslabel[64];
+    char meslabel[128];
     FILE *fn;
 
 
@@ -2641,7 +2636,7 @@ RKR::SaveIntPreset(int num,char *name)
     FILE *fn;
     char tempfile[256];
     char buf[256];
-    char sbuf[256];
+    char sbuf[512];
     memset(tempfile,0,sizeof(tempfile));
     sprintf (tempfile, "%s%s", getenv ("HOME"), "/.rkrintpreset");
 

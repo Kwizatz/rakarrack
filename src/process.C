@@ -309,16 +309,6 @@ RKR::RKR ()
     RecNote = new Recognize (efxoutl, efxoutr, rtrig);
     RC = new RecChord ();
 
-
-    Preset_Name = (char *) malloc (sizeof (char) * 64);
-    memset (Preset_Name, 0, sizeof (char) * 64);
-    Author = (char *) malloc (sizeof (char) * 64);
-    memset (Author, 0, sizeof (char) * 64);
-    Bank_Saved = (char *) malloc (sizeof (char) * 128);
-    memset (Bank_Saved, 0, sizeof (char) * 128);
-    UserRealName = (char *) malloc (sizeof (char) * 128);
-    memset (UserRealName, 0, sizeof (char) * 128);
-
 // Names
 
     /*

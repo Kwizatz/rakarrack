@@ -710,10 +710,10 @@ public:
 
     char tmpprefname[128];
 
-    char *Preset_Name;
-    char *Author;
-    char *Bank_Saved;
-    char *UserRealName;
+    char Preset_Name[64];
+    char Author[64];
+    char Bank_Saved[128];
+    char UserRealName[128];
 
 
 
