@@ -1,11 +1,11 @@
-AC_PREREQ(2.61)
+AC_PREREQ([2.71])
 AC_INIT([rakarrack],[0.6.2],[Josep Andreu holborn@telefonica.net]) 
 AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([src/main.C])
-AC_CONFIG_HEADER([src/config.h])
+AC_CONFIG_HEADERS([src/config.h])
 
 AC_ARG_ENABLE(optimizations,
-AC_HELP_STRING([--enable-optimizations[=yes/no]],[enable optimizations (default=yes)]),
+AS_HELP_STRING([--enable-optimizations[=yes/no]],[enable optimizations (default=yes)]),
 [ac_optimizations="$enableval"], [ac_optimizations="yes"])
 
 if test "x$ac_optimizations" = "xyes"; then
@@ -16,7 +16,7 @@ fi
 
 
 AC_ARG_ENABLE(vectorize,
-AC_HELP_STRING([--enable-vectorize[=yes/no]],[enable vectorize (default=yes)]),
+AS_HELP_STRING([--enable-vectorize[=yes/no]],[enable vectorize (default=yes)]),
 [ac_vectorize="$enableval"], [ac_vectorize="yes"])
 
 if test "x$ac_vectorize" = "xyes"; then
@@ -27,7 +27,7 @@ fi
 
 
 AC_ARG_ENABLE(sse,
-AC_HELP_STRING([--enable-sse],[enable sse (default=automatic check)]),
+AS_HELP_STRING([--enable-sse],[enable sse (default=automatic check)]),
 [ac_sse="$enableval"])
 
 if test "x$ac_sse" = "xyes"; then
@@ -37,7 +37,7 @@ ac_sse="no"
 fi
 
 AC_ARG_ENABLE(sse2,
-AC_HELP_STRING([--enable-sse2],[enable sse2 (default=automatic check)]),
+AS_HELP_STRING([--enable-sse2],[enable sse2 (default=automatic check)]),
 [ac_sse2="$enableval"])
 
 if test "x$ac_sse2" = "xyes"; then
@@ -47,7 +47,7 @@ ac_sse2="no"
 fi
 
 AC_ARG_ENABLE(altivec,
-AC_HELP_STRING([--enable-altivec],[enable altivec (default=automatic check)]),
+AS_HELP_STRING([--enable-altivec],[enable altivec (default=automatic check)]),
 [ac_altivec="$enableval"])
 
 if test "x$ac_altivec" = "xyes"; then
@@ -57,7 +57,7 @@ ac_altivec="no"
 fi
 
 AC_ARG_ENABLE(jack-session,
-  AC_HELP_STRING([--enable-jack-session], [enable JACK session support (default=yes)]),
+  AS_HELP_STRING([--enable-jack-session],[enable JACK session support (default=yes)]),
   [ac_jack_session="$enableval"],
   [ac_jack_session="yes"])
 
@@ -247,7 +247,7 @@ else
 AC_DEFINE_UNQUOTED(PREFIX, "$prefix", [Install prefix])
 fi
 AC_HEADER_DIRENT
-AC_HEADER_STDC
+
 AC_CHECK_HEADERS([fcntl.h libintl.h stdlib.h string.h sys/ioctl.h unistd.h sndfile.h samplerate.h fftw3.h X11/xpm.h])
 AC_CHECK_HEADER(alsa/asoundlib.h, true, AC_MSG_ERROR([Alsa is required]))
 AC_SUBST(SAMPLERATE_CFLAG)
@@ -261,7 +261,7 @@ fi
 
 
 AC_ARG_ENABLE(datadir,
-AC_HELP_STRING([--enable-datadir[=yes/no]],[use datadir (default=no)]),
+AS_HELP_STRING([--enable-datadir[=yes/no]],[use datadir (default=no)]),
 [ac_dd="$enableval"], [ac_dd="no"])
 
 if test "x$ac_dd" = "xyes"; then
@@ -272,7 +272,7 @@ fi
 
 
 AC_ARG_ENABLE(docdir,
-AC_HELP_STRING([--enable-docdir[=yes/no]],[use docdir (default=no)]),
+AS_HELP_STRING([--enable-docdir[=yes/no]],[use docdir (default=no)]),
 [ac_hd="$enableval"], [ac_hd="no"])
 
 if test "x$ac_hd" = "xyes"; then
