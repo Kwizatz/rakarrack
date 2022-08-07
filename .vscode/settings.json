@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "fileio.C": "cpp",
+        "Looper.C": "cpp",
+        "process.C": "cpp"
+    }
+}
