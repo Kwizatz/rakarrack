@@ -21,6 +21,7 @@
 */
 
 #include <errno.h>
+#include <string>
 #include "global.h"
 
 void RKR::putbuf(char *buf, int j)
@@ -1696,9 +1697,12 @@ RKR::loadbank (char *filename)
         return(0);
         break;
     case 2:
-        Message(1, meslabel, "Can not load this Bank file\n");
-        return(0);
-        break;
+        {
+            std::string message{"Can not load bank file "};
+            message += filename;
+            Message(1, meslabel, message.c_str());
+            return(0);
+        }
     case 3:
         Message(1, meslabel, "Can not load this Bank file because is from a old rakarrack git version,\n please use rakgit2new utility to convert.");
         return(0);

@@ -46,15 +46,15 @@ public:
     void setmvol(int value);
     int looper_bar;
     int looper_qua;
-    int Ppreset;
-    int progstate[6];
+    int Ppreset{};
+    int progstate[6]{};
 
     void getstate ();
 
-    float outvolume;
+    float outvolume{};
 
-    float *efxoutl;
-    float *efxoutr;
+    float *efxoutl{};
+    float *efxoutr{};
 
     int Pplay;	//set to 1
     int Pstop;	//set to 1
