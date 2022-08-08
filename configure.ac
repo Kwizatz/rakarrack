@@ -56,14 +56,6 @@ else
 ac_altivec="no"
 fi
 
-# JACK Session is deprecated.
-AC_ARG_ENABLE(jack-session,
-  AS_HELP_STRING([--enable-jack-session],[enable JACK session support (default=no)]),
-  [ac_jack_session="$enableval"],
-  [ac_jack_session="no"])
-
-
-
 # Checks for programs.
 AC_PROG_CXX
 AC_PROG_CC
@@ -224,14 +216,6 @@ else
    LIBS="$LIBS -lfftw3"
 fi
 
-
-if test "x$ac_jack_session" = "xyes"; then
-   AC_CHECK_LIB(jack, jack_set_session_callback, [ac_jack_session="yes"], [ac_jack_session="no"])
-else
-   AC_MSG_WARN([*** JACK session support will be disabled.])
-fi
-
-
 if test "x$prefix" = "xNONE"; then
 AC_DEFINE_UNQUOTED(PREFIX, "/usr/local", [Install prefix])
 else
@@ -312,19 +296,6 @@ fi
 fi
 fi
 
-if test "x$ac_jack_session" = "xyes"; then
-   AC_CHECK_HEADER(jack/session.h, [ac_jack_session="yes"], [ac_jack_session="no"])
-   if test "x$ac_jack_session" = "xyes"; then
-      AC_DEFINE(JACK_SESSION, 1, [Define if JACK session support is available.])
-   else
-      AC_MSG_WARN([*** jack/session.h file not found.])
-      AC_MSG_WARN([*** JACK session support will be disabled.])
-   fi
-fi
-
-
-
-
 LIBS="`$FLTKCONFIG --use-images --ldflags` $LIBS"
 CXXFLAGS="-Wall -Werror -Wfatal-errors -Wno-warn_unused_result -Wno-unused-result $SSE $ALTIVEC -ffast-math $VECTOR -pipe $ADDS -fsigned-char `$FLTKCONFIG --use-images --cxxflags` `pkg-config --cflags sndfile` `pkg-config --cflags jack` $CXXFLAGS"
 AC_CONFIG_FILES([Makefile src/Makefile man/Makefile data/Makefile icons/Makefile doc/Makefile doc/help/Makefile doc/help/imagenes/Makefile doc/help/css/Makefile extra/Makefile])
@@ -350,7 +321,6 @@ echo  " Freetype support . . . . . . . . . . . . . . . . . . . .: $ac_freetype"
 echo  " FLTK toolkit . . . . . . . . . . . . . . . . . . . . . .: $ac_fltk"
 echo  " pthread support (libpthread) . . . . . . . . . . . . . .: $ac_pthread"
 echo  " JACK Audio Connection Kit library  . . . . . . . . . . .: $ac_jack"
-echo  " JACK Session support . . . . . . . . . . . . . . . . . .: $ac_jack_session"
 echo  " ALSA MIDI Sequencer support  . . . . . . . . . . . . . .: $ac_asound"
 echo  " Samplerate conversion (libsamplerate). . . . . . . . . .: $ac_samplerate"
 echo  " General audio file (libsndfile)  . . . . . . . . . . . .: $ac_sndfile"
