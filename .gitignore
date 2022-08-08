@@ -1,6 +1,6 @@
 *.o
 *.exe
-.vscode/
+*~
 INSTALL
 Makefile
 Makefile.in

@@ -75,9 +75,7 @@ else
   ac_fltk="yes"
 fi
 AC_CHECK_PROG([ACONNECT],[aconnect],[aconnect])
-if test -z "$ACONNECT"; then
-  AC_MSG_ERROR([aconnect not installed!])
-fi
+AC_DEFINE_UNQUOTED(ACONNECT,"$ACONNECT",[ACONNECT])
 
 # Checks gcc version
 
@@ -108,24 +106,18 @@ AC_CHECK_FUNCS([floor memset memmove pow select sqrt strdup strstr])
 # Checks for libraries.
 
 AC_CHECK_LIB([X11], [XOpenDisplay],[ac_X11="yes"],[ac_X11="no"])
-if test "x$ac_X11" = "xno"; then
-AC_MSG_ERROR([Could not find XOpenDisplay in -lX11.])
-else
+if test "x$ac_X11" = "xyes"; then
    LIBS="$LIBS -lX11"
 fi
 
 
 AC_CHECK_LIB([Xft], [main], [ac_libXft="yes"], [ac_libXft="no"])
-if test "x$ac_libXft" = "xno"; then
-AC_MSG_ERROR([Xft library not found.])
-else 
+if test "x$ac_libXft" = "xyes"; then
    LIBS="$LIBS -lXft"
 fi
 
 AC_CHECK_LIB([Xrender], [main], [ac_Xrender="yes"], [ac_Xrender="no"])
-if test "x$ac_Xrender" = "xno"; then
-AC_MSG_ERROR([Xrender library not found.])
-else 
+if test "x$ac_Xrender" = "xyes"; then
    LIBS="$LIBS -lXrender"
 
 fi
@@ -179,9 +171,7 @@ else
 fi
 
 AC_CHECK_LIB([rt], [main], [ac_rt="yes"], [ac_rt="no"])
-if test "x$ac_rt" = "xno"; then
-AC_MSG_ERROR([rt library not found.])
-else 
+if test "x$ac_rt" = "xyes"; then
    LIBS="$LIBS -lrt"
 
 fi
@@ -195,19 +185,19 @@ else
 fi
 
 AC_CHECK_LIB([asound], [main], [ac_asound="yes"], [ac_asound="no"])
-if test "x$ac_asound" = "xno"; then
-AC_MSG_ERROR([ALSA libasound library not found.])
-else 
+if test "x$ac_asound" = "xyes"; then
    LIBS="$LIBS -lasound"
 
 fi
 
 AC_CHECK_LIB([jack],main, [ac_jack="yes"], [ac_jack="no"])
-if test "x$ac_jack" = "xno"; then
-AC_MSG_ERROR([JACK library not found.])
-else 
+if test "x$ac_jack" = "xyes"; then
    LIBS="$LIBS -ljack"
+fi
 
+AC_CHECK_LIB([jack64],main, [ac_jack64="yes"], [ac_jack64="no"])
+if test "x$ac_jack64" = "xyes"; then
+   LIBS="$LIBS -ljack64"
 fi
 
 AC_CHECK_LIB([sndfile],sf_open, [ac_sndfile="yes"], [ac_sndfile="no"])
@@ -250,7 +240,7 @@ fi
 AC_HEADER_DIRENT
 
 AC_CHECK_HEADERS([fcntl.h libintl.h stdlib.h string.h sys/ioctl.h unistd.h sndfile.h samplerate.h fftw3.h X11/xpm.h])
-AC_CHECK_HEADER(alsa/asoundlib.h, true, AC_MSG_ERROR([Alsa is required]))
+#AC_CHECK_HEADER(alsa/asoundlib.h, true, AC_MSG_ERROR([Alsa is required]))
 AC_SUBST(SAMPLERATE_CFLAG)
 AC_SUBST(SAMPLERATE_LIBS)
 

@@ -16,7 +16,6 @@
 #include <math.h>
 #include <stdlib.h>
 #include <jack/midiport.h>
-#include <alsa/asoundlib.h>
 
 
 struct Midi_Event {
