@@ -24,6 +24,7 @@
 
 #include <getopt.h>
 #include <sched.h>
+#include <sys/mman.h>
 #include "global.h"
 #include "rakarrack.h"
 #include "jack.h"

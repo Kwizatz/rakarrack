@@ -175,6 +175,7 @@ static inline float f_pow2(float x)
 #include <X11/xpm.h>
 #include <jack/jack.h>
 #include <jack/midiport.h>
+#include <alsa/asoundlib.h>
 #include <FL/Fl_Preferences.H>
 #include "FPreset.h"
 #include "Reverb.h"
