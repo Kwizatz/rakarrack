@@ -874,7 +874,7 @@ RKR::init_rkr ()
 
     char temp[128];
     memset (temp, 0, sizeof (temp));
-    sprintf (temp, "%s/Default.rkrb", DATADIR);
+    sprintf (temp, "%s/Default.rkrb", DATA_DIR);
     rakarrack.get (PrefNom ("Bank Filename"), BankFilename, temp, 127);
     loadnames();
 

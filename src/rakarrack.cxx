@@ -9721,7 +9721,7 @@ void RKRGUI::cb_L_B1_i(Fl_Button*, void*) {
   is_modified();
 char temp[128];           
   memset (temp, 0, sizeof (temp));
-  sprintf (temp, "%s/Default.rkrb", DATADIR);
+  sprintf (temp, "%s/Default.rkrb", DATA_DIR);
 int ok=rkr->loadbank(temp);
 if(ok) 
 {
@@ -9739,7 +9739,7 @@ void RKRGUI::cb_L_B2_i(Fl_Button*, void*) {
   is_modified();
 char temp[128];           
   memset (temp, 0, sizeof (temp));
-  sprintf (temp, "%s/Extra.rkrb", DATADIR);
+  sprintf (temp, "%s/Extra.rkrb", DATA_DIR);
  int ok=rkr->loadbank(temp);
 if(ok) 
 {
@@ -9757,7 +9757,7 @@ void RKRGUI::cb_L_B3_i(Fl_Button*, void*) {
   is_modified();
 char temp[128];           
   memset (temp, 0, sizeof (temp));
-  sprintf (temp, "%s/Extra1.rkrb", DATADIR);
+  sprintf (temp, "%s/Extra1.rkrb", DATA_DIR);
  int ok=rkr->loadbank(temp);
 if(ok) 
 {
@@ -22668,7 +22668,7 @@ void RKRGUI::load_stat() {
   rakarrack.get(rkr->PrefNom("Principal H"),h,600);
   
   char tmp[256];
-  sprintf (tmp, "%s/bg.png", DATADIR);
+  sprintf (tmp, "%s/bg.png", DATA_DIR);
   
   rakarrack.get(rkr->PrefNom("Enable Background Image"),rkr->EnableBackgroundImage,1);
   rakarrack.get(rkr->PrefNom("Background Image"),rkr->BackgroundImage,tmp,256);
@@ -22783,7 +22783,7 @@ void RKRGUI::load_stat() {
   
   
   rakarrack.get(rkr->PrefNom("UserName"),rkr->UserRealName,"",127);
-  rakarrack.get(rkr->PrefNom("User Directory"),rkr->UDirFilename,DATADIR,127);
+  rakarrack.get(rkr->PrefNom("User Directory"),rkr->UDirFilename,DATA_DIR,127);
   rakarrack.get(rkr->PrefNom("Preserve Gain/Master"),rkr->actuvol,0);
   rakarrack.get(rkr->PrefNom("Metronome Volume"),rkr->Metro_Vol,50);
   rkr->efx_Looper->setmvol(rkr->Metro_Vol);
@@ -27737,14 +27737,14 @@ void RKRGUI::ScanDir() {
     ClearBankNames();     /* This will free all memory allocated for names */
     CH_UB->clear();
   
-    dir=opendir(DATADIR);
+    dir=opendir(DATA_DIR);
     if (dir==NULL) return;
   
     while ((fs=readdir(dir)))
     {
     if (strstr(fs->d_name,".rkrb")!=NULL)
       {
-        sprintf(nombank,"%s/%s",DATADIR, fs->d_name);
+        sprintf(nombank,"%s/%s",DATA_DIR, fs->d_name);
         AddBankName(nombank);
         if(rkr->CheckOldBank(nombank)==0)
         {

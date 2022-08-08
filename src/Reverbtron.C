@@ -253,7 +253,7 @@ Reverbtron::setfile(int value)
     if(!Puser) {
         Filenum = value;
         memset(Filename,0, sizeof(Filename));
-        sprintf(Filename, "%s/%d.rvb",DATADIR,Filenum+1);
+        sprintf(Filename, "%s/%d.rvb",DATA_DIR,Filenum+1);
     }
 
     if ((fs = fopen (Filename, "r")) == NULL) {

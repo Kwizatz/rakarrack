@@ -1639,17 +1639,17 @@ RKR::loadnames()
 
         case 0:
             memset (temp, 0, sizeof (temp));
-            sprintf (temp, "%s/Default.rkrb", DATADIR);
+            sprintf (temp, "%s/Default.rkrb", DATA_DIR);
             break;
 
         case 1:
             memset (temp, 0, sizeof (temp));
-            sprintf (temp, "%s/Extra.rkrb", DATADIR);
+            sprintf (temp, "%s/Extra.rkrb", DATA_DIR);
             break;
 
         case 2:
             memset (temp, 0, sizeof (temp));
-            sprintf (temp, "%s/Extra1.rkrb", DATADIR);
+            sprintf (temp, "%s/Extra1.rkrb", DATA_DIR);
             break;
 
         case 3:

@@ -10567,7 +10567,7 @@ rkr->M_Metronome->set_tempo(rkr->M_Metro_Tempo);}
           callback {is_modified();
 char temp[128];           
   memset (temp, 0, sizeof (temp));
-  sprintf (temp, "%s/Default.rkrb", DATADIR);
+  sprintf (temp, "%s/Default.rkrb", DATA_DIR);
 int ok=rkr->loadbank(temp);
 if(ok) 
 {
@@ -10584,7 +10584,7 @@ unlight_preset(rkr->Selected_Preset);
           callback {is_modified();
 char temp[128];           
   memset (temp, 0, sizeof (temp));
-  sprintf (temp, "%s/Extra.rkrb", DATADIR);
+  sprintf (temp, "%s/Extra.rkrb", DATA_DIR);
  int ok=rkr->loadbank(temp);
 if(ok) 
 {
@@ -10601,7 +10601,7 @@ unlight_preset(rkr->Selected_Preset);
           callback {is_modified();
 char temp[128];           
   memset (temp, 0, sizeof (temp));
-  sprintf (temp, "%s/Extra1.rkrb", DATADIR);
+  sprintf (temp, "%s/Extra1.rkrb", DATA_DIR);
  int ok=rkr->loadbank(temp);
 if(ok) 
 {
@@ -12747,7 +12747,7 @@ rkr->resolution=w;
 rakarrack.get(rkr->PrefNom("Principal H"),h,600);
 
 char tmp[256];
-sprintf (tmp, "%s/bg.png", DATADIR);
+sprintf (tmp, "%s/bg.png", DATA_DIR);
 
 rakarrack.get(rkr->PrefNom("Enable Background Image"),rkr->EnableBackgroundImage,1);
 rakarrack.get(rkr->PrefNom("Background Image"),rkr->BackgroundImage,tmp,256);
@@ -12862,7 +12862,7 @@ if(!rkr->midi_table) scroll->deactivate();
 
 
 rakarrack.get(rkr->PrefNom("UserName"),rkr->UserRealName,"",127);
-rakarrack.get(rkr->PrefNom("User Directory"),rkr->UDirFilename,DATADIR,127);
+rakarrack.get(rkr->PrefNom("User Directory"),rkr->UDirFilename,DATA_DIR,127);
 rakarrack.get(rkr->PrefNom("Preserve Gain/Master"),rkr->actuvol,0);
 rakarrack.get(rkr->PrefNom("Metronome Volume"),rkr->Metro_Vol,50);
 rkr->efx_Looper->setmvol(rkr->Metro_Vol);
@@ -17790,7 +17790,7 @@ return(1000);} {}
   ClearBankNames();     /* This will free all memory allocated for names */
   CH_UB->clear();
 
-  dir=opendir(DATADIR);
+  dir=opendir(DATA_DIR);
   if (dir==NULL) return;
 
   while ((fs=readdir(dir)))
@@ -17798,7 +17798,7 @@ return(1000);} {}
   if (strstr(fs->d_name,".rkrb")!=NULL)
     {
       nombank = (char *)calloc(1, 256);
-      sprintf(nombank,"%s/%s",DATADIR, fs->d_name);
+      sprintf(nombank,"%s/%s",DATA_DIR, fs->d_name);
       AddBankName(nombank);
       if(rkr->CheckOldBank(nombank)==0)
       {

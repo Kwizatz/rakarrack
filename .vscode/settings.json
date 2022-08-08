@@ -1,5 +1,53 @@
 {
+    "git.path": "C:/msys64/usr/bin/git.exe",
+    "git.ignoreLimitWarning": true,
+    "terminal.integrated.automationProfile.windows":
+    {
+        "path": "C:\\Windows\\System32\\cmd.exe"
+    },
+    "terminal.integrated.profiles.windows": {
+        "MinGW GCC Bash": {
+            "path": "C:/msys64/usr/bin/bash.exe",
+            "args": ["--login", "-i"],
+            "env":
+            {
+                "MSYSTEM": "MINGW64",
+                "CHERE_INVOKING":"1"
+            }
+        },
+        "MinGW Clang Bash": {
+            "path": "C:/msys64/usr/bin/bash.exe",
+            "args": ["--login", "-i"],
+            "env":
+            {
+                "MSYSTEM": "CLANG64",
+                "CHERE_INVOKING":"1"
+            }
+        },
+        "MinGW UCRT64 Bash": {
+            "path": "C:/msys64/usr/bin/bash.exe",
+            "args": ["--login", "-i"],
+            "env":
+            {
+                "MSYSTEM": "UCRT64",
+                "CHERE_INVOKING":"1"
+            }
+        },
+        "PowerShell":null,
+        "Command Prompt":null
+    },  
+    "python.defaultInterpreterPath": "C:/msys64/mingw64/bin/python3.10.exe",
+    "clang.executable": "C:/msys64/mingw64/bin/clang.exe",
+    "cmake.cmakePath": "C:/msys64/mingw64/bin/cmake.exe",
+    "window.zoomLevel": 0,
     "files.associations": {
-        "*.C": "cpp"
-    }
+        "*.json.in": "json",
+        "*.cap.in": "json",
+        "*.cap": "json",
+        "*.cmake": "cmake",
+        "*.cmake.in": "cmake",
+        "*.C": "cpp",
+        "*.rh": "cpp"
+    },
+    "editor.fontFamily": "'Fira Code', Consolas, 'Courier New', monospace"
 }

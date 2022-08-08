@@ -226,7 +226,7 @@ Echotron::setfile(int value)
     if(!Puser) {
         Filenum = value;
         memset(Filename,0,sizeof(Filename));
-        sprintf(Filename, "%s/%d.dly",DATADIR,Filenum+1);
+        sprintf(Filename, "%s/%d.dly",DATA_DIR,Filenum+1);
     }
 
     if ((fs = fopen (Filename, "r")) == NULL) {

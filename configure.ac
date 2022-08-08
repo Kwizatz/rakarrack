@@ -228,7 +228,7 @@ fi
 if test "x$ac_jack_session" = "xyes"; then
    AC_CHECK_LIB(jack, jack_set_session_callback, [ac_jack_session="yes"], [ac_jack_session="no"])
 else
-   AC_MSG_WARN([*** JACK latency support will be disabled.])
+   AC_MSG_WARN([*** JACK session support will be disabled.])
 fi
 
 
@@ -256,9 +256,9 @@ AS_HELP_STRING([--enable-datadir[=yes/no]],[use datadir (default=no)]),
 [ac_dd="$enableval"], [ac_dd="no"])
 
 if test "x$ac_dd" = "xyes"; then
-DATADIR="$datadir"
+DATA_DIR="$datadir"
 else
-DATADIR="$prefix/share/${PACKAGE}"
+DATA_DIR="$prefix/share/${PACKAGE}"
 fi
 
 
@@ -272,7 +272,7 @@ else
 HELPDIR="$prefix/share/doc/${PACKAGE}"
 fi
 
-AC_DEFINE_UNQUOTED(DATADIR,"$DATADIR",[DATADIR])
+AC_DEFINE_UNQUOTED(DATA_DIR,"$DATA_DIR",[DATA_DIR])
 AC_DEFINE_UNQUOTED(HELPDIR,"$HELPDIR",[HELPDIR])
 AC_DEFINE([WEBSITE],["rakarrack.sf.net"],[WEBSITE])
 
