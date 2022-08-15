@@ -1,0 +1,161 @@
+# Copyright (C) 2022 Rodrigo Jose Hernandez Cordoba
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may not
+# use this file except in compliance with the License. You may obtain a copy of
+# the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations under
+# the License.
+
+set(RAKARRACK_SOURCES
+	Alienwah.C
+	AnalogFilter.C
+	APhaser.C
+	Arpie.C
+	beattracker.C
+	Chorus.C
+	CoilCrafter.C
+	CompBand.C
+	Compressor.C
+	Convolotron.C
+	delayline.C
+	Distorsion.C
+	Dual_Flange.C
+	DynamicFilter.C
+	Echo.C
+	Echotron.C
+	EffectLFO.C
+	EQ.C
+	Exciter.C
+	Expander.C
+	fileio.C
+	Filter.C
+	FilterParams.C
+	FormantFilter.C
+	FPreset.C
+	Gate.C
+	HarmonicEnhancer.C
+	Harmonizer.C
+	icono_rakarrack_128x128.xpm
+	icono_rakarrack_32x32.xpm
+	Infinity.C
+	jack.C
+	Looper.C
+	mayer_fft.C
+	MBDist.C
+	MBVvol.C
+	metronome.C
+	MIDIConverter.C
+	MusicDelay.C
+	NewDist.C
+	Opticaltrem.C
+	Pan.C
+	Phaser.C
+	process.C
+	rakarrack.cxx
+	RBEcho.C
+	RBFilter.C
+	RecChord.C
+	RecognizeNote.C
+	Resample.C
+	Reverb.C
+	Reverbtron.C
+	Ring.C
+	rkrMIDI.C
+	RyanWah.C
+	Sequence.C
+	ShelfBoost.C
+	Shifter.C
+	Shuffle.C
+	smbPitchShift.C
+	StereoHarm.C
+	StompBox.C
+	Sustainer.C
+	SVFilter.C
+	Synthfilter.C
+	Tuner.C
+	Valve.C
+	varios.C
+	Vibe.C
+	Vocoder.C
+	Waveshaper.C
+    main.C
+)
+set(RAKARRACK_HEADERS
+	Alienwah.h
+	AnalogFilter.h
+	APhaser.h
+	Arpie.h
+	beattracker.h
+	Chorus.h
+	CoilCrafter.h
+	CompBand.h
+	Compressor.h
+	config.h
+	Convolotron.h
+	delayline.h
+	Distorsion.h
+	Dual_Flange.h
+	DynamicFilter.h
+	Echo.h
+	Echotron.h
+	Effect.h
+	EffectLFO.h
+	EQ.h
+	Exciter.h
+	Expander.h
+	f_sin.h
+	Filter_.h
+	Filter.h
+	FilterParams.h
+	FormantFilter.h
+	FPreset.h
+	Gate.h
+	global.h
+	HarmonicEnhancer.h
+	Harmonizer.h
+	Infinity.h
+	jack.h
+	Looper.h
+	mayer_fft.h
+	MBDist.h
+	MBVvol.h
+	metronome.h
+	MIDIConverter.h
+	MusicDelay.h
+	NewDist.h
+	Opticaltrem.h
+	Pan.h
+	Phaser.h
+	rakarrack.h
+	RBEcho.h
+	RBFilter.h
+	RecChord.h
+	RecognizeNote.h
+	Resample.h
+	Reverb.h
+	Reverbtron.h
+	Ring.h
+	RyanWah.h
+	Sequence.h
+	ShelfBoost.h
+	Shifter.h
+	Shuffle.h
+	smbPitchShift.h
+	StereoHarm.h
+	StompBox.h
+	Sustainer.h
+	SVFilter.h
+	Synthfilter.h
+	Tuner.h
+	Valve.h
+	Vibe.h
+	Vocoder.h
+	Waveshaper.h
+)
+add_executable(rakarrack ${RAKARRACK_SOURCES} ${RAKARRACK_HEADERS})
