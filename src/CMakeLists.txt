@@ -12,6 +12,15 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
+if(ENABLE_MIDI)
+	set(RAKARRACK_MIDI_SOURCES
+		MIDIConverter.C
+		rkrMIDI.C
+	)
+	set(RAKARRACK_MIDI_HEADERS
+		MIDIConverter.h
+	)
+endif()
 set(RAKARRACK_SOURCES
 	Alienwah.C
 	AnalogFilter.C
@@ -50,14 +59,12 @@ set(RAKARRACK_SOURCES
 	MBDist.C
 	MBVvol.C
 	metronome.C
-	MIDIConverter.C
 	MusicDelay.C
 	NewDist.C
 	Opticaltrem.C
 	Pan.C
 	Phaser.C
 	process.C
-	rakarrack.cxx
 	RBEcho.C
 	RBFilter.C
 	RecChord.C
@@ -66,7 +73,6 @@ set(RAKARRACK_SOURCES
 	Reverb.C
 	Reverbtron.C
 	Ring.C
-	rkrMIDI.C
 	RyanWah.C
 	Sequence.C
 	ShelfBoost.C
@@ -85,6 +91,7 @@ set(RAKARRACK_SOURCES
 	Vocoder.C
 	Waveshaper.C
     main.C
+	rakarrack.cxx
 )
 set(RAKARRACK_HEADERS
 	Alienwah.h
@@ -125,13 +132,11 @@ set(RAKARRACK_HEADERS
 	MBDist.h
 	MBVvol.h
 	metronome.h
-	MIDIConverter.h
 	MusicDelay.h
 	NewDist.h
 	Opticaltrem.h
 	Pan.h
 	Phaser.h
-	rakarrack.h
 	RBEcho.h
 	RBFilter.h
 	RecChord.h
@@ -156,9 +161,23 @@ set(RAKARRACK_HEADERS
 	Vibe.h
 	Vocoder.h
 	Waveshaper.h
+	rakarrack.h
 )
-add_executable(rakarrack ${RAKARRACK_SOURCES} ${RAKARRACK_HEADERS})
+
+add_custom_command(OUTPUT rakarrack.cxx rakarrack.h
+	COMMAND ${FLTK_FLUID_EXECUTABLE} -c ${CMAKE_CURRENT_SOURCE_DIR}/rakarrack.fl
+	MAIN_DEPENDENCY rakarrack.fl
+	WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+)
+
+add_executable(rakarrack
+	${RAKARRACK_SOURCES}
+	${RAKARRACK_HEADERS}
+	${RAKARRACK_MIDI_SOURCES}
+	${RAKARRACK_MIDI_HEADERS}
+)
 target_include_directories(rakarrack PRIVATE
+	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}
 	${FLTK_INCLUDE_DIR}
 	${ALSA_INCLUDE_DIRS}

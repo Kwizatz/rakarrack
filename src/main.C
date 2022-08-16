@@ -179,9 +179,10 @@ main (int argc, char *argv[])
 
 
     JACKstart (&rkr, rkr.jackclient);
+#ifdef ENABLE_MIDI
     rkr.InitMIDI ();
     rkr.ConnectMIDI ();
-
+#endif
 
     if (needtoloadstate) rkr.loadfile(statefile);
     if (needtoloadfile) rkr.loadfile(filetoload);
@@ -232,8 +233,9 @@ main (int argc, char *argv[])
                          "Jack Shut Down, try to save your work");
         }
 
-
+#ifdef ENABLE_MIDI
         rkr.miramidi ();
+#endif
 
     }
 

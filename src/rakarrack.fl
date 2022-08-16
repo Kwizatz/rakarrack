@@ -941,7 +941,7 @@ Put_Skin(last);}
             label {Save Sk&in}
             callback {char *filename;
 \#define EXT ".rkrs"
-filename=fl_file_chooser("Save Skin:","(*"EXT")","",0);
+filename=fl_file_chooser("Save Skin:","(*" EXT ")","",0);
 if (filename==NULL) return;
 filename=fl_filename_setext(filename,EXT);
 \#undef EXT
@@ -971,7 +971,7 @@ Put_MidiTable();}
             label {Save MIDI Table}
             callback {char *filename;
 \#define EXT ".rmt"
-filename=fl_file_chooser("Save MIDI Table:","(*"EXT")","",0);
+filename=fl_file_chooser("Save MIDI Table:","(*" EXT ")","",0);
 if (filename==NULL) return;
 filename=fl_filename_setext(filename,EXT);
 \#undef EXT
@@ -980,9 +980,9 @@ rkr->savemiditable(filename);}
           }
           MenuItem ConvertReverb {
             label {&Convert Reverb IR File}
-            callback {char *filename;
-char name[64];
-memset(name,0, sizeof(name));
+            callback {
+char *filename;
+char name[128];
 sprintf(name,"%s %s",rkr->jackcliname, VERSION);
 
 filename=fl_file_chooser("Convert Reverb IR File:","(*.wav)",NULL,0);
@@ -1426,7 +1426,7 @@ if ((rkr->Metro_Bypass) && (MetroSound->value()==0))
      } 
 }
 
-
+\#ifdef ENABLE_MIDI
 if (rkr->MIDIConverter_Bypass)
 {
   if ((rkr->efx_MIDIConverter->hay) && ( (int) Mled->color() != (int) fl_lighter(FL_RED)))
@@ -1442,7 +1442,7 @@ if (rkr->MIDIConverter_Bypass)
      Mled->redraw();
      } 
 }
-
+\#endif
 
 if (rkr->Harmonizer_Bypass)
 {
@@ -10264,8 +10264,8 @@ if (!o->value())
         } 
     if (rkr->MIDIConverter_Bypass)  
         {
-            nidi_activar->value(0);
-            nidi_activar->do_callback();
+            midi_activar->value(0);
+            midi_activar->do_callback();
         }
              
 rkr->cleanup_efx();
@@ -10342,50 +10342,58 @@ rkr->calculavol(2);}
         user_data 1
         xywh {520 85 276 52} box UP_BOX color 0 selection_color 0 align 112
       } {
-        Fl_Light_Button nidi_activar {
+        Fl_Light_Button midi_activar {
           label On
           user_data 2
-          callback {if ((int)o->value()==0)
-{ 
-rkr->efx_MIDIConverter->panic();
-  Mled->color(fl_darker(FL_RED));
-  Mled->redraw();
-}
+          callback 
+          {
+\#ifdef ENABLE_MIDI
+            if ((int)o->value()==0)
+            { 
+              rkr->efx_MIDIConverter->panic();
+              Mled->color(fl_darker(FL_RED));
+              Mled->redraw();
+            }
 
+            rkr->MIDIConverter_Bypass=(int)o->value();
+            Midi_out_Counter->do_callback();
 
-rkr->MIDIConverter_Bypass=(int)o->value();
-Midi_out_Counter->do_callback();
-
-ChangeActives();
-MIDI_LABEL->redraw_label();}
+            ChangeActives();
+            MIDI_LABEL->redraw_label();
+\#endif
+          }
           xywh {525 89 38 18} shortcut 0x6d color 62 selection_color 1 labelsize 10 when 1
         }
         Fl_Choice MIDIOctave {
           label Octave
           user_data 12
-          callback {switch((int)o->value())
-{
-  case 0:
-  rkr->efx_MIDIConverter->Moctave=-2;
-  break;
-  
-  case 1:
-  rkr->efx_MIDIConverter->Moctave=-1;
-  break;
+          callback 
+          {
+\#ifdef ENABLE_MIDI
+            switch((int)o->value())
+            {
+              case 0:
+              rkr->efx_MIDIConverter->Moctave=-2;
+              break;
+              
+              case 1:
+              rkr->efx_MIDIConverter->Moctave=-1;
+              break;
 
-  case 2:
-  rkr->efx_MIDIConverter->Moctave=0;
-  break;
+              case 2:
+              rkr->efx_MIDIConverter->Moctave=0;
+              break;
 
-  case 3:
-  rkr->efx_MIDIConverter->Moctave=1;
-  break;
+              case 3:
+              rkr->efx_MIDIConverter->Moctave=1;
+              break;
 
-  case 4:
-  rkr->efx_MIDIConverter->Moctave=2;
-  break;
-
-}}
+              case 4:
+              rkr->efx_MIDIConverter->Moctave=2;
+              break;
+            }
+\#endif
+          }
           xywh {624 118 37 16} down_box BORDER_BOX selection_color 0 labelsize 8 labelcolor 7 textsize 10 textcolor 7
         } {
           MenuItem {} {
@@ -10411,18 +10419,33 @@ MIDI_LABEL->redraw_label();}
         }
         Fl_Counter Midi_out_Counter {
           label Channel
-          callback {rkr->efx_MIDIConverter->setmidichannel((int)o->value()-1);}
+          callback 
+          {
+\#ifdef ENABLE_MIDI
+            rkr->efx_MIDIConverter->setmidichannel((int)o->value()-1);
+\#endif
+          }
           xywh {601 89 60 17} type Simple color 62 labelsize 9 labelcolor 7 minimum 1 maximum 16 step 1 value 1 textsize 11
         }
         Fl_Value_Slider Trig_Adj {
           label Trigger
-          callback {rkr->efx_MIDIConverter->setTriggerAdjust((int)o->value());}
+          callback 
+          {
+\#ifdef ENABLE_MIDI
+            rkr->efx_MIDIConverter->setTriggerAdjust((int)o->value());
+\#endif
+          }
           xywh {667 100 117 11} type {Horz Knob} box FLAT_BOX color 178 selection_color 62 labelsize 8 labelcolor 7 align 9 minimum 2 maximum 60 step 1 textcolor 7
           class SliderW
         }
         Fl_Value_Slider Vel_Adj {
           label Velocity
-          callback {rkr->efx_MIDIConverter->setVelAdjust((int)o->value());}
+          callback
+          {
+\#ifdef ENABLE_MIDI
+            rkr->efx_MIDIConverter->setVelAdjust((int)o->value());
+\#endif
+          }
           xywh {667 119 117 11} type {Horz Knob} box FLAT_BOX color 178 selection_color 62 labelsize 8 labelcolor 7 align 9 minimum 1 maximum 100 step 1 textcolor 7
           class SliderW
         }
@@ -10436,7 +10459,7 @@ MIDI_LABEL->redraw_label();}
 char *filename;
 
 \#define EXT ".rkrb"
-filename=fl_file_chooser("Save Bank File:","(*"EXT")",rkr->Bank_Saved,0);
+filename=fl_file_chooser("Save Bank File:","(*" EXT ")",rkr->Bank_Saved,0);
 if (filename==NULL) return;
 filename=fl_filename_setext(filename,EXT);
 \#undef EXT
@@ -10652,7 +10675,7 @@ Put_Loaded();}
           user_data 77
           callback {char *filename;
 \#define EXT ".rkr"
-filename=fl_file_chooser("Save Preset:","(*"EXT")",rkr->Preset_Name,0);
+filename=fl_file_chooser("Save Preset:","(*" EXT ")",rkr->Preset_Name,0);
 if (filename==NULL) return;
 filename=fl_filename_setext(filename,EXT);
 \#undef EXT
@@ -11022,9 +11045,9 @@ if(rkr->CheckOldBank(filename)==0)
           }
           MenuItem Convert_Old_Bank {
             label {Convert &Old Bank}
-            callback {char *filename;
-char name[64];
-memset(name,0, sizeof(name));
+            callback {
+char *filename;
+char name[128];
 sprintf(name,"%s %s",rkr->jackcliname, VERSION);
 
 filename=fl_file_chooser("Convert Old Bank File:","(*.rkrb)",NULL,0);
@@ -12024,7 +12047,10 @@ if(o->text(valor) != NULL)
 strcpy(rkr->MID,o->text(valor));
 else return;
 o->select(valor,1);
-rkr->Conecta();}
+\#ifdef ENABLE_MIDI
+  rkr->Conecta();
+\#endif
+}
             xywh {15 72 190 111} type Hold selection_color 0 labelsize 11 labelcolor 7 align 5 textsize 12 textcolor 7
           }
           Fl_Counter Midi_In_Counter {
@@ -12112,7 +12138,7 @@ else JackIn->deactivate();}
           }
           Fl_Input Username {
             label {Username:}
-            callback {rkr->UserRealName=(char*) o->value();}
+            callback {strncpy(rkr->UserRealName, o->value(),sizeof(rkr->UserRealName)-1);}
             xywh {80 32 240 21} labelsize 11 labelcolor 7 textsize 11 textcolor 7
           }
           Fl_Check_Button MES_DIS {
@@ -12899,6 +12925,7 @@ RC_Opti->value(rkr->RCOpti);
 RC_Opti->do_callback();
 
 
+\#ifdef ENABLE_MIDI
 //MIDIConverter
 
 rakarrack.get(rkr->PrefNom("Midi Out Channel"),k,1);
@@ -12921,8 +12948,9 @@ MIDIOctave->value(k);
 MIDIOctave->do_callback();
 
 rakarrack.get(rkr->PrefNom("MIDI Converter On/Off"),k,0);
-nidi_activar->value(k);
-nidi_activar->do_callback();
+midi_activar->value(k);
+midi_activar->do_callback();
+\#endif
 
 //Metronome
 
@@ -13617,11 +13645,7 @@ Fl::repeat_timeout(.04,tick,v);} {}
 int num; 
 int tecla = Fl::event_key();
 long long kk = (long long) o->user_data();
-char temp2[128];
-
-
 num = (int) kk;
-
 
 if(drag!=1000)
 {
@@ -13656,16 +13680,13 @@ if (strlen(rkr->Bank[num].Preset_Name) >0)
 { 
   Fl_Widget *m = fl_message_icon();
   m->parent()->copy_label(rkr->jackcliname);
-  sprintf(temp2,"Overwrite \\"%s\\"?",w->label());
-  ok=fl_choice(temp2, "No","Yes", NULL);
- if (!ok)
- { 
- o->value(0);
- o->redraw();
-  return;
- }
-
-
+  ok=fl_choice("Overwrite \\"%s\\"?","No","Yes", NULL, w->label());
+  if (!ok)
+  { 
+    o->value(0);
+    o->redraw();
+    return;
+  }
 }
  o->value(0);
  o->redraw();
@@ -13719,7 +13740,7 @@ for (j=1; j<5; j++)
       butX->labelcolor(label_color);
       butX->labelsize(14);
       butX->align(68|FL_ALIGN_INSIDE);
-      butX->user_data((void*) (num));
+      butX->user_data(reinterpret_cast<void*>(num));
       butX->value(0);
       butX->when(FL_WHEN_CHANGED |FL_WHEN_RELEASE_ALWAYS);
       butX->callback((Fl_Callback *)preset_click);
@@ -16726,8 +16747,8 @@ case 46:
   Tap_activar->do_callback();
   break;
   case 122:
-  nidi_activar->value(rkr->MIDIConverter_Bypass);
-  nidi_activar->do_callback();
+  midi_activar->value(rkr->MIDIConverter_Bypass);
+  midi_activar->do_callback();
   break;
   case 123:
   tuner_activar->value(rkr->Tuner_Bypass);
@@ -17593,7 +17614,7 @@ if(rkr->Chorus_Bypass)
   }
   Function {ActACI()} {} {
     code {int value;
-int i,amax,amin;
+int amax,amin;
 float gain =  0.0;
 float tmp = 0.0;
 
@@ -17630,21 +17651,22 @@ value = amin + lrintf((float)(amax - amin)* tmp);
 if(value != rkr->last_auxvalue)
 {
 
+\#ifdef ENABLE_MIDI
 if(rkr->MIDIway)
 {
-
-for(i=0; i<20;i++)
-    {
-      if (rkr->XUserMIDI[rkr->Aux_MIDI][i])
-          rkr->process_midi_controller_events(rkr->XUserMIDI[rkr->Aux_MIDI][i],value);
-          else break;
-   }        
-
+  for(int i=0; i<20;i++)
+  {
+    if (rkr->XUserMIDI[rkr->Aux_MIDI][i])
+        rkr->process_midi_controller_events(rkr->XUserMIDI[rkr->Aux_MIDI][i],value);
+        else break;
+  }
 }
-else rkr->process_midi_controller_events(rkr->Aux_MIDI,value);   
-
+else 
+{
+  rkr->process_midi_controller_events(rkr->Aux_MIDI,value);
+}
+\#endif
 rkr->last_auxvalue = value;
-
 }} {}
   }
   Function {Busca_Eff(int num)} {open return_type int
@@ -17782,63 +17804,67 @@ if(tecla != last_tecla)
 return(1000);} {}
   }
   Function {ScanDir()} {} {
-    code {char nombre[64];
-  char *nombank;
-  DIR *dir;
-  struct dirent *fs;
-
-  ClearBankNames();     /* This will free all memory allocated for names */
-  CH_UB->clear();
-
-  dir=opendir(DATA_DIR);
-  if (dir==NULL) return;
-
-  while ((fs=readdir(dir)))
-  {
-  if (strstr(fs->d_name,".rkrb")!=NULL)
+    code {
+  char nombre[256];
+    char nombank[1024];
+    DIR *dir;
+    struct dirent *fs;
+  
+    ClearBankNames();     /* This will free all memory allocated for names */
+    CH_UB->clear();
+  
+    dir=opendir(DATA_DIR);
+    if (dir==NULL) return;
+  
+    while ((fs=readdir(dir)))
     {
-      nombank = (char *)calloc(1, 256);
-      sprintf(nombank,"%s/%s",DATA_DIR, fs->d_name);
-      AddBankName(nombank);
-      if(rkr->CheckOldBank(nombank)==0)
+    if (strstr(fs->d_name,".rkrb")!=NULL)
       {
-       memset(nombre,0,sizeof(nombre));
-       strncpy(nombre,fs->d_name,strlen(fs->d_name)-5);
-       if(nombre != NULL)
-       {
-          CH_UB->add((const char *)nombre, 0, (Fl_Callback *)cb_CH_UB, (void *)nombank, 0);
+        sprintf(nombank,"%s/%s",DATA_DIR, fs->d_name);
+        AddBankName(nombank);
+        if(rkr->CheckOldBank(nombank)==0)
+        {
+         size_t namelen = strlen(fs->d_name);
+         strncpy(nombre,fs->d_name, 254);
+         namelen = (namelen > 5) ? namelen - 5 : 0;
+         if(namelen > 0)
+         {
+            nombre[namelen] = 0;
+            CH_UB->add((const char *)nombre, 0, (Fl_Callback *)cb_CH_UB, (void *)nombank, 0);
+         }
+        }
+  
        }
-      }
-
-     }
-  }
-  closedir(dir);
-
-  dir=opendir(rkr->UDirFilename);
-  if (dir==NULL) return;
-
-  while ((fs=readdir(dir)))
-  {
-  if (strstr(fs->d_name,".rkrb")!=NULL)
+    }
+    closedir(dir);
+  
+    dir=opendir(rkr->UDirFilename);
+    if (dir==NULL) return;
+  
+    while ((fs=readdir(dir)))
     {
-      nombank = (char *)calloc(1, 256);
-      sprintf(nombank,"%s/%s",rkr->UDirFilename,fs->d_name);
-      AddBankName(nombank);
-      if(rkr->CheckOldBank(nombank)==0)
+    if (strstr(fs->d_name,".rkrb")!=NULL)
       {
-       memset(nombre,0,sizeof(nombre));
-       strncpy(nombre,fs->d_name,strlen(fs->d_name)-5);
-       if(nombre != NULL)
-       {
-          CH_UB->add((const char *)nombre, 0, (Fl_Callback *)cb_CH_UB, (void *)nombank, 0);
+        sprintf(nombank,"%s/%s",rkr->UDirFilename,fs->d_name);
+        AddBankName(nombank);
+        if(rkr->CheckOldBank(nombank)==0)
+        {
+         strncpy(nombre,fs->d_name, sizeof(nombre));
+         size_t namelen = strlen(fs->d_name);
+         namelen = (namelen > 5) ? namelen - 5 : 0;
+         if(namelen > 0)
+         {
+            nombre[namelen] = 0;
+            CH_UB->add((const char *)nombre, 0, (Fl_Callback *)cb_CH_UB, (void *)nombank, 0);
+         }
+        }
+  
        }
-      }
-
-     }
-  }
-  closedir(dir);
-
-  CH_UB->value(0);} {}
+    }
+    closedir(dir);
+  
+    CH_UB->value(0);
+  } {}
   }
   Function {prevnext(int e)} {return_type {static int}
   } {
@@ -18042,7 +18068,6 @@ if (( fn = fopen (tempfile, "r")) != NULL)
   } {
     code {if(num==12) return;
 int ok;
-char temp2[128];
 char Rname[128];
 Fl_Choice *s = (Fl_Choice * ) w;
 if(strncmp(s->text(),"*",1)!=0) 
@@ -18051,8 +18076,7 @@ if(strncmp(s->text(),"*",1)!=0)
  return;
 } 
 
-sprintf(temp2,"Delete? \\"%s\\"",s->text());
-ok=fl_choice("%d",temp2,"No","Yes",NULL);
+ok=fl_choice("Delete? \\"%s\\"","No","Yes",NULL,s->text());
 if (!ok) return;
 memset(Rname,0,sizeof(Rname));
 sprintf(Rname,"%s",s->text());
@@ -18083,7 +18107,7 @@ if (Order->visible())Prepare_Order();} {}
     b->box(FL_DOWN_BOX);
     b->copy_label(buf);
     b->labelcolor(FL_WHITE);
-    b->user_data((void *) 8000);
+    b->user_data(reinterpret_cast<void *>(8000));
     
     Fl_Choice* cb = new Fl_Choice(120,y*25+25,60,20);
     cb->copy_label("Bank");
@@ -18092,14 +18116,14 @@ if (Order->visible())Prepare_Order();} {}
     cb->add("2");
     cb->add("3");
     cb->add("U");
-    cb->user_data((void *) (1000+y));
+    cb->user_data(reinterpret_cast<void *>(1000+y));
     cb->callback((Fl_Callback *)bank_click); 
     scroll->add(cb);
     
     Fl_Choice* cp = new Fl_Choice(260,y*25+25,220,20);
     cp->copy_label("Preset");
     cp->labelcolor(FL_WHITE);
-    cp->user_data((void *) (2000+y));
+    cp->user_data(reinterpret_cast<void *>(2000+y));
     cp->callback((Fl_Callback *)p_click); 
     scroll->add(cp);
   

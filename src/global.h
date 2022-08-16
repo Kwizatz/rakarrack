@@ -175,7 +175,10 @@ static inline float f_pow2(float x)
 #include <X11/xpm.h>
 #include <jack/jack.h>
 #include <jack/midiport.h>
+#ifdef ENABLE_MIDI
 #include <alsa/asoundlib.h>
+#include "MIDIConverter.h"
+#endif
 #include <FL/Fl_Preferences.H>
 #include "FPreset.h"
 #include "Reverb.h"
@@ -192,7 +195,6 @@ static inline float f_pow2(float x)
 #include "MusicDelay.h"
 #include "Gate.h"
 #include "Tuner.h"
-#include "MIDIConverter.h"
 #include "RecognizeNote.h"
 #include "RecChord.h"
 #include "NewDist.h"
@@ -360,7 +362,9 @@ public:
     class Gate *efx_Gate;
     class NewDist *efx_NewDist;
     class Tuner *efx_Tuner;
+#ifdef ENABLE_MIDI
     class MIDIConverter *efx_MIDIConverter;
+#endif
     class metronome *M_Metronome;
     class beattracker *beat;
 
@@ -771,10 +775,10 @@ public:
     } B_Names[4][62];
 
 
+#ifdef ENABLE_MIDI
     // Alsa MIDI
-
     snd_seq_t *midi_in, *midi_out;
-
+#endif
 
     struct JackPorts {
         char name[128];

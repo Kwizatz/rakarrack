@@ -14,7 +14,6 @@ else
 OPTS="no"
 fi
 
-
 AC_ARG_ENABLE(vectorize,
 AS_HELP_STRING([--enable-vectorize[=yes/no]],[enable vectorize (default=yes)]),
 [ac_vectorize="$enableval"], [ac_vectorize="yes"])
@@ -68,6 +67,7 @@ else
 fi
 AC_CHECK_PROG([ACONNECT],[aconnect],[aconnect])
 AC_DEFINE_UNQUOTED(ACONNECT,"$ACONNECT",[ACONNECT])
+AC_DEFINE_UNQUOTED(ENABLE_MIDI,1,[ENABLE_MIDI])
 
 # Checks gcc version
 

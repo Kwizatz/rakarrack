@@ -118,9 +118,6 @@ JACKstart (RKR * rkr_, jack_client_t * jackclient_)
 int
 jackprocess (jack_nframes_t nframes, void *arg)
 {
-
-    int i,count;
-    jack_midi_event_t midievent;
     jack_position_t pos;
     jack_transport_state_t astate;
 
@@ -198,20 +195,21 @@ jackprocess (jack_nframes_t nframes, void *arg)
 
 
 
-
+#ifdef ENABLE_MIDI
     float *data = (float *)jack_port_get_buffer(jack_midi_in, nframes);
-    count = jack_midi_get_event_count(data);
+    int count = jack_midi_get_event_count(data);
+    jack_midi_event_t midievent;
 
     dataout = jack_port_get_buffer(jack_midi_out, nframes);
     jack_midi_clear_buffer(dataout);
 
 
-    for (i = 0; i < count; i++) {
+    for (int i = 0; i < count; ++i) {
         jack_midi_event_get(&midievent, data, i);
         JackOUT->jack_process_midievents(&midievent);
     }
 
-    for (i=0; i<=JackOUT->efx_MIDIConverter->ev_count; i++) {
+    for (int i=0; i<=JackOUT->efx_MIDIConverter->ev_count; ++i) {
         jack_midi_event_write(dataout,
                               JackOUT->efx_MIDIConverter->Midi_event[i].time,
                               JackOUT->efx_MIDIConverter->Midi_event[i].dataloc,
@@ -220,7 +218,7 @@ jackprocess (jack_nframes_t nframes, void *arg)
 
     JackOUT->efx_MIDIConverter->moutdatasize = 0;
     JackOUT->efx_MIDIConverter->ev_count = 0;
-
+#endif
 
 
     memcpy (JackOUT->efxoutl, inl,

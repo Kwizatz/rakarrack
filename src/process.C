@@ -300,7 +300,9 @@ RKR::RKR ()
 
     beat = new beattracker();
     efx_Tuner = new Tuner ();
+#ifdef ENABLE_MIDI    
     efx_MIDIConverter = new MIDIConverter(jackcliname);
+#endif
     RecNote = new Recognize (efxoutl, efxoutr, rtrig);
     RC = new RecChord ();
 
@@ -910,21 +912,17 @@ RKR::Adjust_Upsample()
 
 
 
-
+#ifdef ENABLE_MIDI
 void
 RKR::ConnectMIDI ()
 {
-
-// Get config settings and init settings
-// Get MIDI IN Setting
-
+    // Get config settings and init settings
+    // Get MIDI IN Setting
     rakarrack.get (PrefNom ("Auto Connect MIDI IN"), aconnect_MI, 0);
     rakarrack.get (PrefNom ("MIDI IN Device"), MID, "", 40);
-    if (aconnect_MI)
-        Conecta ();
-
-
+    if (aconnect_MI){ Conecta (); }
 }
+#endif
 
 int
 RKR::Cabinet_setpreset (int npreset)
@@ -1483,10 +1481,10 @@ RKR::Alg (float *inl1, float *inr1, float *origl, float *origr, void *)
 
         if (Tuner_Bypass)
             efx_Tuner->schmittFloat (PERIOD, efxoutl, efxoutr);
-
+#ifdef ENABLE_MIDI
         if (MIDIConverter_Bypass)
-            efx_MIDIConverter->schmittFloat (PERIOD, efxoutl, efxoutr);
-
+            { efx_MIDIConverter->schmittFloat (PERIOD, efxoutl, efxoutr); }
+#endif
 
         if ((Harmonizer_Bypass) && (have_signal)) {
             if (efx_Har->mira) {

@@ -49,6 +49,6 @@
         "*.C": "cpp",
         "*.rh": "cpp"
     },
-    "editor.fontFamily": "'Noto Mono Nerd Font Complete Mono','Fira Code', Consolas, 'Courier New', monospace",
-    "terminal.integrated.fontFamily": "'Noto Mono Nerd Font Complete Mono','Fira Code', Consolas, 'Courier New', monospace"
+    "editor.fontFamily": "'Fira Code', Consolas, 'Courier New', monospace",
+    "terminal.integrated.fontFamily": "'Noto Mono','Fira Code', Consolas, 'Courier New', monospace"
 }
