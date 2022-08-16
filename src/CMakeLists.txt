@@ -96,7 +96,6 @@ set(RAKARRACK_HEADERS
 	CoilCrafter.h
 	CompBand.h
 	Compressor.h
-	config.h
 	Convolotron.h
 	delayline.h
 	Distorsion.h
@@ -159,3 +158,13 @@ set(RAKARRACK_HEADERS
 	Waveshaper.h
 )
 add_executable(rakarrack ${RAKARRACK_SOURCES} ${RAKARRACK_HEADERS})
+target_include_directories(rakarrack PRIVATE
+	${CMAKE_CURRENT_BINARY_DIR}
+	${FLTK_INCLUDE_DIR}
+	${ALSA_INCLUDE_DIRS}
+	PkgConfig::FFTW
+	PkgConfig::XPM
+	PkgConfig::JACK
+	PkgConfig::SAMPLERATE
+	PkgConfig::SNDFILE)
+target_link_libraries(rakarrack ${FLTK_LIBRARIES} ${ALSA_LIBRARIES} PkgConfig::FFTW PkgConfig::XPM PkgConfig::JACK PkgConfig::SAMPLERATE PkgConfig::SNDFILE)

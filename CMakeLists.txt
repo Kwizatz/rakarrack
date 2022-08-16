@@ -41,4 +41,17 @@ list(APPEND CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}")
 
 include(compiler)
 
+set(DATA_DIR ${CMAKE_INSTALL_PREFIX}/share/rakarrack)
+set(VERSION "0.6.2")
+configure_file(cmake/config.h.in src/config.h)
+
+find_package(FLTK)
+find_package(ALSA)
+find_package(PkgConfig REQUIRED)
+pkg_search_module(FFTW REQUIRED fftw3 IMPORTED_TARGET)
+pkg_search_module(XPM REQUIRED xpm IMPORTED_TARGET)
+pkg_search_module(JACK REQUIRED jack IMPORTED_TARGET)
+pkg_search_module(SAMPLERATE REQUIRED samplerate IMPORTED_TARGET)
+pkg_search_module(SNDFILE REQUIRED sndfile IMPORTED_TARGET)
+
 add_subdirectory(src)
