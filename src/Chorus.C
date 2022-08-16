@@ -22,9 +22,9 @@
 
 */
 
-#include <math.h>
+#include <cmath>
+#include <cstdio>
 #include "Chorus.h"
-#include <stdio.h>
 
 Chorus::Chorus (float * efxoutl_, float * efxoutr_)
 {
@@ -33,19 +33,16 @@ Chorus::Chorus (float * efxoutl_, float * efxoutr_)
     dlk = 0;
     drk = 0;
     maxdelay = lrintf (MAX_CHORUS_DELAY / 1000.0 * SAMPLE_RATE);
-    delayl = new float[maxdelay];
-    delayr = new float[maxdelay];
+    delayl.resize(maxdelay);
+    delayr.resize(maxdelay);
 
     Ppreset = 0;
     setpreset (0,Ppreset);
 
-    float tmp = 0.08f;
-    ldelay = new delayline(tmp, 2);
-    rdelay = new delayline(tmp, 2);
-    ldelay -> set_averaging(0.005f);
-    rdelay -> set_averaging(0.005f);
-    ldelay->set_mix( 0.5f );
-    rdelay->set_mix( 0.5f );
+    ldelay.set_averaging(0.005f);
+    rdelay.set_averaging(0.005f);
+    ldelay.set_mix( 0.5f );
+    rdelay.set_mix( 0.5f );
 
     oldr = 0.0f;
     oldl = 0.0f;
@@ -107,13 +104,13 @@ Chorus::out (float * smpsl, float * smpsr)
             //Left
             mdel = (dl1 * (float)(PERIOD - i) + dl2 * (float)i) / fPERIOD;
             tmp = smpsl[i] + oldl*fb;
-            efxoutl[i] = tmpsub*ldelay->delay(tmp, mdel, 0, 1, 0);
+            efxoutl[i] = tmpsub*ldelay.delay(tmp, mdel, 0, 1, 0);
             oldl = efxoutl[i];
 
             //Right
             mdel = (dr1 * (float)(PERIOD - i) + dr2 * (float)i) / fPERIOD;
             tmp = smpsr[i] + oldr*fb;
-            efxoutr[i] = tmpsub*rdelay->delay(tmp, mdel, 0, 1, 0);
+            efxoutr[i] = tmpsub*rdelay.delay(tmp, mdel, 0, 1, 0);
             oldr =  efxoutr[i];
         }
 
@@ -221,11 +218,17 @@ void
 Chorus::setvolume (int Pvolume)
 {
     this->Pvolume = Pvolume;
-    if(awesome_mode) { //use interpolated delay line for better sound
+    if(awesome_mode) 
+    {
+        //use interpolated delay line for better sound
         outvolume = 0.0f;
-        ldelay->set_mix( ((float)Pvolume / 128.0f) );
-        rdelay->set_mix( ((float)Pvolume / 128.0f) );
-    } else   outvolume = (float)Pvolume / 127.0f;
+        ldelay.set_mix( ((float)Pvolume / 128.0f) );
+        rdelay.set_mix( ((float)Pvolume / 128.0f) );
+    } 
+    else
+    {
+        outvolume = (float)Pvolume / 127.0f;
+    }
 
 };
 
@@ -343,8 +346,8 @@ Chorus::changepar (int npar, int value)
         awesome_mode = value;
         if(awesome_mode) {
             outvolume = 0.0f;
-            ldelay->set_mix(((float)Pvolume/128.0f) );
-            rdelay->set_mix(((float)Pvolume/128.0f) );
+            ldelay.set_mix(((float)Pvolume/128.0f) );
+            rdelay.set_mix(((float)Pvolume/128.0f) );
         } else outvolume = (float)Pvolume / 127.0f;
         break;
     };

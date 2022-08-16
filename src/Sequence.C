@@ -870,7 +870,7 @@ Sequence::setpreset (int npreset)
 void
 Sequence::changepar (int npar, int value)
 {
-    int testegg, i;
+    int testegg{};
 
     switch (npar) {
     case 0:
@@ -885,14 +885,17 @@ Sequence::changepar (int npar, int value)
         fsequence[npar] = (float) value / 127.0f;
 
         seqpower = 0.0f;
-        for (i = 0; i<8; i++)  seqpower += fsequence[i];
+        for (size_t i = 0; i<8; ++i)
+        {
+            seqpower += fsequence[i];
+        }
         if(seqpower > 0.1f) {
             seqpower = 15.0f/seqpower;
             rndflag = 0;
         }
 
         testegg = 0;
-        for (i = 0; i<8; i++)  testegg += Psequence[i];
+        for (size_t i = 0; i<8; ++i) { testegg += Psequence[i]; }
         if(testegg < 4) {
             seqpower = 5.0f;  //Easter egg
             rndflag = 1;

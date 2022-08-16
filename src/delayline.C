@@ -51,10 +51,8 @@ delayline::delayline(float maxdelay, int maxtaps_)
     cleanup();
 };
 
-delayline::~delayline()
-{
+delayline::~delayline(){}
 
-}
 
 void
 delayline::cleanup()

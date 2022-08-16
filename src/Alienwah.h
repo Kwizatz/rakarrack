@@ -66,7 +66,7 @@ private:
     int Pphase;
 
     int oldk;
-    int oldpdelay;
+    int oldpdelay{};
 
     //Control Parametrii
     void setvolume (int Pvolume);

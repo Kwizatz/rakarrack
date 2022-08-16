@@ -24,6 +24,7 @@
 
 #ifndef CHORUS_H
 #define CHORUS_H
+#include <vector>
 #include "global.h"
 #include "EffectLFO.h"
 #include "delayline.h"
@@ -69,19 +70,21 @@ private:
     void setfb (int Pfb);
     void setlrcross (int Plrcross);
 
-    //Valorile interne
+    //Internal Values
     int maxdelay;
     int dlk, drk, dlhi, dlhi2;
     int awesome_mode;
 
     float depth, delay, fb, lrcross, panning, oldr, oldl;
     float dl1, dl2, dr1, dr2, lfol, lfor;
-    float *delayl, *delayr;
+    std::vector<float> delayl;
+    std::vector<float> delayr;
     float getdelay (float xlfo);
     float dllo, mdel;
 
     class FPreset *Fpre;
-    class delayline *ldelay, *rdelay;
+    class delayline ldelay{0.08f, 2};
+    class delayline rdelay{0.08f, 2};
 
 };
 

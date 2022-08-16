@@ -20,11 +20,8 @@
 
 */
 
-#ifndef DLINE_H
-#define DLINE_H
-
-#include "global.h"
-
+#ifndef DELAYLINE_H
+#define DELAYLINE_H
 
 class delayline
 {

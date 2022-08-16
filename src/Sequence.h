@@ -53,7 +53,7 @@ public:
 private:
     //Parametrii
     int Pvolume;	       //Output Level
-    int Psequence[8];	//Sequence.  Each value is 0...127
+    int Psequence[8]{};	//Sequence.  Each value is 0...127
     int Ptempo;           // Rate
     int Pq;                //Filter Q
     int Pamplitude;     // 0 or 1.  Checkbox on or off...
