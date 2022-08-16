@@ -270,13 +270,13 @@ Arpie::sethidamp (int Phidamp)
 
 
 void
-Arpie::setpattern (int Ppattern)
+Arpie::setpattern (int pattern_index)
 {
-    this->Ppattern = Ppattern;
+    Ppattern = pattern_index;
 
     const int PATTERN_SIZE = MAXHARMS;
     const int NUM_PATTERNS = 7;
-    int setpatterns[NUM_PATTERNS][PATTERN_SIZE] = {
+    const int setpatterns[NUM_PATTERNS][PATTERN_SIZE] = {
         {2, 3, 4, 5, 6, 7, 8, 9},
         {9, 8, 7, 6, 5, 4, 3, 2},
         {2, 4, 3, 5, 4, 6, 5, 7},
@@ -287,10 +287,10 @@ Arpie::setpattern (int Ppattern)
     };
 
 
-    if (Ppattern >= PATTERN_SIZE)
-        Ppattern = PATTERN_SIZE - 1;
+    if (Ppattern >= NUM_PATTERNS)
+        {Ppattern = NUM_PATTERNS - 1;}
     for (int ii = 0; ii < PATTERN_SIZE; ii++)
-        pattern[ii] = setpatterns[Ppattern][ii];
+        {pattern[ii] = setpatterns[Ppattern][ii];}
 
 };
 

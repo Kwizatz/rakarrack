@@ -128,7 +128,8 @@ void
 Sequence::out (float * smpsl, float * smpsr)
 {
     int i;
-    int nextcount,dnextcount;
+    size_t nextcount;
+    size_t dnextcount;
     int hPERIOD;
 
     float ldiff, rdiff, lfol, lfor, ftcount;
@@ -143,8 +144,8 @@ Sequence::out (float * smpsl, float * smpsr)
         avflag = 0;
     }
 
-    if((Pmode==3)||(Pmode ==5) || (Pmode==6)) hPERIOD=nPERIOD;
-    else hPERIOD=PERIOD;
+    if((Pmode == 3) || (Pmode == 5) || (Pmode == 6)) {hPERIOD=nPERIOD;}
+    else {hPERIOD=PERIOD;}
 
 
     if ((rndflag) && (tcount < hPERIOD + 1)) { //This is an Easter Egg
@@ -161,13 +162,13 @@ Sequence::out (float * smpsl, float * smpsr)
     case 0:	//Lineal
 
         nextcount = scount + 1;
-        if (nextcount > 7 ) nextcount = 0;
+        if (nextcount > 7 ) {nextcount = 0;}
         ldiff = ifperiod * (fsequence[nextcount] - fsequence[scount]);
         lfol = fsequence[scount];
 
         dscount = (scount + Pstdiff) % 8;
         dnextcount = dscount + 1;
-        if (dnextcount > 7 ) dnextcount = 0;
+        if (dnextcount > 7 ) {dnextcount = 0;}
         rdiff = ifperiod * (fsequence[dnextcount] - fsequence[dscount]);
         lfor = fsequence[dscount];
 
@@ -176,10 +177,10 @@ Sequence::out (float * smpsl, float * smpsr)
             if (++tcount >= intperiod) {
                 tcount = 0;
                 scount++;
-                if(scount > 7) scount = 0;  //reset to beginning of sequence buffer
+                if(scount > 7) {scount = 0;}  //reset to beginning of sequence buffer
 
                 nextcount = scount + 1;
-                if (nextcount > 7 ) nextcount = 0;
+                if (nextcount > 7 ) {nextcount = 0;}
                 ldiff = ifperiod * (fsequence[nextcount] - fsequence[scount]);
                 lfol = fsequence[scount];
 

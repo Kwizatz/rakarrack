@@ -162,9 +162,13 @@ target_include_directories(rakarrack PRIVATE
 	${CMAKE_CURRENT_BINARY_DIR}
 	${FLTK_INCLUDE_DIR}
 	${ALSA_INCLUDE_DIRS}
+)
+target_link_libraries(rakarrack
+	${FLTK_LIBRARIES}
+	${ALSA_LIBRARIES}
 	PkgConfig::FFTW
 	PkgConfig::XPM
 	PkgConfig::JACK
 	PkgConfig::SAMPLERATE
-	PkgConfig::SNDFILE)
-target_link_libraries(rakarrack ${FLTK_LIBRARIES} ${ALSA_LIBRARIES} PkgConfig::FFTW PkgConfig::XPM PkgConfig::JACK PkgConfig::SAMPLERATE PkgConfig::SNDFILE)
+	PkgConfig::SNDFILE
+)

@@ -60,7 +60,10 @@ private:
     int Pstdiff;       // 1 2 3 4 5 6 7 8
     int Pmode;
     int Prange;
-    int tcount, scount, dscount, intperiod;
+    int tcount{};
+    size_t scount{};
+    size_t dscount{};
+    int intperiod{};
     int subdiv;
     int rndflag;
     int DS_state;
@@ -75,7 +78,7 @@ private:
 
     float nfSAMPLE_RATE;
     float MINFREQ,MAXFREQ;
-    float fsequence[8];
+    float fsequence[8]{};
     float fq;
     float panning;
     float ifperiod,fperiod, seqpower;
