@@ -134,8 +134,7 @@ RKR::Get_Bogomips()
             if (strstr (temp, "bogomips") != NULL)
 
             {
-                tmp=strdup(temp);
-                strsep(&tmp,":");
+                tmp = strtok(temp,":");
                 sscanf (tmp, "%f", &bogomips);
                 break;
             }

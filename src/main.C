@@ -20,14 +20,17 @@
   Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 
 */
-
-
+#include <chrono>
+#include <thread>
+#include <cstdio>
 #include <getopt.h>
 #include <sched.h>
-#include <sys/mman.h>
-#include "global.h"
-#include "rakarrack.h"
+#include "config.h"
 #include "jack.h"
+#include "rakarrack.h"
+#ifndef WIN32
+#include <sys/mman.h>
+#endif
 
 void
 show_help ()
@@ -57,7 +60,6 @@ show_help ()
     fprintf (stderr, "  -ti[tle] windowtitle\n");
     fprintf (stderr, "  -to[oltips]\n");
     fprintf (stderr, "\n");
-
 }
 
 int
@@ -204,7 +206,9 @@ main (int argc, char *argv[])
 
     }
 
+#ifndef WIN32
     mlockall (MCL_CURRENT | MCL_FUTURE);
+#endif
 
     //Main Loop
 
@@ -213,13 +217,11 @@ main (int argc, char *argv[])
         if (gui) {
             Fl::wait ();
         } else {
-            usleep (1500);
+            std::this_thread::sleep_for(std::chrono::microseconds(1500));
             if (preset != 1000) {
                 if( (preset>0) && (preset<61)) rkr.Bank_to_Preset (preset);
                 preset = 1000;
             }
-
-
         }
 
 
@@ -239,12 +241,13 @@ main (int argc, char *argv[])
 
     }
 
-// free memory etc.
+    // free memory etc.
+#ifndef WIN32
+    munlockall (MCL_CURRENT | MCL_FUTURE);
+#endif
 
-    if(needtoloadstate) rgui->save_stat(0);
+    if(needtoloadstate) { rgui->save_stat(0); }
     JACKfinish ();
     return (0);
-
-
 };
 

@@ -3,7 +3,10 @@ version 1.0300
 header_name {.h} 
 code_name {.cxx}
 decl {\#include "global.h"} {public local
-} 
+}
+
+decl {\#include <search.h>} {public local
+}
 
 decl {\#include <FL/Fl_Value_Slider.H>} {public local
 } 
@@ -35,8 +38,12 @@ decl {\#include <FL/Fl_File_Chooser.H>} {public global
 decl {\#include <FL/Fl_Color_Chooser.H>} {public global
 } 
 
-decl {\#include "icono_rakarrack_128x128.xpm"} {private local
-} 
+decl {
+\#ifndef WIN32
+\#include "icono_rakarrack_128x128.xpm"
+\#endif
+} {private local
+}
 
 decl {Fl_Tiled_Image *back;} {private local
 } 
@@ -12566,8 +12573,10 @@ About_Version->copy_label(tmp);} {}
   Function {RKRGUI(int argc, char**argv,RKR *rkr_)} {open C
   } {
     code {Fl::args(argc,argv);
-fl_open_display();
-XpmCreatePixmapFromData(fl_display, DefaultRootWindow(fl_display),(char **)icono_rakarrack_128x128,&p ,&mask, NULL);
+\#ifndef WIN32
+    fl_open_display();
+    XpmCreatePixmapFromData(fl_display, DefaultRootWindow(fl_display),(char **)icono_rakarrack_128x128,&p ,&mask, NULL);
+\#endif
 
 Fl::visual(FL_DOUBLE|FL_RGB);
 fl_register_images();
@@ -12581,6 +12590,7 @@ back = NULL;
 old = NULL;
 make_window();
 
+\#ifndef WIN32
 Principal->icon((char *)p);
 BankWindow->icon((char *)p);
 Order->icon((char *)p);
@@ -12588,6 +12598,7 @@ Settings->icon((char *)p);
 AboutWin->icon((char *)p);
 MIDILearn->icon((char *)p);
 Trigger->icon((char *)p);
+\#endif
 
 last_tecla=0;
 made=0;
@@ -12752,13 +12763,17 @@ CH_UB->color(bcolor);
 chfsize(0);} {}
   }
   Function {put_icon(Fl_Window* window)} {} {
-    code {if (hints == NULL)
-hints = XGetWMHints(fl_display, fl_xid(window));
+    code {
+\#ifndef WIN32
+    if (hints == NULL)
+    hints = XGetWMHints(fl_display, fl_xid(window));
 
-hints->icon_pixmap=p;
-hints->icon_mask=mask; 
-hints->flags = IconPixmapHint | IconMaskHint;
-XSetWMHints(fl_display, fl_xid(window), hints);} {}
+    hints->icon_pixmap=p;
+    hints->icon_mask=mask; 
+    hints->flags = IconPixmapHint | IconMaskHint;
+    XSetWMHints(fl_display, fl_xid(window), hints);
+\#endif
+    } {}
   }
   Function {load_stat()} {open
   } {
@@ -18057,8 +18072,8 @@ if (( fn = fopen (tempfile, "r")) != NULL)
         
        sbuf = buf;
        sscanf(buf,"%d",&num);
-       name = strsep(&sbuf,",");
-       name = strsep(&sbuf,",");
+       name = strtok(sbuf,",");
+       name = strtok(nullptr,",");
        add_name(FindWidget(num), name);
      }
  fclose(fn);
@@ -18527,9 +18542,11 @@ drag=1000;
         strncpy(elem->name, name, 255);
         if (mBankNameList == NULL) {
                 mBankNameList = elem;
-                insque(elem, NULL);
+                elem->forward = elem->backward = nullptr;
         } else {
-                insque(elem, mBankNameListTail);
+          mBankNameListTail->forward = elem;
+          elem->backward = mBankNameListTail;
+          elem->forward = nullptr;
         }
         mBankNameListTail = elem;
         return 1;} {}
@@ -18540,7 +18557,8 @@ drag=1000;
                 elem = mBankNameList;
                 mBankNameList = elem->forward;
                 free(elem->name);
-                remque(elem);
+                if(elem->forward) { elem->forward->backward = elem->backward; }
+                if(elem->backward) { elem->backward->forward = elem->forward; }
                 free(elem);
         }} {}
   }

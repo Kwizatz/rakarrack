@@ -30,6 +30,7 @@
 #include <unistd.h>
 #include <FL/Fl_Preferences.H>
 #include "global.h"
+#include <X11/xpm.h>
 
 int Pexitprogram, preset;
 int commandline;

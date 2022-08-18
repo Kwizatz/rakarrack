@@ -22,6 +22,7 @@
 
 #include <errno.h>
 #include <string>
+#include <cstring>
 #include "global.h"
 
 void RKR::putbuf(char *buf, int j)
@@ -2671,7 +2672,6 @@ RKR::DelIntPreset(int num, char *name)
     char buf[256];
     char rbuf[256];
 
-    char *sbuf;
     memset(tempfile,0,sizeof(tempfile));
     memset(tempfile2,0,sizeof(tempfile2));
     memset(orden,0,sizeof(orden));
@@ -2684,17 +2684,15 @@ RKR::DelIntPreset(int num, char *name)
     if (( fn = fopen (tempfile2, "w")) != NULL) {
         memset(buf,0,sizeof(buf));
         while (fgets (buf, sizeof buf, fs) != NULL) {
-            sbuf = buf;
             memset(rbuf,0,sizeof(rbuf));
             sprintf(rbuf,"%s",buf);
             sscanf(buf,"%d",&eff);
-            rname = strsep(&sbuf,",");
-            rname = strsep(&sbuf,",");
+            rname = strtok(buf,",");
+            rname = strtok(nullptr,",");
             if((eff==num)&&(strcmp(rname,name)==0)) {
                 continue;
             } else fputs(rbuf,fn);
             memset(buf,0,sizeof(buf));
-
         }
     }
     fclose(fs);

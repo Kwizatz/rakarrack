@@ -172,7 +172,6 @@ static inline float f_pow2(float x)
 #include <dirent.h>
 #include <search.h>
 #include <sys/time.h>
-#include <X11/xpm.h>
 #include <jack/jack.h>
 #include <jack/midiport.h>
 #ifdef ENABLE_MIDI
@@ -255,8 +254,6 @@ extern float r__ratio[12];
 extern int Wave_res_amount;
 extern int Wave_up_q;
 extern int Wave_down_q;
-extern Pixmap p, mask;
-extern XWMHints *hints;
 extern float freqs[12];
 extern float lfreqs[12];
 extern float aFreq;

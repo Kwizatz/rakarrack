@@ -21,6 +21,8 @@
 
 */
 
+#include <chrono>
+#include <thread>
 #include <jack/jack.h>
 #include <jack/midiport.h>
 #include <jack/transport.h>
@@ -251,7 +253,7 @@ JACKfinish ()
 {
 
     jack_client_close (jackclient);
-    usleep (1000);
+    std::this_thread::sleep_for(std::chrono::microseconds(1000));
 };
 
 
