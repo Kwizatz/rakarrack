@@ -47,6 +47,8 @@ set(PACKAGE "rakarrack")
 set(HELPDIR ${CMAKE_INSTALL_PREFIX}/share/doc/${PACKAGE})
 set(DATA_DIR ${CMAKE_INSTALL_PREFIX}/share/${PACKAGE})
 
+find_path (RAPIDJSON_INCLUDE_PATH rapidjson/rapidjson.h include)
+
 find_package(FLTK)
 option(ENABLE_MIDI "Enable MIDI code (requires ALSA)" ON)
 if(ENABLE_MIDI)

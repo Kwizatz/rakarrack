@@ -8,7 +8,7 @@ Original development seems to have stalled and now modern compilers do not let p
 Building From Source
 --------------------
 
-Same as original Rakarrack, you will need autotools, as well as the libraries listed on the original [README](README) file.
+Using autotools is no longer recomended, prefer using CMake as the autotools build is deprecated and will be removed as soon as the CMake scripts are able to fulfill autotool duties one to one.
 
 Building For Arch or Manjaro
 ----------------------------
@@ -18,8 +18,9 @@ There is a PKGBUILD file at the [AeonGames Arch Repo](https://github.com/AeonGam
 Building For Windows
 --------------------
 
-Running on Windows is in the experimental stage right now, building for [MSYS2](https://www.msys2.org) is likely to be the first success, to do so, follow the same instructions as on Linux after installing the following packages:
+Running on Windows is in the experimental stage right now, building for [MSYS2](https://www.msys2.org) is now possible using the CMake.
 
-`pacman -S --needed --noconfirm automake autoconf mingw-w64-x86_64-fltk mingw-w64-x86_64-dlfcn mingw-w64-x86_64-jack2 mingw-w64-x86_64-qjackctl mingw-w64-x86_64-xpm-nox`
+This is the partial list of dependencies for building on MSYS:
 
-This is not an exhaustive list, and the code does not currently fully compile, but It should get you past the configure phase, if not then we need to add some more libraries to those above.
+`pacman -S --needed --noconfirm automake autoconf mingw-w64-x86_64-fltk mingw-w64-x86_64-dlfcn mingw-w64-x86_64-jack2 mingw-w64-x86_64-qjackctl mingw-w64-x86_64-xpm-nox mingw-w64-x86_64-rapidjson`
+
