@@ -167,6 +167,7 @@ static inline float f_pow2(float x)
 
 #define f_exp(x) f_pow2(x * LN2R)
 
+#include <X11/xpm.h>
 #include "config.h"
 #include <signal.h>
 #include <dirent.h>
@@ -228,7 +229,6 @@ static inline float f_pow2(float x)
 #include "Vibe.h"
 #include "Infinity.h"
 #include "beattracker.h"
-
 extern int Pexitprogram, preset;
 extern int commandline, gui;
 extern int exitwithhelp, nojack;
@@ -261,6 +261,10 @@ extern char *s_uuid;
 extern char *statefile;
 extern char *filetoload;
 extern char *banktoload;
+extern Pixmap p;
+extern Pixmap mask;
+extern XWMHints *hints;
+
 class RKR
 {
 

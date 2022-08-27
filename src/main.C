@@ -243,7 +243,7 @@ main (int argc, char *argv[])
 
     // free memory etc.
 #ifndef WIN32
-    munlockall (MCL_CURRENT | MCL_FUTURE);
+    munlockall();
 #endif
 
     if(needtoloadstate) { rgui->save_stat(0); }
