@@ -63,9 +63,9 @@ private:
     float Qfactor, formantslowness, oldQfactor;
     float vowelclearness, sequencestretch;
 
-    float *inbuffer, *tmpbuf;
+    std::vector<float> inbuffer, tmpbuf;
 
-    AnalogFilter * formant[FF_MAX_FORMANTS];
+    std::array<std::unique_ptr<AnalogFilter>, FF_MAX_FORMANTS> formant;
 
 
 

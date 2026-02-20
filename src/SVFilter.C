@@ -171,7 +171,7 @@ void
 SVFilter::filterout (float * smp)
 {
     int i;
-    float *ismp = NULL;
+    float *ismp = nullptr;
 
     if (needsinterpolation != 0) {
         ismp = new float[PERIOD];
@@ -189,7 +189,7 @@ SVFilter::filterout (float * smp)
             float x = (float) i / fPERIOD;
             smp[i] = ismp[i] * (1.0f - x) + smp[i] * x;
         };
-        delete (ismp);
+        delete[] ismp;
         needsinterpolation = 0;
     };
 

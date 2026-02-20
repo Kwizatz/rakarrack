@@ -36,9 +36,9 @@ int Pexitprogram, preset;
 int commandline;
 int exitwithhelp, gui, nojack;
 int PERIOD;
-int note_active[POLY];
-int rnote[POLY];
-int gate[POLY];
+std::array<int, POLY> note_active;
+std::array<int, POLY> rnote;
+std::array<int, POLY> gate;
 int reconota;
 int maxx_len;
 int error_num;
@@ -53,11 +53,11 @@ float cSAMPLE_RATE;
 int Wave_res_amount;
 int Wave_up_q;
 int Wave_down_q;
-int pdata[50];
+std::array<int, 50> pdata;
 float val_sum;
-float r__ratio[12];
-float freqs[12];
-float lfreqs[12];
+std::array<float, 12> r__ratio;
+std::array<float, 12> freqs;
+std::array<float, 12> lfreqs;
 float aFreq;
 char *s_uuid;
 char *statefile;
@@ -93,7 +93,7 @@ RKR::RKR ()
     mess_dis = 0;
     mtc_counter = 0;
     nojack = 0;
-    memset (Mcontrol, 0, sizeof (Mcontrol));
+    memset (Mcontrol.data(), 0, sizeof(int) * Mcontrol.size());
     Mvalue = 0;
     actuvol= 0;
     OnCounter=0;
@@ -111,7 +111,7 @@ RKR::RKR ()
 
     }
 
-    strcpy (jackcliname, jack_get_client_name (jackclient));
+    strcpy (jackcliname.data(), jack_get_client_name (jackclient));
 
 
 
@@ -201,7 +201,7 @@ RKR::RKR ()
             strcpy (j_names, jack_names[i]);
         else
             strcpy (j_names, "");
-        rakarrack.get (PrefNom (temp), jack_po[i].name, j_names, 128);
+        rakarrack.get (PrefNom (temp), jack_po[i].name.data(), j_names, 128);
 
     }
 
@@ -217,7 +217,7 @@ RKR::RKR ()
             strcpy (j_names, jack_inames[i]);
         else
             strcpy (j_names, "");
-        rakarrack.get (PrefNom (temp), jack_poi[i].name, j_names, 128);
+        rakarrack.get (PrefNom (temp), jack_poi[i].name.data(), j_names, 128);
     }
 
 
@@ -226,86 +226,86 @@ RKR::RKR ()
 
 
 
-    efxoutl = (float *) malloc (sizeof (float) * PERIOD);
-    efxoutr = (float *) malloc (sizeof (float) * PERIOD);
+    efxoutl.resize(PERIOD, 0.0f);
+    efxoutr.resize(PERIOD, 0.0f);
 
-    smpl = (float *) malloc (sizeof (float) * PERIOD);
-    smpr = (float *) malloc (sizeof (float) * PERIOD);
+    smpl.resize(PERIOD, 0.0f);
+    smpr.resize(PERIOD, 0.0f);
 
-    anall = (float *) malloc (sizeof (float) * PERIOD);
-    analr = (float *) malloc (sizeof (float) * PERIOD);
+    anall.resize(PERIOD, 0.0f);
+    analr.resize(PERIOD, 0.0f);
 
-    auxdata = (float *) malloc (sizeof (float) * PERIOD);
-    auxresampled = (float *) malloc (sizeof (float) * PERIOD);
+    auxdata.resize(PERIOD, 0.0f);
+    auxresampled.resize(PERIOD, 0.0f);
 
-    m_ticks = (float *) malloc (sizeof (float) * PERIOD);
+    m_ticks.resize(PERIOD, 0.0f);
 
 
 
-    Fpre = new FPreset();
-    DC_Offsetl = new AnalogFilter (1, 20, 1, 0);
-    DC_Offsetr = new AnalogFilter (1, 20, 1, 0);
-    M_Metronome = new metronome();
-    efx_Chorus = new Chorus (efxoutl, efxoutr);
-    efx_Flanger = new Chorus (efxoutl, efxoutr);
-    efx_Rev = new Reverb (efxoutl, efxoutr);
-    efx_Echo = new Echo (efxoutl, efxoutr);
-    efx_Phaser = new Phaser (efxoutl, efxoutr);
-    efx_APhaser = new Analog_Phaser(efxoutl, efxoutr);
-    efx_Distorsion = new Distorsion (efxoutl, efxoutr);
-    efx_Overdrive = new Distorsion (efxoutl, efxoutr);
-    efx_EQ2 = new EQ (efxoutl, efxoutr);
-    efx_EQ1 = new EQ (efxoutl, efxoutr);
-    efx_Compressor = new Compressor (efxoutl, efxoutr);
-    efx_WhaWha = new DynamicFilter (efxoutl, efxoutr);
-    efx_Alienwah = new Alienwah (efxoutl, efxoutr);
-    efx_Cabinet = new EQ (efxoutl, efxoutr);
-    efx_Pan = new Pan (efxoutl, efxoutr);
-    efx_Har = new Harmonizer (efxoutl, efxoutr, (long) HarQual, Har_Down, Har_U_Q, Har_D_Q);
-    efx_MusDelay = new MusicDelay (efxoutl, efxoutr);
-    efx_Gate = new Gate (efxoutl, efxoutr);
-    efx_NewDist = new NewDist(efxoutl, efxoutr);
-    efx_FLimiter = new Compressor (efxoutl, efxoutr);
-    efx_Valve = new Valve(efxoutl, efxoutr);
-    efx_DFlange = new Dflange(efxoutl,efxoutr);
-    efx_Ring = new Ring(efxoutl,efxoutr);
-    efx_Exciter = new Exciter(efxoutl,efxoutr);
-    efx_MBDist = new MBDist(efxoutl,efxoutr);
-    efx_Arpie = new Arpie(efxoutl,efxoutr);
-    efx_Expander = new Expander(efxoutl,efxoutr);
-    efx_Shuffle = new Shuffle(efxoutl,efxoutr);
-    efx_Synthfilter = new Synthfilter(efxoutl,efxoutr);
-    efx_MBVvol = new MBVvol(efxoutl,efxoutr);
-    efx_Convol = new Convolotron(efxoutl,efxoutr,Con_Down,Con_U_Q,Con_D_Q);
-    efx_Looper = new Looper(efxoutl,efxoutr,looper_size);
-    efx_RyanWah = new RyanWah(efxoutl,efxoutr);
-    efx_RBEcho = new RBEcho(efxoutl,efxoutr);
-    efx_CoilCrafter = new CoilCrafter(efxoutl,efxoutr);
-    efx_ShelfBoost = new ShelfBoost(efxoutl,efxoutr);
-    efx_Vocoder = new Vocoder(efxoutl,efxoutr,auxresampled,VocBands,Voc_Down, Voc_U_Q, Voc_D_Q);
-    efx_Sustainer = new Sustainer(efxoutl,efxoutr);
-    efx_Sequence = new Sequence(efxoutl,efxoutr, (long) HarQual, Seq_Down, Seq_U_Q, Seq_D_Q);
-    efx_Shifter =  new Shifter(efxoutl,efxoutr, (long) HarQual, Shi_Down, Shi_U_Q, Shi_D_Q);
-    efx_StompBox = new StompBox(efxoutl,efxoutr);
-    efx_Reverbtron = new Reverbtron(efxoutl,efxoutr,Rev_Down, Rev_U_Q, Rev_D_Q);
-    efx_Echotron = new Echotron(efxoutl,efxoutr);
-    efx_StereoHarm = new StereoHarm(efxoutl, efxoutr, (long) SteQual, Ste_Down, Ste_U_Q, Ste_D_Q);
-    efx_CompBand = new CompBand(efxoutl,efxoutr);
-    efx_Opticaltrem = new Opticaltrem(efxoutl,efxoutr);
-    efx_Vibe = new Vibe(efxoutl,efxoutr);
-    efx_Infinity = new Infinity(efxoutl,efxoutr);
+    Fpre = std::make_unique<FPreset>();
+    DC_Offsetl = std::make_unique<AnalogFilter>(1, 20, 1, 0);
+    DC_Offsetr = std::make_unique<AnalogFilter>(1, 20, 1, 0);
+    M_Metronome = std::make_unique<metronome>();
+    efx_Chorus = std::make_unique<Chorus>(efxoutl.data(), efxoutr.data());
+    efx_Flanger = std::make_unique<Chorus>(efxoutl.data(), efxoutr.data());
+    efx_Rev = std::make_unique<Reverb>(efxoutl.data(), efxoutr.data());
+    efx_Echo = std::make_unique<Echo>(efxoutl.data(), efxoutr.data());
+    efx_Phaser = std::make_unique<Phaser>(efxoutl.data(), efxoutr.data());
+    efx_APhaser = std::make_unique<Analog_Phaser>(efxoutl.data(), efxoutr.data());
+    efx_Distorsion = std::make_unique<Distorsion>(efxoutl.data(), efxoutr.data());
+    efx_Overdrive = std::make_unique<Distorsion>(efxoutl.data(), efxoutr.data());
+    efx_EQ2 = std::make_unique<EQ>(efxoutl.data(), efxoutr.data());
+    efx_EQ1 = std::make_unique<EQ>(efxoutl.data(), efxoutr.data());
+    efx_Compressor = std::make_unique<Compressor>(efxoutl.data(), efxoutr.data());
+    efx_WhaWha = std::make_unique<DynamicFilter>(efxoutl.data(), efxoutr.data());
+    efx_Alienwah = std::make_unique<Alienwah>(efxoutl.data(), efxoutr.data());
+    efx_Cabinet = std::make_unique<EQ>(efxoutl.data(), efxoutr.data());
+    efx_Pan = std::make_unique<Pan>(efxoutl.data(), efxoutr.data());
+    efx_Har = std::make_unique<Harmonizer>(efxoutl.data(), efxoutr.data(), (long) HarQual, Har_Down, Har_U_Q, Har_D_Q);
+    efx_MusDelay = std::make_unique<MusicDelay>(efxoutl.data(), efxoutr.data());
+    efx_Gate = std::make_unique<Gate>(efxoutl.data(), efxoutr.data());
+    efx_NewDist = std::make_unique<NewDist>(efxoutl.data(), efxoutr.data());
+    efx_FLimiter = std::make_unique<Compressor>(efxoutl.data(), efxoutr.data());
+    efx_Valve = std::make_unique<Valve>(efxoutl.data(), efxoutr.data());
+    efx_DFlange = std::make_unique<Dflange>(efxoutl.data(), efxoutr.data());
+    efx_Ring = std::make_unique<Ring>(efxoutl.data(), efxoutr.data());
+    efx_Exciter = std::make_unique<Exciter>(efxoutl.data(), efxoutr.data());
+    efx_MBDist = std::make_unique<MBDist>(efxoutl.data(), efxoutr.data());
+    efx_Arpie = std::make_unique<Arpie>(efxoutl.data(), efxoutr.data());
+    efx_Expander = std::make_unique<Expander>(efxoutl.data(), efxoutr.data());
+    efx_Shuffle = std::make_unique<Shuffle>(efxoutl.data(), efxoutr.data());
+    efx_Synthfilter = std::make_unique<Synthfilter>(efxoutl.data(), efxoutr.data());
+    efx_MBVvol = std::make_unique<MBVvol>(efxoutl.data(), efxoutr.data());
+    efx_Convol = std::make_unique<Convolotron>(efxoutl.data(), efxoutr.data(), Con_Down, Con_U_Q, Con_D_Q);
+    efx_Looper = std::make_unique<Looper>(efxoutl.data(), efxoutr.data(), looper_size);
+    efx_RyanWah = std::make_unique<RyanWah>(efxoutl.data(), efxoutr.data());
+    efx_RBEcho = std::make_unique<RBEcho>(efxoutl.data(), efxoutr.data());
+    efx_CoilCrafter = std::make_unique<CoilCrafter>(efxoutl.data(), efxoutr.data());
+    efx_ShelfBoost = std::make_unique<ShelfBoost>(efxoutl.data(), efxoutr.data());
+    efx_Vocoder = std::make_unique<Vocoder>(efxoutl.data(), efxoutr.data(), auxresampled.data(), VocBands, Voc_Down, Voc_U_Q, Voc_D_Q);
+    efx_Sustainer = std::make_unique<Sustainer>(efxoutl.data(), efxoutr.data());
+    efx_Sequence = std::make_unique<Sequence>(efxoutl.data(), efxoutr.data(), (long) HarQual, Seq_Down, Seq_U_Q, Seq_D_Q);
+    efx_Shifter = std::make_unique<Shifter>(efxoutl.data(), efxoutr.data(), (long) HarQual, Shi_Down, Shi_U_Q, Shi_D_Q);
+    efx_StompBox = std::make_unique<StompBox>(efxoutl.data(), efxoutr.data());
+    efx_Reverbtron = std::make_unique<Reverbtron>(efxoutl.data(), efxoutr.data(), Rev_Down, Rev_U_Q, Rev_D_Q);
+    efx_Echotron = std::make_unique<Echotron>(efxoutl.data(), efxoutr.data());
+    efx_StereoHarm = std::make_unique<StereoHarm>(efxoutl.data(), efxoutr.data(), (long) SteQual, Ste_Down, Ste_U_Q, Ste_D_Q);
+    efx_CompBand = std::make_unique<CompBand>(efxoutl.data(), efxoutr.data());
+    efx_Opticaltrem = std::make_unique<Opticaltrem>(efxoutl.data(), efxoutr.data());
+    efx_Vibe = std::make_unique<Vibe>(efxoutl.data(), efxoutr.data());
+    efx_Infinity = std::make_unique<Infinity>(efxoutl.data(), efxoutr.data());
 
-    U_Resample = new Resample(UpQual);
-    D_Resample = new Resample(DownQual);
-    A_Resample = new Resample(3);
+    U_Resample = std::make_unique<Resample>(UpQual);
+    D_Resample = std::make_unique<Resample>(DownQual);
+    A_Resample = std::make_unique<Resample>(3);
 
-    beat = new beattracker();
-    efx_Tuner = new Tuner ();
+    beat = std::make_unique<beattracker>();
+    efx_Tuner = std::make_unique<Tuner>();
 #ifdef ENABLE_MIDI    
-    efx_MIDIConverter = new MIDIConverter(jackcliname);
+    efx_MIDIConverter = std::make_unique<MIDIConverter>(jackcliname.data());
 #endif
-    RecNote = new Recognize (efxoutl, efxoutr, rtrig);
-    RC = new RecChord ();
+    RecNote = std::make_unique<Recognize>(efxoutl.data(), efxoutr.data(), rtrig);
+    RC = std::make_unique<RecChord>();
 
 // Names
 
@@ -377,7 +377,7 @@ RKR::RKR ()
         };
 
         for (i = 0; i < NumEffects*3; i+=3) {
-            strcpy (efx_names[i/3].Nom, los_names[i]);
+            strcpy (efx_names[i/3].Nom.data(), los_names[i]);
             sscanf(los_names[i+1],"%d",&efx_names[i/3].Pos);
             sscanf(los_names[i+2],"%d",&efx_names[i/3].Type);
 
@@ -770,7 +770,7 @@ RKR::RKR ()
             "WahWah WD","28","10"
         };
         for(i=0; i<NumParams; i++) {
-            strcpy (efx_params[i].Nom, los_params[i*3]);
+            strcpy (efx_params[i].Nom.data(), los_params[i*3]);
             sscanf(los_params[i*3+1],"%d",&efx_params[i].Ato);
             sscanf(los_params[i*3+2],"%d",&efx_params[i].Effect);
 
@@ -790,9 +790,7 @@ RKR::RKR ()
 
 
 
-RKR::~RKR ()
-{
-};
+RKR::~RKR () = default;
 
 
 
@@ -873,11 +871,11 @@ RKR::init_rkr ()
     char temp[128];
     memset (temp, 0, sizeof (temp));
     sprintf (temp, "%s/Default.rkrb", DATA_DIR);
-    rakarrack.get (PrefNom ("Bank Filename"), BankFilename, temp, 127);
+    rakarrack.get (PrefNom ("Bank Filename"), BankFilename.data(), temp, 127);
     loadnames();
 
     if (commandline == 0) {
-        loadbank (BankFilename);
+        loadbank (BankFilename.data());
         a_bank=3;
 
     }

@@ -24,70 +24,75 @@
 #ifndef DXEMU_H
 #define DXEMU_H
 
+#include <memory>
+#include <array>
+#include <vector>
+#include <cmath>
+#include <cstdlib>
+#include <string>
 
-#define D_PI 6.283185f
-#define PI 3.141598f
-#define LOG_10 2.302585f
-#define LOG_2  0.693147f
-#define LN2R 1.442695041f
-#define CNST_E  2.71828182845905f
-#define AMPLITUDE_INTERPOLATION_THRESHOLD 0.0001f
-#define FF_MAX_VOWELS 6
-#define FF_MAX_FORMANTS 12
-#define FF_MAX_SEQUENCE 8
-#define MAX_FILTER_STAGES 5
-#define RND (rand()/(RAND_MAX+1.0))
-#define RND1 (((float) rand())/(((float) RAND_MAX)+1.0f))
-#define F2I(f,i) (i)=((f>0) ? ( (int)(f) ) :( (int)(f-1.0f) ))
-#define dB2rap(dB) (float)((expf((dB)*LOG_10/20.0f)))
-#define rap2dB(rap) (float)((20*log(rap)/LOG_10))
-#define CLAMP(x, low, high)  (((x) > (high)) ? (high) : (((x) < (low)) ? (low) : (x)))
-#define INTERPOLATE_AMPLITUDE(a,b,x,size) ( (a) + ( (b) - (a) ) * (float)(x) / (float) (size) )
-#define ABOVE_AMPLITUDE_THRESHOLD(a,b) ( ( 2.0f*fabs( (b) - (a) ) / ( fabs( (b) + (a) + 0.0000000001f) ) ) > AMPLITUDE_INTERPOLATION_THRESHOLD )
-#define POLY 8
-#define DENORMAL_GUARD 1e-18f	// Make it smaller until CPU problem re-appears
-#define SwapFourBytes(data) ( (((data) >> 24) & 0x000000ff) | (((data) >> 8) & 0x0000ff00) | (((data) << 8) & 0x00ff0000) | (((data) << 24) & 0xff000000) )
-#define D_NOTE          1.059463f
-#define LOG_D_NOTE      0.057762f
-#define D_NOTE_SQRT     1.029302f
-#define MAX_PEAKS 8
-#define MAX_ALIENWAH_DELAY 100
-#define ATTACK  0.175f  //crossover time for reverse delay
-#define MAX_DELAY 2	// Number of Seconds
-#define MAXHARMS  8    // max number of harmonics available
-#define MAX_PHASER_STAGES 12
-#define MAX_CHORUS_DELAY 250.0f	//ms
-#define LN2                       (1.0f)  //Uncomment for att/rel to behave more like a capacitor.
-#define MUG_CORR_FACT  0.4f
-//Crunch waveshaping constants
-#define Thi		0.67f			//High threshold for limiting onset
-#define Tlo		-0.65f			//Low threshold for limiting onset
-#define Tlc		-0.6139445f		//Tlo + sqrt(Tlo/500)
-#define Thc		0.6365834f	        //Thi - sqrt(Thi/600)
-#define CRUNCH_GAIN	100.0f			//Typical voltage gain for most OD stompboxes
-#define DIV_TLC_CONST   0.002f			// 1/300
-#define DIV_THC_CONST	0.0016666f		// 1/600 (approximately)
-//End waveshaping constants
-#define D_FLANGE_MAX_DELAY	0.055f			// Number of Seconds  - 50ms corresponds to fdepth = 20 (Hz). Added some extra for padding
-#define LFO_CONSTANT		9.765625e-04		// 1/(2^LOG_FMAX - 1)
-#define LOG_FMAX		10.0f			//  -- This optimizes LFO sweep for useful range.
-#define MINDEPTH		20.0f			// won't allow filter lower than 20Hz
-#define MAXDEPTH		15000.0f		// Keeps delay greater than 2 samples at 44kHz SR
-#define MAX_EQ_BANDS 16
-#define CLOSED  1
-#define OPENING 2
-#define OPEN    3
-#define CLOSING 4
-#define ENV_TR 0.0001f
-#define HARMONICS 11
-#define REV_COMBS 8
-#define REV_APS 4
-#define MAX_SFILTER_STAGES 12
+inline constexpr float D_PI = 6.283185f;
+inline constexpr float PI = 3.141598f;
+inline constexpr float LOG_10 = 2.302585f;
+inline constexpr float LOG_2 = 0.693147f;
+inline constexpr float LN2R = 1.442695041f;
+inline constexpr float CNST_E = 2.71828182845905f;
+inline constexpr float AMPLITUDE_INTERPOLATION_THRESHOLD = 0.0001f;
+inline constexpr int FF_MAX_VOWELS = 6;
+inline constexpr int FF_MAX_FORMANTS = 12;
+inline constexpr int FF_MAX_SEQUENCE = 8;
+inline constexpr int MAX_FILTER_STAGES = 5;
+inline constexpr float RND() { return static_cast<float>(rand()) / (RAND_MAX + 1.0f); }
+inline constexpr float RND1() { return static_cast<float>(rand()) / (static_cast<float>(RAND_MAX) + 1.0f); }
+inline void F2I(float f, int &i) { i = (f > 0) ? static_cast<int>(f) : static_cast<int>(f - 1.0f); }
+inline float dB2rap(float dB) { return expf(dB * LOG_10 / 20.0f); }
+inline float rap2dB(float rap) { return 20.0f * logf(rap) / LOG_10; }
+template<typename T>
+inline constexpr T CLAMP(T x, T low, T high) { return (x > high) ? high : ((x < low) ? low : x); }
+inline constexpr float INTERPOLATE_AMPLITUDE(float a, float b, float x, float size) { return a + (b - a) * x / size; }
+inline bool ABOVE_AMPLITUDE_THRESHOLD(float a, float b) { return (2.0f * fabsf(b - a) / (fabsf(b + a + 0.0000000001f))) > AMPLITUDE_INTERPOLATION_THRESHOLD; }
+inline constexpr int POLY = 8;
+inline constexpr float DENORMAL_GUARD = 1e-18f;
+inline constexpr uint32_t SwapFourBytes(uint32_t data) { return ((data >> 24) & 0x000000ff) | ((data >> 8) & 0x0000ff00) | ((data << 8) & 0x00ff0000) | ((data << 24) & 0xff000000); }
+inline constexpr float D_NOTE = 1.059463f;
+inline constexpr float LOG_D_NOTE = 0.057762f;
+inline constexpr float D_NOTE_SQRT = 1.029302f;
+inline constexpr int MAX_PEAKS = 8;
+inline constexpr int MAX_ALIENWAH_DELAY = 100;
+inline constexpr float ATTACK = 0.175f;
+inline constexpr int MAX_DELAY = 2;
+inline constexpr int MAXHARMS = 8;
+inline constexpr int MAX_PHASER_STAGES = 12;
+inline constexpr float MAX_CHORUS_DELAY = 250.0f;
+inline constexpr float LN2 = 1.0f;
+inline constexpr float MUG_CORR_FACT = 0.4f;
+inline constexpr float Thi = 0.67f;
+inline constexpr float Tlo = -0.65f;
+inline constexpr float Tlc = -0.6139445f;
+inline constexpr float Thc = 0.6365834f;
+inline constexpr float CRUNCH_GAIN = 100.0f;
+inline constexpr float DIV_TLC_CONST = 0.002f;
+inline constexpr float DIV_THC_CONST = 0.0016666f;
+inline constexpr float D_FLANGE_MAX_DELAY = 0.055f;
+inline constexpr float LFO_CONSTANT = 9.765625e-04f;
+inline constexpr float LOG_FMAX = 10.0f;
+inline constexpr float MINDEPTH = 20.0f;
+inline constexpr float MAXDEPTH = 15000.0f;
+inline constexpr int MAX_EQ_BANDS = 16;
+inline constexpr int CLOSED = 1;
+inline constexpr int OPENING = 2;
+inline constexpr int OPEN = 3;
+inline constexpr int CLOSING = 4;
+inline constexpr float ENV_TR = 0.0001f;
+inline constexpr int HARMONICS = 11;
+inline constexpr int REV_COMBS = 8;
+inline constexpr int REV_APS = 4;
+inline constexpr int MAX_SFILTER_STAGES = 12;
 
-typedef union {
+union ls_pcast32 {
     float f;
-    long i;
-} ls_pcast32;
+    int32_t i;
+};
 
 /*
 static inline float f_pow2(float x)
@@ -133,12 +138,10 @@ return y;
 
 //The below pow function really works & is good to 16 bits, but is it faster than math lib powf()???
 //globals
-#include <math.h>
-static const float a[5] = { 1.00000534060469, 0.693057900547259, 0.239411678986933, 0.0532229404911678, 0.00686649174914722 };
-//lookup for positive powers of 2
-static const float pw2[25] = {1.0f, 2.0f, 4.0f, 8.0f, 16.0f, 32.0f, 64.0f, 128.0f, 256.0f, 512.0f, 1024.0f, 2048.0f, 4096.0f, 8192.0f, 16384.0f, 32768.0f, 65536.0f, 131072.0f, 262144.0f, 524288.0f, 1048576.0f, 2097152.0f, 4194304.0f, 8388608.0f, 16777216.0f};
-//negative powers of 2, notice ipw2[0] will never be indexed.
-static const float ipw2[25] = {1.0, 5.0e-01, 2.5e-01, 1.25e-01, 6.25e-02, 3.125e-02, 1.5625e-02, 7.8125e-03, 3.90625e-03, 1.953125e-03, 9.765625e-04, 4.8828125e-04, 2.44140625e-04, 1.220703125e-04, 6.103515625e-05, 3.0517578125e-05, 1.52587890625e-05, 7.62939453125e-06, 3.814697265625e-06, 1.9073486328125e-06, 9.5367431640625e-07, 4.76837158203125e-07, 2.38418579101562e-07, 1.19209289550781e-07, 5.96046447753906e-08};
+#include <cmath>
+static constexpr std::array<float, 5> a = { 1.00000534060469f, 0.693057900547259f, 0.239411678986933f, 0.0532229404911678f, 0.00686649174914722f };
+static constexpr std::array<float, 25> pw2 = {1.0f, 2.0f, 4.0f, 8.0f, 16.0f, 32.0f, 64.0f, 128.0f, 256.0f, 512.0f, 1024.0f, 2048.0f, 4096.0f, 8192.0f, 16384.0f, 32768.0f, 65536.0f, 131072.0f, 262144.0f, 524288.0f, 1048576.0f, 2097152.0f, 4194304.0f, 8388608.0f, 16777216.0f};
+static constexpr std::array<float, 25> ipw2 = {1.0f, 5.0e-01f, 2.5e-01f, 1.25e-01f, 6.25e-02f, 3.125e-02f, 1.5625e-02f, 7.8125e-03f, 3.90625e-03f, 1.953125e-03f, 9.765625e-04f, 4.8828125e-04f, 2.44140625e-04f, 1.220703125e-04f, 6.103515625e-05f, 3.0517578125e-05f, 1.52587890625e-05f, 7.62939453125e-06f, 3.814697265625e-06f, 1.9073486328125e-06f, 9.5367431640625e-07f, 4.76837158203125e-07f, 2.38418579101562e-07f, 1.19209289550781e-07f, 5.96046447753906e-08f};
 
 static inline float f_pow2(float x)
 {
@@ -165,7 +168,7 @@ static inline float f_pow2(float x)
 
 }
 
-#define f_exp(x) f_pow2(x * LN2R)
+inline float f_exp(float x) { return f_pow2(x * LN2R); }
 
 #include <X11/xpm.h>
 #include "config.h"
@@ -241,21 +244,20 @@ extern int needtoloadbank;
 extern int stecla;
 extern int looper_lqua;
 extern unsigned int SAMPLE_RATE;
-extern int note_active[POLY];
-extern int rnote[POLY];
-extern int gate[POLY];
-extern int pdata[50];
+extern std::array<int, POLY> note_active;
+extern std::array<int, POLY> rnote;
+extern std::array<int, POLY> gate;
+extern std::array<int, 50> pdata;
 extern float val_sum;
 extern float fPERIOD;
-extern unsigned int SAMPLE_RATE;
 extern float fSAMPLE_RATE;
 extern float cSAMPLE_RATE;
-extern float r__ratio[12];
+extern std::array<float, 12> r__ratio;
 extern int Wave_res_amount;
 extern int Wave_up_q;
 extern int Wave_down_q;
-extern float freqs[12];
-extern float lfreqs[12];
+extern std::array<float, 12> freqs;
+extern std::array<float, 12> lfreqs;
 extern float aFreq;
 extern char *s_uuid;
 extern char *statefile;
@@ -342,74 +344,74 @@ public:
     void Error_Handle(int num);
     void update_freqs(float val);
 
-    class FPreset *Fpre;
-    class Reverb *efx_Rev;
-    class Chorus *efx_Chorus;
-    class Chorus *efx_Flanger;
-    class Phaser *efx_Phaser;
-    class Analog_Phaser *efx_APhaser;
-    class EQ *efx_EQ1;
-    class EQ *efx_EQ2;
-    class Echo *efx_Echo;
-    class Distorsion *efx_Distorsion;
-    class Distorsion *efx_Overdrive;
-    class Compressor *efx_Compressor;
-    class DynamicFilter *efx_WhaWha;
-    class Alienwah *efx_Alienwah;
-    class EQ *efx_Cabinet;
-    class Pan *efx_Pan;
-    class Harmonizer *efx_Har;
-    class MusicDelay *efx_MusDelay;
-    class Gate *efx_Gate;
-    class NewDist *efx_NewDist;
-    class Tuner *efx_Tuner;
+    std::unique_ptr<FPreset> Fpre;
+    std::unique_ptr<Reverb> efx_Rev;
+    std::unique_ptr<Chorus> efx_Chorus;
+    std::unique_ptr<Chorus> efx_Flanger;
+    std::unique_ptr<Phaser> efx_Phaser;
+    std::unique_ptr<Analog_Phaser> efx_APhaser;
+    std::unique_ptr<EQ> efx_EQ1;
+    std::unique_ptr<EQ> efx_EQ2;
+    std::unique_ptr<Echo> efx_Echo;
+    std::unique_ptr<Distorsion> efx_Distorsion;
+    std::unique_ptr<Distorsion> efx_Overdrive;
+    std::unique_ptr<Compressor> efx_Compressor;
+    std::unique_ptr<DynamicFilter> efx_WhaWha;
+    std::unique_ptr<Alienwah> efx_Alienwah;
+    std::unique_ptr<EQ> efx_Cabinet;
+    std::unique_ptr<Pan> efx_Pan;
+    std::unique_ptr<Harmonizer> efx_Har;
+    std::unique_ptr<MusicDelay> efx_MusDelay;
+    std::unique_ptr<Gate> efx_Gate;
+    std::unique_ptr<NewDist> efx_NewDist;
+    std::unique_ptr<Tuner> efx_Tuner;
 #ifdef ENABLE_MIDI
-    class MIDIConverter *efx_MIDIConverter;
+    std::unique_ptr<MIDIConverter> efx_MIDIConverter;
 #endif
-    class metronome *M_Metronome;
-    class beattracker *beat;
+    std::unique_ptr<metronome> M_Metronome;
+    std::unique_ptr<beattracker> beat;
 
-    class Recognize *RecNote;
-    class RecChord *RC;
-    class Compressor *efx_FLimiter;
-    class Valve *efx_Valve;
-    class Dflange *efx_DFlange;
-    class Ring *efx_Ring;
-    class Exciter *efx_Exciter;
-    class MBDist *efx_MBDist;
-    class Arpie *efx_Arpie;
-    class Expander *efx_Expander;
-    class Synthfilter *efx_Synthfilter;
-    class Shuffle *efx_Shuffle;
-    class MBVvol *efx_MBVvol;
-    class Convolotron *efx_Convol;
-    class Resample *U_Resample;
-    class Resample *D_Resample;
-    class Resample *A_Resample;
-    class AnalogFilter *DC_Offsetl;
-    class AnalogFilter *DC_Offsetr;
-    class Looper *efx_Looper;
-    class RyanWah *efx_RyanWah;
-    class RBEcho *efx_RBEcho;
-    class CoilCrafter *efx_CoilCrafter;
-    class ShelfBoost *efx_ShelfBoost;
-    class Vocoder *efx_Vocoder;
-    class Sustainer *efx_Sustainer;
-    class Sequence *efx_Sequence;
-    class Shifter *efx_Shifter;
-    class StompBox *efx_StompBox;
-    class Reverbtron *efx_Reverbtron;
-    class Echotron *efx_Echotron;
-    class StereoHarm *efx_StereoHarm;
-    class CompBand *efx_CompBand;
-    class Opticaltrem *efx_Opticaltrem;
-    class Vibe *efx_Vibe;
-    class Infinity *efx_Infinity;
+    std::unique_ptr<Recognize> RecNote;
+    std::unique_ptr<RecChord> RC;
+    std::unique_ptr<Compressor> efx_FLimiter;
+    std::unique_ptr<Valve> efx_Valve;
+    std::unique_ptr<Dflange> efx_DFlange;
+    std::unique_ptr<Ring> efx_Ring;
+    std::unique_ptr<Exciter> efx_Exciter;
+    std::unique_ptr<MBDist> efx_MBDist;
+    std::unique_ptr<Arpie> efx_Arpie;
+    std::unique_ptr<Expander> efx_Expander;
+    std::unique_ptr<Synthfilter> efx_Synthfilter;
+    std::unique_ptr<Shuffle> efx_Shuffle;
+    std::unique_ptr<MBVvol> efx_MBVvol;
+    std::unique_ptr<Convolotron> efx_Convol;
+    std::unique_ptr<Resample> U_Resample;
+    std::unique_ptr<Resample> D_Resample;
+    std::unique_ptr<Resample> A_Resample;
+    std::unique_ptr<AnalogFilter> DC_Offsetl;
+    std::unique_ptr<AnalogFilter> DC_Offsetr;
+    std::unique_ptr<Looper> efx_Looper;
+    std::unique_ptr<RyanWah> efx_RyanWah;
+    std::unique_ptr<RBEcho> efx_RBEcho;
+    std::unique_ptr<CoilCrafter> efx_CoilCrafter;
+    std::unique_ptr<ShelfBoost> efx_ShelfBoost;
+    std::unique_ptr<Vocoder> efx_Vocoder;
+    std::unique_ptr<Sustainer> efx_Sustainer;
+    std::unique_ptr<Sequence> efx_Sequence;
+    std::unique_ptr<Shifter> efx_Shifter;
+    std::unique_ptr<StompBox> efx_StompBox;
+    std::unique_ptr<Reverbtron> efx_Reverbtron;
+    std::unique_ptr<Echotron> efx_Echotron;
+    std::unique_ptr<StereoHarm> efx_StereoHarm;
+    std::unique_ptr<CompBand> efx_CompBand;
+    std::unique_ptr<Opticaltrem> efx_Opticaltrem;
+    std::unique_ptr<Vibe> efx_Vibe;
+    std::unique_ptr<Infinity> efx_Infinity;
 
     jack_client_t *jackclient;
     jack_options_t options;
     jack_status_t status;
-    char jackcliname[64];
+    std::array<char, 64> jackcliname{};
 
     int db6booster;
     int jdis;
@@ -519,12 +521,12 @@ public:
 
     int Cabinet_Preset;
     int Selected_Preset;
-    int lv[70][20];
-    int saved_order[16];
-    int efx_order[16];
-    int new_order[16];
-    int availables[60];
-    int active[12];
+    std::array<std::array<int, 20>, 70> lv{};
+    std::array<int, 16> saved_order{};
+    std::array<int, 16> efx_order{};
+    std::array<int, 16> new_order{};
+    std::array<int, 60> availables{};
+    std::array<int, 12> active{};
     int MidiCh;
     int HarCh;
     int init_state;
@@ -546,12 +548,12 @@ public:
     int Pcin;
 
     // bank of flags telling GUI which midi controlled items to update
-    int Mcontrol[500];
+    std::array<int, 500> Mcontrol{};
     // flag telling GUI that Mcontrol has at least one set flag
     int RControl;
     int ControlGet;
     int CountWait;
-    int XUserMIDI[128][20];
+    std::array<std::array<int, 20>, 128> XUserMIDI{};
 
     int eff_filter;
     int Har_Down;
@@ -589,7 +591,7 @@ public:
     int J_PERIOD;
     int m_displayed;
     int Mvalue;
-    int Mnumeff[32];
+    std::array<int, 32> Mnumeff{};
     int OnOffC;
 
     int sw_stat;
@@ -654,7 +656,7 @@ public:
     int mtc_counter;
     int EnableBackgroundImage;
     int ML_filter;
-    int ML_clist[150];
+    std::array<int, 150> ML_clist{};
 
     long Tap_time_Init;
 
@@ -662,7 +664,7 @@ public:
     double Tap_timeC;
     double jt_tempo;
 
-    double tempobuf[6];
+    std::array<double, 6> tempobuf{};
 
 
     double u_down;
@@ -674,16 +676,16 @@ public:
     float cpuload;
     float rtrig;
 
-    float *efxoutl;
-    float *efxoutr;
-    float *auxdata;
-    float *auxresampled;
-    float *anall;
-    float *analr;
-    float *smpl;
-    float *smpr;
-    float *denormal;
-    float *m_ticks;
+    std::vector<float> efxoutl;
+    std::vector<float> efxoutr;
+    std::vector<float> auxdata;
+    std::vector<float> auxresampled;
+    std::vector<float> anall;
+    std::vector<float> analr;
+    std::vector<float> smpl;
+    std::vector<float> smpr;
+    std::vector<float> denormal;
+    std::vector<float> m_ticks;
 
     float Master_Volume;
     float Input_Gain;
@@ -713,56 +715,56 @@ public:
     float nfreq_old;
     float afreq_old;
 
-    char tmpprefname[128];
+    std::array<char, 128> tmpprefname{};
 
-    char Preset_Name[64];
-    char Author[64];
-    char Bank_Saved[128];
-    char UserRealName[128];
+    std::array<char, 64> Preset_Name{};
+    std::array<char, 64> Author{};
+    std::array<char, 128> Bank_Saved{};
+    std::array<char, 128> UserRealName{};
 
 
 
-    char MID[128];
-    char BankFilename[128];
-    char UDirFilename[128];
-    char BackgroundImage[256];
+    std::array<char, 128> MID{};
+    std::array<char, 128> BankFilename{};
+    std::array<char, 128> UDirFilename{};
+    std::array<char, 256> BackgroundImage{};
 
 
 
 
     struct Effects_Names {
-        char Nom[24];
+        std::array<char, 24> Nom{};
         int Pos;
         int Type;
 
     } efx_names[70];
 
     struct Effects_Params {
-        char Nom[32];
+        std::array<char, 32> Nom{};
         int Ato;
         int Effect;
     } efx_params[500];
 
 
     struct Preset_Bank_Struct {
-        char Preset_Name[64];
-        char Author[64];
-        char Classe[36];
-        char Type[4];
-        char ConvoFiname[128];
-        char cInput_Gain[64];
-        char cMaster_Volume[64];
-        char cBalance[64];
+        std::array<char, 64> Preset_Name{};
+        std::array<char, 64> Author{};
+        std::array<char, 36> Classe{};
+        std::array<char, 4> Type{};
+        std::array<char, 128> ConvoFiname{};
+        std::array<char, 64> cInput_Gain{};
+        std::array<char, 64> cMaster_Volume{};
+        std::array<char, 64> cBalance{};
         float Input_Gain;
         float Master_Volume;
         float Balance;
         int Bypass;
-        char RevFiname[128];
-        char EchoFiname[128];
-        int lv[70][20];
-        int XUserMIDI[128][20];
-        int XMIDIrangeMin[128];
-        int XMIDIrangeMax[128];
+        std::array<char, 128> RevFiname{};
+        std::array<char, 128> EchoFiname{};
+        std::array<std::array<int, 20>, 70> lv{};
+        std::array<std::array<int, 20>, 128> XUserMIDI{};
+        std::array<int, 128> XMIDIrangeMin{};
+        std::array<int, 128> XMIDIrangeMax{};
     } Bank[62];
 
 
@@ -772,7 +774,7 @@ public:
     } M_table[128];
 
     struct Bank_Names {
-        char Preset_Name[64];
+        std::array<char, 64> Preset_Name{};
     } B_Names[4][62];
 
 
@@ -782,7 +784,7 @@ public:
 #endif
 
     struct JackPorts {
-        char name[128];
+        std::array<char, 128> name{};
     } jack_po[16],jack_poi[16];
 
 

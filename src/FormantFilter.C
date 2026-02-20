@@ -30,10 +30,10 @@ FormantFilter::FormantFilter (FilterParams * pars)
 {
     numformants = pars->Pnumformants;
     for (int i = 0; i < numformants; i++)
-        formant[i] = new AnalogFilter (4 /*BPF*/, 1000.0f, 10.0f, pars->Pstages);
+        formant[i] = std::make_unique<AnalogFilter>(4 /*BPF*/, 1000.0f, 10.0f, pars->Pstages);
     cleanup ();
-    inbuffer = new float[PERIOD];
-    tmpbuf = new float[PERIOD];
+    inbuffer.resize(PERIOD, 0.0f);
+    tmpbuf.resize(PERIOD, 0.0f);
 
     for (int j = 0; j < FF_MAX_VOWELS; j++)
         for (int i = 0; i < numformants; i++) {
@@ -74,13 +74,7 @@ FormantFilter::FormantFilter (FilterParams * pars)
     firsttime = 1;
 };
 
-FormantFilter::~FormantFilter ()
-{
-    for (int i = 0; i < numformants; i++)
-        delete (formant[i]);
-    delete (inbuffer);
-    delete (tmpbuf);
-};
+FormantFilter::~FormantFilter () = default;
 
 
 
