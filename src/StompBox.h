@@ -59,10 +59,10 @@ private:
     float gain{}, pre1gain{}, pre2gain{}, lowb{}, midb{}, highb{}, volume{};
     float LG{}, MG{}, HG{}, RGP2{}, RGPST{}, pgain{};
 
-    AnalogFilter *linput, *lpre1, *lpre2, *lpost, *ltonehg, *ltonemd, *ltonelw;
-    AnalogFilter *rinput, *rpre1, *rpre2, *rpost, *rtonehg, *rtonemd, *rtonelw;
-    AnalogFilter *ranti, *lanti;
-    class Waveshaper *lwshape, *rwshape, *lwshape2, *rwshape2;
+    std::unique_ptr<AnalogFilter> linput, lpre1, lpre2, lpost, ltonehg, ltonemd, ltonelw;
+    std::unique_ptr<AnalogFilter> rinput, rpre1, rpre2, rpost, rtonehg, rtonemd, rtonelw;
+    std::unique_ptr<AnalogFilter> ranti, lanti;
+    std::unique_ptr<Waveshaper> lwshape, rwshape, lwshape2, rwshape2;
 
     class FPreset *Fpre{};
 

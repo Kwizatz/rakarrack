@@ -15,6 +15,7 @@
 
 #include <math.h>
 #include <stdlib.h>
+#include <vector>
 
 
 class Tuner
@@ -28,7 +29,7 @@ public:
     int preparada;
     int note_actual;
     int cents;
-    signed short int *schmittBuffer;
+    std::vector<signed short int> schmittBuffer;
     signed short int *schmittPointer;
     const char **notes;
     float nfreq, afreq, freq;

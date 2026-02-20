@@ -36,8 +36,8 @@ ShelfBoost::ShelfBoost (float * efxoutl_, float * efxoutr_)
     Pvolume = 50;
     Pstereo = 0;
 
-    RB1l =  new AnalogFilter(7,3200.0f,0.5f,0);
-    RB1r =  new AnalogFilter(7,3200.0f,0.5f,0);
+    RB1l = std::make_unique<AnalogFilter>(7,3200.0f,0.5f,0);
+    RB1r = std::make_unique<AnalogFilter>(7,3200.0f,0.5f,0);
 
 
     cleanup ();
@@ -45,9 +45,7 @@ ShelfBoost::ShelfBoost (float * efxoutl_, float * efxoutr_)
     setpreset (Ppreset);
 };
 
-ShelfBoost::~ShelfBoost ()
-{
-};
+ShelfBoost::~ShelfBoost () = default;
 
 /*
  * Cleanup the effect

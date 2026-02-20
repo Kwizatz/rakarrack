@@ -34,9 +34,6 @@ RyanWah::RyanWah (float * efxoutl_, float * efxoutr_)
 
     Ppreset = 0;
 
-    filterl = NULL;
-    filterr = NULL;
-
     base = 7.0f;		//sets curve of modulation to frequency relationship
     ibase = 1.0f/base;
 
@@ -57,18 +54,16 @@ RyanWah::RyanWah (float * efxoutl_, float * efxoutr_)
 
     Fstages = 1;
     Ftype = 1;
-    filterl = new RBFilter (0, 80.0f, 70.0f, 1);
-    filterr = new RBFilter (0, 80.0f, 70.0f, 1);
+    filterl = std::make_unique<RBFilter> (0, 80.0f, 70.0f, 1);
+    filterr = std::make_unique<RBFilter> (0, 80.0f, 70.0f, 1);
     
-    sidechain_filter = new AnalogFilter (1, 630.0, 1.0, 1);
+    sidechain_filter = std::make_unique<AnalogFilter> (1, 630.0, 1.0, 1);
     setpreset (Ppreset);
 
     cleanup ();
 };
 
-RyanWah::~RyanWah ()
-{
-};
+RyanWah::~RyanWah () = default;
 
 
 /*

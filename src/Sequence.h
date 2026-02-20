@@ -83,9 +83,9 @@ private:
     float panning;
     float ifperiod,fperiod, seqpower;
 
-    float *outi;
-    float *outo;
-    float *templ, *tempr;
+    std::vector<float> outi;
+    std::vector<float> outo;
+    std::vector<float> templ, tempr;
 
 //Variables for TrigStepper detecting trigger state.
     float peakpulse, peak, envrms, peakdecay, trigthresh;
@@ -96,16 +96,16 @@ private:
     float avtime;
     int avflag;
 
-    class RBFilter *filterl, *filterr, *modfilterl, *modfilterr, *rmsfilter, *peaklpfilter, *peakhpfilter, *peaklpfilter2;
+    std::unique_ptr<RBFilter> filterl, filterr, modfilterl, modfilterr, rmsfilter, peaklpfilter, peakhpfilter, peaklpfilter2;
 
-    Resample *U_Resample;
-    Resample *D_Resample;
+    std::unique_ptr<Resample> U_Resample;
+    std::unique_ptr<Resample> D_Resample;
 
-    PitchShifter *PS;
+    std::unique_ptr<PitchShifter> PS;
 
     class FPreset *Fpre;
-    class beattracker *beats;
-    class delayline *ldelay, *rdelay;
+    std::unique_ptr<beattracker> beats;
+    std::unique_ptr<delayline> ldelay, rdelay;
 
 };
 

@@ -38,16 +38,16 @@ Shifter::Shifter (float *efxoutl_, float *efxoutr_, long int Quality, int DS, in
     hq = Quality;
     adjust(DS);
 
-    templ = (float *) malloc (sizeof (float) * PERIOD);
-    tempr = (float *) malloc (sizeof (float) * PERIOD);
+    templ.resize(PERIOD);
+    tempr.resize(PERIOD);
 
-    outi = (float *) malloc (sizeof (float) * nPERIOD);
-    outo = (float *) malloc (sizeof (float) * nPERIOD);
+    outi.resize(nPERIOD);
+    outo.resize(nPERIOD);
 
-    U_Resample = new Resample(dq);
-    D_Resample = new Resample(uq);
+    U_Resample = std::make_unique<Resample>(dq);
+    D_Resample = std::make_unique<Resample>(uq);
 
-    PS = new PitchShifter (window, hq, nfSAMPLE_RATE);
+    PS = std::make_unique<PitchShifter> (window, hq, nfSAMPLE_RATE);
     PS->ratio = 1.0f;
 
     state = IDLE;
@@ -63,16 +63,14 @@ Shifter::Shifter (float *efxoutl_, float *efxoutr_, long int Quality, int DS, in
 
 
 
-Shifter::~Shifter ()
-{
-};
+Shifter::~Shifter () = default;
 
 void
 Shifter::cleanup ()
 {
     state = IDLE;
-    memset(outi, 0, sizeof(float)*nPERIOD);
-    memset(outo, 0, sizeof(float)*nPERIOD);
+    memset(outi.data(), 0, sizeof(float)*nPERIOD);
+    memset(outo.data(), 0, sizeof(float)*nPERIOD);
 };
 
 
@@ -174,9 +172,9 @@ Shifter::out (float *smpsl, float *smpsr)
 
 
     if(DS_state != 0) {
-        memcpy(templ, smpsl,sizeof(float)*PERIOD);
-        memcpy(tempr, smpsr,sizeof(float)*PERIOD);
-        U_Resample->out(templ,tempr,smpsl,smpsr,PERIOD,u_up);
+        memcpy(templ.data(), smpsl,sizeof(float)*PERIOD);
+        memcpy(tempr.data(), smpsr,sizeof(float)*PERIOD);
+        U_Resample->out(templ.data(),tempr.data(),smpsl,smpsr,PERIOD,u_up);
     }
 
     for (i=0; i < nPERIOD; i++) {
@@ -231,7 +229,7 @@ Shifter::out (float *smpsl, float *smpsr)
         PS->ratio = 1.0f+((range-1.0f)*use);
 
 
-    PS->smbPitchShift (PS->ratio, nPERIOD, window, hq, nfSAMPLE_RATE, outi, outo);
+    PS->smbPitchShift (PS->ratio, nPERIOD, window, hq, nfSAMPLE_RATE, outi.data(), outo.data());
 
     for (i = 0; i < nPERIOD; i++) {
         templ[i] = outo[i] * gain * panning;
@@ -240,11 +238,11 @@ Shifter::out (float *smpsl, float *smpsr)
 
 
     if(DS_state != 0) {
-        D_Resample->out(templ,tempr,efxoutl,efxoutr,nPERIOD,u_down);
+        D_Resample->out(templ.data(),tempr.data(),efxoutl,efxoutr,nPERIOD,u_down);
 
     } else {
-        memcpy(efxoutl, templ,sizeof(float)*PERIOD);
-        memcpy(efxoutr, tempr,sizeof(float)*PERIOD);
+        memcpy(efxoutl, templ.data(),sizeof(float)*PERIOD);
+        memcpy(efxoutr, tempr.data(),sizeof(float)*PERIOD);
     }
 
 

@@ -65,9 +65,9 @@ public:
 
     float *efxoutl;
     float *efxoutr;
-    float *outil,*outir;
-    float *outol,*outor;
-    float *templ, *tempr;
+    std::vector<float> outil, outir;
+    std::vector<float> outol, outor;
+    std::vector<float> templ, tempr;
 
     float outvolume;
 
@@ -98,10 +98,10 @@ private:
     void setMIDI (int PMIDI);
     void setlrcross(int value);
 
-    class Resample *U_Resample;
-    class Resample *D_Resample;
+    std::unique_ptr<Resample> U_Resample;
+    std::unique_ptr<Resample> D_Resample;
 
-    PitchShifter *PSl, *PSr;
+    std::unique_ptr<PitchShifter> PSl, PSr;
 
     class FPreset *Fpre;
 };

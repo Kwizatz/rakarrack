@@ -17,8 +17,7 @@
 Tuner::Tuner ()
 {
 
-    schmittBuffer = NULL;
-    schmittPointer = NULL;
+    schmittPointer = nullptr;
     static const char *englishNotes[12] =
     { "A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#" };
     preparada = -1;
@@ -82,9 +81,8 @@ void
 Tuner::schmittInit (int size)
 {
     blockSize = SAMPLE_RATE / size;
-    schmittBuffer =
-    (signed short int *) malloc (blockSize * sizeof (signed short int));
-    schmittPointer = schmittBuffer;
+    schmittBuffer.resize(blockSize);
+    schmittPointer = schmittBuffer.data();
 };
 
 
@@ -97,10 +95,10 @@ Tuner::schmittS16LE (int nframes, signed short int *indata)
 
     for (i = 0; i < nframes; i++) {
         *schmittPointer++ = indata[i];
-        if (schmittPointer - schmittBuffer >= blockSize) {
+        if (schmittPointer - schmittBuffer.data() >= blockSize) {
             int endpoint, startpoint, t1, t2, A1, A2, tc, schmittTriggered;
 
-            schmittPointer = schmittBuffer;
+            schmittPointer = schmittBuffer.data();
 
             for (j = 0, A1 = 0, A2 = 0; j < blockSize; j++) {
                 if (schmittBuffer[j] > 0 && A1 < schmittBuffer[j])
@@ -139,7 +137,7 @@ Tuner::schmittS16LE (int nframes, signed short int *indata)
 void
 Tuner::schmittFree ()
 {
-    free (schmittBuffer);
+    schmittBuffer.clear();
 };
 
 void

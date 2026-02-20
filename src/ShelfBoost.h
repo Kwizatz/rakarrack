@@ -55,7 +55,7 @@ private:
 
     float freq1,q1,gain,u_gain;
 
-    class AnalogFilter *RB1l, *RB1r;
+    std::unique_ptr<AnalogFilter> RB1l, RB1r;
 
     class FPreset *Fpre;
 

@@ -34,11 +34,11 @@ Valve::Valve (float * efxoutl_, float * efxoutr_)
     efxoutl = efxoutl_;
     efxoutr = efxoutr_;
 
-    lpfl = new AnalogFilter (2, 22000.0f, 1.0f, 0);
-    lpfr = new AnalogFilter (2, 22000.0f, 1.0f, 0);
-    hpfl = new AnalogFilter (3, 20.0f, 1.0f, 0);
-    hpfr = new AnalogFilter (3, 20.0f, 1.0f, 0);
-    harm = new HarmEnhancer (rm, 20.0f,20000.0f,1.0f);
+    lpfl = std::make_unique<AnalogFilter> (2, 22000.0f, 1.0f, 0);
+    lpfr = std::make_unique<AnalogFilter> (2, 22000.0f, 1.0f, 0);
+    hpfl = std::make_unique<AnalogFilter> (3, 20.0f, 1.0f, 0);
+    hpfr = std::make_unique<AnalogFilter> (3, 20.0f, 1.0f, 0);
+    harm = std::make_unique<HarmEnhancer> (rm, 20.0f,20000.0f,1.0f);
 
 
     //default values
@@ -73,9 +73,7 @@ Valve::Valve (float * efxoutl_, float * efxoutr_)
     cleanup ();
 };
 
-Valve::~Valve ()
-{
-};
+Valve::~Valve () = default;
 
 /*
  * Cleanup the effect

@@ -36,40 +36,38 @@ StompBox::StompBox (float * efxoutl_, float * efxoutr_)
     Pvolume = 50;
 
     //left channel filters
-    linput = new AnalogFilter (1, 80.0f, 1.0f, 0);  //  AnalogFilter (unsigned char Ftype, float Ffreq, float Fq,unsigned char Fstages);
-    lpre1 = new AnalogFilter (1, 630.0f, 1.0f, 0);   // LPF = 0, HPF = 1
-    lpre2 = new AnalogFilter (1, 220.0f, 1.0f, 0);
-    lpost = new AnalogFilter (0, 720.0f, 1.0f, 0);
-    ltonehg = new AnalogFilter (1, 1500.0f, 1.0f, 0);
-    ltonemd = new AnalogFilter (4, 1000.0f, 1.0f, 0);
-    ltonelw = new AnalogFilter (0, 500.0f, 1.0, 0);
+    linput = std::make_unique<AnalogFilter> (1, 80.0f, 1.0f, 0);  //  AnalogFilter (unsigned char Ftype, float Ffreq, float Fq,unsigned char Fstages);
+    lpre1 = std::make_unique<AnalogFilter> (1, 630.0f, 1.0f, 0);   // LPF = 0, HPF = 1
+    lpre2 = std::make_unique<AnalogFilter> (1, 220.0f, 1.0f, 0);
+    lpost = std::make_unique<AnalogFilter> (0, 720.0f, 1.0f, 0);
+    ltonehg = std::make_unique<AnalogFilter> (1, 1500.0f, 1.0f, 0);
+    ltonemd = std::make_unique<AnalogFilter> (4, 1000.0f, 1.0f, 0);
+    ltonelw = std::make_unique<AnalogFilter> (0, 500.0f, 1.0, 0);
 
     //Right channel filters
-    rinput = new AnalogFilter (1, 80.0f, 1.0f, 0);  //  AnalogFilter (unsigned char Ftype, float Ffreq, float Fq,unsigned char Fstages);
-    rpre1 = new AnalogFilter (1, 630.0f, 1.0f, 0);   // LPF = 0, HPF = 1
-    rpre2 = new AnalogFilter (1, 220.0f, 1.0f, 0);
-    rpost = new AnalogFilter (0, 720.0f, 1.0f, 0);
-    rtonehg = new AnalogFilter (1, 1500.0f, 1.0f, 0);
-    rtonemd = new AnalogFilter (4, 1000.0f, 1.0f, 0);
-    rtonelw = new AnalogFilter (0, 500.0f, 1.0f, 0);
+    rinput = std::make_unique<AnalogFilter> (1, 80.0f, 1.0f, 0);  //  AnalogFilter (unsigned char Ftype, float Ffreq, float Fq,unsigned char Fstages);
+    rpre1 = std::make_unique<AnalogFilter> (1, 630.0f, 1.0f, 0);   // LPF = 0, HPF = 1
+    rpre2 = std::make_unique<AnalogFilter> (1, 220.0f, 1.0f, 0);
+    rpost = std::make_unique<AnalogFilter> (0, 720.0f, 1.0f, 0);
+    rtonehg = std::make_unique<AnalogFilter> (1, 1500.0f, 1.0f, 0);
+    rtonemd = std::make_unique<AnalogFilter> (4, 1000.0f, 1.0f, 0);
+    rtonelw = std::make_unique<AnalogFilter> (0, 500.0f, 1.0f, 0);
 
     //Anti-aliasing for between stages
-    ranti = new AnalogFilter (0, 6000.0f, 0.707f, 1);
-    lanti = new AnalogFilter (0, 6000.0f, 0.707f, 1);
+    ranti = std::make_unique<AnalogFilter> (0, 6000.0f, 0.707f, 1);
+    lanti = std::make_unique<AnalogFilter> (0, 6000.0f, 0.707f, 1);
 
-    rwshape = new Waveshaper();
-    lwshape = new Waveshaper();
-    rwshape2 = new Waveshaper();
-    lwshape2 = new Waveshaper();
+    rwshape = std::make_unique<Waveshaper>();
+    lwshape = std::make_unique<Waveshaper>();
+    rwshape2 = std::make_unique<Waveshaper>();
+    lwshape2 = std::make_unique<Waveshaper>();
 
     cleanup ();
 
     setpreset (Ppreset);
 };
 
-StompBox::~StompBox ()
-{
-};
+StompBox::~StompBox () = default;
 
 /*
  * Cleanup the effect

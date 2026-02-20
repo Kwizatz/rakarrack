@@ -55,8 +55,8 @@ public:
 
     float *efxoutl;
     float *efxoutr;
-    float *outi;
-    float *outo;
+    std::vector<float> outi;
+    std::vector<float> outo;
 
 
 
@@ -92,13 +92,13 @@ private:
     float panning;
     float gain;
     float interval;
-    float *templ, *tempr;
+    std::vector<float> templ, tempr;
 
-    Resample *U_Resample;
-    Resample *D_Resample;
+    std::unique_ptr<Resample> U_Resample;
+    std::unique_ptr<Resample> D_Resample;
 
 
-    PitchShifter *PS;
+    std::unique_ptr<PitchShifter> PS;
 
     class FPreset *Fpre;
 };

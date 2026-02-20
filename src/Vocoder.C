@@ -43,12 +43,12 @@ Vocoder::Vocoder (float * efxoutl_, float * efxoutr_, float *auxresampled_,int b
     Ppanning = 64;
     Plrcross = 100;
 
-    filterbank = (fbank *) malloc(sizeof(fbank) * VOC_BANDS);
-    tmpl = (float *) malloc (sizeof (float) * nPERIOD);
-    tmpr = (float *) malloc (sizeof (float) * nPERIOD);
-    tsmpsl = (float *) malloc (sizeof (float) * nPERIOD);
-    tsmpsr = (float *) malloc (sizeof (float) * nPERIOD);
-    tmpaux = (float *) malloc (sizeof (float) * nPERIOD);
+    filterbank.resize(VOC_BANDS);
+    tmpl.resize(nPERIOD);
+    tmpr.resize(nPERIOD);
+    tsmpsl.resize(nPERIOD);
+    tsmpsr.resize(nPERIOD);
+    tmpaux.resize(nPERIOD);
 
 
 
@@ -71,25 +71,25 @@ Vocoder::Vocoder (float * efxoutl_, float * efxoutr_, float *auxresampled_,int b
     float center;
     float qq;
 
-    A_Resample = new Resample(dq);
-    U_Resample = new Resample(dq);
-    D_Resample = new Resample(uq);
+    A_Resample = std::make_unique<Resample>(dq);
+    U_Resample = std::make_unique<Resample>(dq);
+    D_Resample = std::make_unique<Resample>(uq);
 
 
     for (int i = 0; i < VOC_BANDS; i++) {
         center = (float) i * 20000.0f/((float) VOC_BANDS);
         qq = 60.0f;
 
-        filterbank[i].l = new AnalogFilter (4, center, qq, 0);
+        filterbank[i].l = std::make_unique<AnalogFilter> (4, center, qq, 0);
         filterbank[i].l->setSR(nSAMPLE_RATE);
-        filterbank[i].r = new AnalogFilter (4, center, qq, 0);
+        filterbank[i].r = std::make_unique<AnalogFilter> (4, center, qq, 0);
         filterbank[i].r->setSR(nSAMPLE_RATE);
-        filterbank[i].aux = new AnalogFilter (4, center, qq, 0);
+        filterbank[i].aux = std::make_unique<AnalogFilter> (4, center, qq, 0);
         filterbank[i].aux->setSR(nSAMPLE_RATE);
     };
 
-    vlp = new AnalogFilter (2, 4000.0f, 1.0f, 1);
-    vhp = new AnalogFilter (3, 200.0f, 0.707f, 1);
+    vlp = std::make_unique<AnalogFilter> (2, 4000.0f, 1.0f, 1);
+    vhp = std::make_unique<AnalogFilter> (3, 200.0f, 0.707f, 1);
 
     vlp->setSR(nSAMPLE_RATE);
     vhp->setSR(nSAMPLE_RATE);
@@ -99,9 +99,7 @@ Vocoder::Vocoder (float * efxoutl_, float * efxoutr_, float *auxresampled_,int b
 
 };
 
-Vocoder::~Vocoder ()
-{
-};
+Vocoder::~Vocoder () = default;
 
 /*
  * Cleanup the effect
@@ -223,9 +221,9 @@ Vocoder::out (float * smpsl, float * smpsr)
 
 
     if(DS_state != 0) {
-        A_Resample->mono_out(auxresampled,tmpaux,PERIOD,u_up,nPERIOD);
+        A_Resample->mono_out(auxresampled,tmpaux.data(),PERIOD,u_up,nPERIOD);
     } else
-        memcpy(tmpaux,auxresampled,sizeof(float)*nPERIOD);
+        memcpy(tmpaux.data(),auxresampled,sizeof(float)*nPERIOD);
 
 
     for (i = 0; i<nPERIOD; i++) {  //apply compression to auxresampled
@@ -261,15 +259,15 @@ Vocoder::out (float * smpsl, float * smpsr)
     auxtemp = 0.0f;
 
     if(DS_state != 0) {
-        U_Resample->out(smpsl,smpsr,tsmpsl,tsmpsr,PERIOD,u_up);
+        U_Resample->out(smpsl,smpsr,tsmpsl.data(),tsmpsr.data(),PERIOD,u_up);
     } else {
-        memcpy(tsmpsl,smpsl,sizeof(float)*nPERIOD);
-        memcpy(tsmpsr,smpsr,sizeof(float)*nPERIOD);
+        memcpy(tsmpsl.data(),smpsl,sizeof(float)*nPERIOD);
+        memcpy(tsmpsr.data(),smpsr,sizeof(float)*nPERIOD);
     }
 
 
-    memset(tmpl,0,sizeof(float)*nPERIOD);
-    memset(tmpr,0,sizeof(float)*nPERIOD);
+    memset(tmpl.data(),0,sizeof(float)*nPERIOD);
+    memset(tmpr.data(),0,sizeof(float)*nPERIOD);
 
 
 
@@ -308,10 +306,10 @@ Vocoder::out (float * smpsl, float * smpsr)
 
 
     if(DS_state != 0) {
-        D_Resample->out(tmpl,tmpr,efxoutl,efxoutr,nPERIOD,u_down);
+        D_Resample->out(tmpl.data(),tmpr.data(),efxoutl,efxoutr,nPERIOD,u_down);
     } else {
-        memcpy(efxoutl,tmpl,sizeof(float)*nPERIOD);
-        memcpy(efxoutr,tmpr,sizeof(float)*nPERIOD);
+        memcpy(efxoutl,tmpl.data(),sizeof(float)*nPERIOD);
+        memcpy(efxoutr,tmpr.data(),sizeof(float)*nPERIOD);
     }
 
     vulevel = (float)CLAMP(rap2dB(maxgain), -48.0, 15.0);

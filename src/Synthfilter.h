@@ -81,7 +81,7 @@ private:
 
     //Internal Variables
     float distortion, fb, width, env, envdelta, sns, att, rls, fbl, fbr, depth, bandgain;
-    float *lyn1, *ryn1, *lx1hp, *ly1hp, *rx1hp, *ry1hp;
+    std::vector<float> lyn1, ryn1, lx1hp, ly1hp, rx1hp, ry1hp;
     float oldlgain, oldrgain, inv_period;
 
     float delta;

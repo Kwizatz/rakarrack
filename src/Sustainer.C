@@ -49,10 +49,7 @@ Sustainer::Sustainer (float * efxoutl_, float * efxoutr_)
     cleanup ();
 };
 
-Sustainer::~Sustainer ()
-{
-
-};
+Sustainer::~Sustainer () = default;
 
 /*
  * Cleanup the effect

@@ -69,22 +69,20 @@ PitchShifter::PitchShifter (long fftFrameSize, long osamp, float sampleRate)
     ratio = 1.0;
 
     /* initialize our static arrays */
-    memset (gInFIFO, 0, MAX_FRAME_LENGTH * sizeof (float));
-    memset (gOutFIFO, 0, MAX_FRAME_LENGTH * sizeof (float));
-    memset (gFFTworksp, 0, 2 * MAX_FRAME_LENGTH * sizeof (float));
-    memset (gLastPhase, 0, (MAX_FRAME_LENGTH / 2 + 1) * sizeof (float));
-    memset (gSumPhase, 0, (MAX_FRAME_LENGTH / 2 + 1) * sizeof (float));
-    memset (gOutputAccum, 0, 2 * MAX_FRAME_LENGTH * sizeof (float));
-    memset (gAnaFreq, 0, MAX_FRAME_LENGTH * sizeof (float));
-    memset (gAnaMagn, 0, MAX_FRAME_LENGTH * sizeof (float));
-    memset (wndw, 0, MAX_FRAME_LENGTH * sizeof (float));
+    gInFIFO.fill(0.0f);
+    gOutFIFO.fill(0.0f);
+    gFFTworksp.fill(0.0f);
+    gLastPhase.fill(0.0f);
+    gSumPhase.fill(0.0f);
+    gOutputAccum.fill(0.0f);
+    gAnaFreq.fill(0.0f);
+    gAnaMagn.fill(0.0f);
+    wndw.fill(0.0f);
 
-    mayer.make_window(fftFrameSize, wndw);
+    mayer.make_window(fftFrameSize, wndw.data());
 }
 
-PitchShifter::~PitchShifter ()
-{
-}
+PitchShifter::~PitchShifter () = default;
 
 
 void
@@ -124,7 +122,7 @@ PitchShifter::smbPitchShift (float pitchShift, long numSampsToProcess,
             //perform the windowing operation
             for (k = 0; k < fftFrameSize; k++) gFFTworksp[k] = wndw[k] * gInFIFO[k];
             //then transform
-            mayer.realfft(nfftFrameSize, gFFTworksp);
+            mayer.realfft(nfftFrameSize, gFFTworksp.data());
 
             /* this is the analysis step */
             for (k = 0, l=fftFrameSize2; k <= fftFrameSize2; k++, l++) {
@@ -169,8 +167,8 @@ PitchShifter::smbPitchShift (float pitchShift, long numSampsToProcess,
             }
             /* ***************** PROCESSING ******************* */
             /* this does the actual pitch shifting */
-            memset (gSynMagn, 0, fftFrameSize * sizeof (float));
-            memset (gSynFreq, 0, fftFrameSize * sizeof (float));
+            memset (gSynMagn.data(), 0, fftFrameSize * sizeof (float));
+            memset (gSynFreq.data(), 0, fftFrameSize * sizeof (float));
             for (k = 0; k <= fftFrameSize2; k++) {
                 index = long (k * pitchShift);
                 if (index <= fftFrameSize2) {
@@ -215,7 +213,7 @@ PitchShifter::smbPitchShift (float pitchShift, long numSampsToProcess,
 
             /* do inverse transform */
             //smbFft (gFFTworksp, fftFrameSize, 1);
-            mayer.realifft(nfftFrameSize, gFFTworksp);
+            mayer.realifft(nfftFrameSize, gFFTworksp.data());
 
             /* do windowing and add to output accumulator */
             for (k = 0; k < fftFrameSize; k++) {
@@ -231,7 +229,7 @@ PitchShifter::smbPitchShift (float pitchShift, long numSampsToProcess,
                 gOutFIFO[k] = gOutputAccum[k];
 
             /* shift accumulator */
-            memmove (gOutputAccum, gOutputAccum + stepSize,
+            memmove (gOutputAccum.data(), gOutputAccum.data() + stepSize,
                      fftFrameSize * sizeof (float));
 
             /* move input FIFO */

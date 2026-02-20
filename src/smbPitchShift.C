@@ -68,22 +68,22 @@ PitchShifter::PitchShifter (long fftFrameSize, long osamp, float sampleRate)
     ratio = 1.0;
 
     /* initialize our static arrays */
-    memset (gInFIFO, 0.0, MAX_FRAME_LENGTH * sizeof (float));
-    memset (gOutFIFO, 0.0, MAX_FRAME_LENGTH * sizeof (float));
-    memset (gFFTworksp, 0.0, 2 * MAX_FRAME_LENGTH * sizeof (float));
-    memset (gLastPhase, 0.0, (MAX_FRAME_LENGTH / 2 + 1) * sizeof (float));
-    memset (gSumPhase, 0.0, (MAX_FRAME_LENGTH / 2 + 1) * sizeof (float));
-    memset (gOutputAccum, 0.0, 2 * MAX_FRAME_LENGTH * sizeof (float));
-    memset (gAnaFreq, 0.0, MAX_FRAME_LENGTH * sizeof (float));
-    memset (gAnaMagn, 0.0, MAX_FRAME_LENGTH * sizeof (float));
-    memset (window, 0.0, MAX_FRAME_LENGTH * sizeof (double));
+    gInFIFO.fill(0.0f);
+    gOutFIFO.fill(0.0f);
+    gFFTworksp.fill(0.0f);
+    gLastPhase.fill(0.0f);
+    gSumPhase.fill(0.0f);
+    gOutputAccum.fill(0.0f);
+    gAnaFreq.fill(0.0f);
+    gAnaMagn.fill(0.0f);
+    window.fill(0.0);
 
     //create FFTW plan
     int nfftFrameSize = (int) fftFrameSize;
     //printf("nfs= %d, lfs= %ld\n", nfftFrameSize, fftFrameSize);
 
-    ftPlanForward = fftw_plan_dft_1d(nfftFrameSize, fftw_in, fftw_out, FFTW_FORWARD, FFTW_MEASURE);
-    ftPlanInverse = fftw_plan_dft_1d(nfftFrameSize, fftw_in, fftw_out, FFTW_BACKWARD, FFTW_MEASURE);
+    ftPlanForward = fftw_plan_dft_1d(nfftFrameSize, fftw_in.data(), fftw_out.data(), FFTW_FORWARD, FFTW_MEASURE);
+    ftPlanInverse = fftw_plan_dft_1d(nfftFrameSize, fftw_in.data(), fftw_out.data(), FFTW_BACKWARD, FFTW_MEASURE);
 
     //Pre-compute window function
     makeWindow(fftFrameSize);
@@ -187,8 +187,8 @@ PitchShifter::smbPitchShift (float pitchShift, long numSampsToProcess,
 
             /* ***************** PROCESSING ******************* */
             /* this does the actual pitch shifting */
-            memset (gSynMagn, 0, fftFrameSize * sizeof (float));
-            memset (gSynFreq, 0, fftFrameSize * sizeof (float));
+            memset (gSynMagn.data(), 0, fftFrameSize * sizeof (float));
+            memset (gSynFreq.data(), 0, fftFrameSize * sizeof (float));
             for (k = 0; k <= fftFrameSize2; k++) {
                 index = long (k * pitchShift);
                 if (index <= fftFrameSize2) {
@@ -253,7 +253,7 @@ PitchShifter::smbPitchShift (float pitchShift, long numSampsToProcess,
                 gOutFIFO[k] = gOutputAccum[k];
 
             /* shift accumulator */
-            memmove (gOutputAccum, gOutputAccum + stepSize,
+            memmove (gOutputAccum.data(), gOutputAccum.data() + stepSize,
                      fftFrameSize * sizeof (float));
 
             /* move input FIFO */

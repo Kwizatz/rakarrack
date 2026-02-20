@@ -81,8 +81,8 @@ private:
     float fdist;
     float inputvol;
 
-    AnalogFilter *lpfl, *lpfr, *hpfl, *hpfr;
-    class HarmEnhancer *harm;
+    std::unique_ptr<AnalogFilter> lpfl, lpfr, hpfl, hpfr;
+    std::unique_ptr<HarmEnhancer> harm;
     class FPreset *Fpre;
 
 };

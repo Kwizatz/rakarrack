@@ -45,12 +45,12 @@ Synthfilter::Synthfilter (float * efxoutl_, float * efxoutr_)
     efxoutl = efxoutl_;
     efxoutr = efxoutr_;
 
-    lyn1 = new float[MAX_SFILTER_STAGES];
-    ryn1 = new float[MAX_SFILTER_STAGES];
-    lx1hp = new float[MAX_SFILTER_STAGES];
-    rx1hp = new float[MAX_SFILTER_STAGES];
-    ly1hp = new float[MAX_SFILTER_STAGES];
-    ry1hp = new float[MAX_SFILTER_STAGES];
+    lyn1.resize(MAX_SFILTER_STAGES);
+    ryn1.resize(MAX_SFILTER_STAGES);
+    lx1hp.resize(MAX_SFILTER_STAGES);
+    rx1hp.resize(MAX_SFILTER_STAGES);
+    ly1hp.resize(MAX_SFILTER_STAGES);
+    ry1hp.resize(MAX_SFILTER_STAGES);
 
     Plpstages = 4;
     Phpstages = 2;
@@ -72,9 +72,7 @@ Synthfilter::Synthfilter (float * efxoutl_, float * efxoutr_)
     cleanup ();
 };
 
-Synthfilter::~Synthfilter ()
-{
-};
+Synthfilter::~Synthfilter () = default;
 
 
 /*

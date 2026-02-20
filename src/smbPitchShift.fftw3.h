@@ -44,8 +44,9 @@
 #include <math.h>
 #include <stdio.h>
 #include <fftw3.h>
+#include <array>
 
-#define MAX_FRAME_LENGTH 2048
+inline constexpr int MAX_FRAME_LENGTH = 2048;
 class PitchShifter
 {
 public:
@@ -59,24 +60,24 @@ public:
     float ratio;
 private:
     void makeWindow(long fftFrameSize);
-    float gInFIFO[MAX_FRAME_LENGTH];
-    float gOutFIFO[MAX_FRAME_LENGTH];
-    float gFFTworksp[2 * MAX_FRAME_LENGTH];
-    float gLastPhase[MAX_FRAME_LENGTH / 2 + 1];
-    float gSumPhase[MAX_FRAME_LENGTH / 2 + 1];
-    float gOutputAccum[2 * MAX_FRAME_LENGTH];
-    float gAnaFreq[MAX_FRAME_LENGTH];
-    float gAnaMagn[MAX_FRAME_LENGTH];
-    float gSynFreq[MAX_FRAME_LENGTH];
-    float gSynMagn[MAX_FRAME_LENGTH];
-    double window[MAX_FRAME_LENGTH];
+    std::array<float, MAX_FRAME_LENGTH> gInFIFO{};
+    std::array<float, MAX_FRAME_LENGTH> gOutFIFO{};
+    std::array<float, 2 * MAX_FRAME_LENGTH> gFFTworksp{};
+    std::array<float, MAX_FRAME_LENGTH / 2 + 1> gLastPhase{};
+    std::array<float, MAX_FRAME_LENGTH / 2 + 1> gSumPhase{};
+    std::array<float, 2 * MAX_FRAME_LENGTH> gOutputAccum{};
+    std::array<float, MAX_FRAME_LENGTH> gAnaFreq{};
+    std::array<float, MAX_FRAME_LENGTH> gAnaMagn{};
+    std::array<float, MAX_FRAME_LENGTH> gSynFreq{};
+    std::array<float, MAX_FRAME_LENGTH> gSynMagn{};
+    std::array<double, MAX_FRAME_LENGTH> window{};
     double dfftFrameSize, coef_dfftFrameSize, dpi_coef;
     double magn, phase, tmp, real, imag;
     double freqPerBin, expct, coefPB, coef_dpi, coef_mpi;
     long k, qpd, index, inFifoLatency, stepSize, fftFrameSize2, gRover, FS_osamp;
 
     //FFTW variables
-    fftw_complex fftw_in[MAX_FRAME_LENGTH], fftw_out[MAX_FRAME_LENGTH];
+    std::array<fftw_complex, MAX_FRAME_LENGTH> fftw_in{}, fftw_out{};
     fftw_plan ftPlanForward, ftPlanInverse;
 };
 

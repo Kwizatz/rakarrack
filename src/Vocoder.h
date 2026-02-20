@@ -81,20 +81,21 @@ private:
     float lpanning, rpanning, input,level;
     float alpha,beta,prls,gate;
     float compeak, compg, compenv, oldcompenv, calpha, cbeta, cthresh, cratio, cpthresh;
-    float *tmpl, *tmpr;
-    float *tsmpsl, *tsmpsr;
-    float *tmpaux;
+    std::vector<float> tmpl, tmpr;
+    std::vector<float> tsmpsl, tsmpsr;
+    std::vector<float> tmpaux;
     struct fbank {
         float sfreq, sq,speak,gain,oldgain;
-        AnalogFilter *l, *r, *aux;
+        std::unique_ptr<AnalogFilter> l, r, aux;
 
-    } *filterbank;
+    };
+    std::vector<fbank> filterbank;
 
-    AnalogFilter *vhp, *vlp;
+    std::unique_ptr<AnalogFilter> vhp, vlp;
 
-    Resample *U_Resample;
-    Resample *D_Resample;
-    Resample *A_Resample;
+    std::unique_ptr<Resample> U_Resample;
+    std::unique_ptr<Resample> D_Resample;
+    std::unique_ptr<Resample> A_Resample;
 
     class FPreset *Fpre;
 

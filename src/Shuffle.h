@@ -46,8 +46,8 @@ public:
 
     float *efxoutl;
     float *efxoutr;
-    float *inputl;
-    float *inputr;
+    std::vector<float> inputl;
+    std::vector<float> inputr;
 
 
 private:
@@ -80,8 +80,8 @@ private:
     //Parametrii reali
     float tmp;
     float volL,volML,volMH,volH;
-    AnalogFilter  *lr, *hr;
-    AnalogFilter  *mlr,*mhr;
+    std::unique_ptr<AnalogFilter> lr, hr;
+    std::unique_ptr<AnalogFilter> mlr, mhr;
 
     class FPreset *Fpre;
 

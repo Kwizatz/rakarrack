@@ -86,8 +86,8 @@ private:
     float ms1, lpmix, hpmix, bpmix;	//mean squares
     float centfreq; //testing
     EffectLFO lfo;		//lfo-ul RyanWah
-    class RBFilter *filterl, *filterr;
-    class AnalogFilter *sidechain_filter;
+    std::unique_ptr<RBFilter> filterl, filterr;
+    std::unique_ptr<AnalogFilter> sidechain_filter;
 
     class FPreset *Fpre;
 

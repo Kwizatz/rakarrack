@@ -38,14 +38,14 @@ Shuffle::Shuffle (float * efxoutl_, float * efxoutr_)
     efxoutl = efxoutl_;
     efxoutr = efxoutr_;
 
-    inputl = (float *) malloc (sizeof (float) * PERIOD);
-    inputr = (float *) malloc (sizeof (float) * PERIOD);
+    inputl.resize(PERIOD);
+    inputr.resize(PERIOD);
 
 
-    lr = new AnalogFilter (6, 300.0f, .3f, 0);
-    hr = new AnalogFilter (6, 8000.0f,.3f, 0);
-    mlr = new AnalogFilter (6, 1200.0f,.3f, 0);
-    mhr = new AnalogFilter (6, 2400.0f,.3f, 0);
+    lr = std::make_unique<AnalogFilter> (6, 300.0f, .3f, 0);
+    hr = std::make_unique<AnalogFilter> (6, 8000.0f,.3f, 0);
+    mlr = std::make_unique<AnalogFilter> (6, 1200.0f,.3f, 0);
+    mhr = std::make_unique<AnalogFilter> (6, 2400.0f,.3f, 0);
 
 
     //default values
@@ -60,9 +60,7 @@ Shuffle::Shuffle (float * efxoutl_, float * efxoutr_)
     cleanup ();
 };
 
-Shuffle::~Shuffle ()
-{
-};
+Shuffle::~Shuffle () = default;
 
 /*
  * Cleanup the effect
@@ -92,15 +90,15 @@ Shuffle::out (float * smpsl, float * smpsr)
 
     if(E) {
 
-        lr->filterout(inputr);
-        mlr->filterout(inputr);
-        mhr->filterout(inputr);
-        hr->filterout(inputr);
+        lr->filterout(inputr.data());
+        mlr->filterout(inputr.data());
+        mhr->filterout(inputr.data());
+        hr->filterout(inputr.data());
     } else {
-        lr->filterout(inputl);
-        mlr->filterout(inputl);
-        mhr->filterout(inputl);
-        hr->filterout(inputl);
+        lr->filterout(inputl.data());
+        mlr->filterout(inputl.data());
+        mhr->filterout(inputl.data());
+        hr->filterout(inputl.data());
     }
 
 

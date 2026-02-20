@@ -34,19 +34,16 @@ Sequence::Sequence (float * efxoutl_, float * efxoutr_, long int Quality, int DS
     hq = Quality;
     adjust(DS);
 
-    templ = (float *) malloc (sizeof (float) * PERIOD);
-    tempr = (float *) malloc (sizeof (float) * PERIOD);
+    templ.resize(PERIOD);
+    tempr.resize(PERIOD);
 
-    outi = (float *) malloc (sizeof (float) * nPERIOD);
-    outo = (float *) malloc (sizeof (float) * nPERIOD);
+    outi.resize(nPERIOD);
+    outo.resize(nPERIOD);
 
-    U_Resample = new Resample(dq);
-    D_Resample = new Resample(uq);
+    U_Resample = std::make_unique<Resample>(dq);
+    D_Resample = std::make_unique<Resample>(uq);
 
-    beats = new beattracker();
-
-    filterl = NULL;
-    filterr = NULL;
+    beats = std::make_unique<beattracker>();
 
     MAXFREQ = 10000.0f;
     MINFREQ = 100.0f;
@@ -58,14 +55,14 @@ Sequence::Sequence (float * efxoutl_, float * efxoutr_, long int Quality, int DS
     subdiv = 2;
     lmod = 0.5f;
     rmod = 0.5f;
-    filterl = new RBFilter (0, 80.0f, 40.0f, 2);
-    filterr = new RBFilter (0, 80.0f, 40.0f, 2);
-    modfilterl = new RBFilter (0, 15.0f, 0.5f, 1);
-    modfilterr = new RBFilter (0, 15.0f, 0.5f, 1);
-    rmsfilter = new RBFilter (0, 15.0f, 0.15f, 1);
-    peaklpfilter = new RBFilter (0, 25.0f, 0.5f, 0);
-    peaklpfilter2 = new RBFilter (0, 25.0f, 0.5f, 0);
-    peakhpfilter = new RBFilter (1, 45.0f, 0.5f, 0);
+    filterl = std::make_unique<RBFilter> (0, 80.0f, 40.0f, 2);
+    filterr = std::make_unique<RBFilter> (0, 80.0f, 40.0f, 2);
+    modfilterl = std::make_unique<RBFilter> (0, 15.0f, 0.5f, 1);
+    modfilterr = std::make_unique<RBFilter> (0, 15.0f, 0.5f, 1);
+    rmsfilter = std::make_unique<RBFilter> (0, 15.0f, 0.15f, 1);
+    peaklpfilter = std::make_unique<RBFilter> (0, 25.0f, 0.5f, 0);
+    peaklpfilter2 = std::make_unique<RBFilter> (0, 25.0f, 0.5f, 0);
+    peakhpfilter = std::make_unique<RBFilter> (1, 45.0f, 0.5f, 0);
 
 //Trigger Filter Settings
     peakpulse = peak = envrms = 0.0f;
@@ -83,23 +80,21 @@ Sequence::Sequence (float * efxoutl_, float * efxoutr_, long int Quality, int DS
 
     maxdly = 4.0f;  //sets max time to 4 seconds
     tempodiv = maxdly;
-    ldelay = new delayline(maxdly, 1);
-    rdelay = new delayline(maxdly, 1);
+    ldelay = std::make_unique<delayline>(maxdly, 1);
+    rdelay = std::make_unique<delayline>(maxdly, 1);
     fb = 0.0f;
     rdlyfb = 0.0f;
     ldlyfb = 0.0f;
     avtime = 0.25f;
     avflag = 1;
 
-    PS = new PitchShifter (window, hq, nfSAMPLE_RATE);
+    PS = std::make_unique<PitchShifter> (window, hq, nfSAMPLE_RATE);
     PS->ratio = 1.0f;
 
     cleanup ();
 };
 
-Sequence::~Sequence ()
-{
-};
+Sequence::~Sequence () = default;
 
 /*
  * Cleanup the effect
@@ -108,8 +103,8 @@ void
 Sequence::cleanup ()
 {
 
-    memset(outi, 0, sizeof(float)*nPERIOD);
-    memset(outo, 0, sizeof(float)*nPERIOD);
+    memset(outi.data(), 0, sizeof(float)*nPERIOD);
+    memset(outo.data(), 0, sizeof(float)*nPERIOD);
 
     ldelay->cleanup();
     rdelay->cleanup();
@@ -149,7 +144,7 @@ Sequence::out (float * smpsl, float * smpsr)
 
 
     if ((rndflag) && (tcount < hPERIOD + 1)) { //This is an Easter Egg
-        srand(time(NULL));
+        srand(time(nullptr));
         for (i = 0; i<8; i++) {
             fsequence[i] = RND1;
         }
@@ -309,9 +304,9 @@ Sequence::out (float * smpsl, float * smpsr)
         lfol = fsequence[scount];
 
         if(DS_state != 0) {
-            memcpy(templ, smpsl,sizeof(float)*PERIOD);
-            memcpy(tempr, smpsr,sizeof(float)*PERIOD);
-            U_Resample->out(templ,tempr,smpsl,smpsr,PERIOD,u_up);
+            memcpy(templ.data(), smpsl,sizeof(float)*PERIOD);
+            memcpy(tempr.data(), smpsr,sizeof(float)*PERIOD);
+            U_Resample->out(templ.data(),tempr.data(),smpsl,smpsr,PERIOD,u_up);
         }
 
 
@@ -344,17 +339,17 @@ Sequence::out (float * smpsl, float * smpsr)
 
 
         PS->ratio = lmod;
-        PS->smbPitchShift (PS->ratio, nPERIOD, window, hq, nfSAMPLE_RATE, outi, outo);
+        PS->smbPitchShift (PS->ratio, nPERIOD, window, hq, nfSAMPLE_RATE, outi.data(), outo.data());
 
 
-        memcpy(templ, outo, sizeof(float)*nPERIOD);
-        memcpy(tempr, outo, sizeof(float)*nPERIOD);
+        memcpy(templ.data(), outo.data(), sizeof(float)*nPERIOD);
+        memcpy(tempr.data(), outo.data(), sizeof(float)*nPERIOD);
 
         if(DS_state != 0) {
-            D_Resample->out(templ,tempr,efxoutl,efxoutr,nPERIOD,u_down);
+            D_Resample->out(templ.data(),tempr.data(),efxoutl,efxoutr,nPERIOD,u_down);
         } else {
-            memcpy(efxoutl, templ,sizeof(float)*PERIOD);
-            memcpy(efxoutr, tempr,sizeof(float)*PERIOD);
+            memcpy(efxoutl, templ.data(),sizeof(float)*PERIOD);
+            memcpy(efxoutr, tempr.data(),sizeof(float)*PERIOD);
         }
 
 
@@ -425,9 +420,9 @@ Sequence::out (float * smpsl, float * smpsr)
         lfol = floorf(fsequence[scount]*12.75f);
 
         if(DS_state != 0) {
-            memcpy(templ, smpsl,sizeof(float)*PERIOD);
-            memcpy(tempr, smpsr,sizeof(float)*PERIOD);
-            U_Resample->out(templ,tempr,smpsl,smpsr,PERIOD,u_up);
+            memcpy(templ.data(), smpsl,sizeof(float)*PERIOD);
+            memcpy(tempr.data(), smpsr,sizeof(float)*PERIOD);
+            U_Resample->out(templ.data(),tempr.data(),smpsl,smpsr,PERIOD,u_up);
         }
 
 
@@ -454,18 +449,18 @@ Sequence::out (float * smpsl, float * smpsr)
 
 
         PS->ratio = lmod;
-        PS->smbPitchShift (PS->ratio, nPERIOD, window, hq, nfSAMPLE_RATE, outi, outo);
+        PS->smbPitchShift (PS->ratio, nPERIOD, window, hq, nfSAMPLE_RATE, outi.data(), outo.data());
 
 
 
-        memcpy(templ, outo, sizeof(float)*nPERIOD);
-        memcpy(tempr, outo, sizeof(float)*nPERIOD);
+        memcpy(templ.data(), outo.data(), sizeof(float)*nPERIOD);
+        memcpy(tempr.data(), outo.data(), sizeof(float)*nPERIOD);
 
         if(DS_state != 0) {
-            D_Resample->out(templ,tempr,efxoutl,efxoutr,nPERIOD,u_down);
+            D_Resample->out(templ.data(),tempr.data(),efxoutl,efxoutr,nPERIOD,u_down);
         } else {
-            memcpy(efxoutl, templ,sizeof(float)*nPERIOD);
-            memcpy(efxoutr, tempr,sizeof(float)*nPERIOD);
+            memcpy(efxoutl, templ.data(),sizeof(float)*nPERIOD);
+            memcpy(efxoutr, tempr.data(),sizeof(float)*nPERIOD);
         }
 
 
@@ -479,9 +474,9 @@ Sequence::out (float * smpsl, float * smpsr)
         lfol = fsequence[scount];
 
         if(DS_state != 0) {
-            memcpy(templ, smpsl,sizeof(float)*PERIOD);
-            memcpy(tempr, smpsr,sizeof(float)*PERIOD);
-            U_Resample->out(templ,tempr,smpsl,smpsr,PERIOD,u_up);
+            memcpy(templ.data(), smpsl,sizeof(float)*PERIOD);
+            memcpy(tempr.data(), smpsr,sizeof(float)*PERIOD);
+            U_Resample->out(templ.data(),tempr.data(),smpsl,smpsr,PERIOD,u_up);
         }
 
 
@@ -513,7 +508,7 @@ Sequence::out (float * smpsl, float * smpsr)
 
 
         PS->ratio = lmod;
-        PS->smbPitchShift (PS->ratio, nPERIOD, window, hq, nfSAMPLE_RATE, outi, outo);
+        PS->smbPitchShift (PS->ratio, nPERIOD, window, hq, nfSAMPLE_RATE, outi.data(), outo.data());
 
         if(Pstdiff==1) {
             for ( i = 0; i < nPERIOD; i++) {
@@ -526,15 +521,15 @@ Sequence::out (float * smpsl, float * smpsr)
                 tempr[i]=outo[i]*panning;
             }
         } else {
-            memcpy(templ, outo, sizeof(float)*nPERIOD);
-            memcpy(tempr, outo, sizeof(float)*nPERIOD);
+            memcpy(templ.data(), outo.data(), sizeof(float)*nPERIOD);
+            memcpy(tempr.data(), outo.data(), sizeof(float)*nPERIOD);
         }
 
         if(DS_state != 0) {
-            D_Resample->out(templ,tempr,efxoutl,efxoutr,nPERIOD,u_down);
+            D_Resample->out(templ.data(),tempr.data(),efxoutl,efxoutr,nPERIOD,u_down);
         } else {
-            memcpy(efxoutl, templ,sizeof(float)*nPERIOD);
-            memcpy(efxoutr, tempr,sizeof(float)*nPERIOD);
+            memcpy(efxoutl, templ.data(),sizeof(float)*nPERIOD);
+            memcpy(efxoutr, tempr.data(),sizeof(float)*nPERIOD);
         }
 
 

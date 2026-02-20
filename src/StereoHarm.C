@@ -38,33 +38,27 @@ StereoHarm::StereoHarm (float *efxoutl_, float *efxoutr_, long int Quality, int 
     hq = Quality;
     adjust(DS);
 
-    templ = (float *) malloc (sizeof (float) * PERIOD);
-    tempr = (float *) malloc (sizeof (float) * PERIOD);
+    templ.resize(PERIOD);
+    tempr.resize(PERIOD);
 
 
-    outil = (float *) malloc (sizeof (float) * nPERIOD);
-    outir = (float *) malloc (sizeof (float) * nPERIOD);
+    outil.resize(nPERIOD);
+    outir.resize(nPERIOD);
 
-    outol = (float *) malloc (sizeof (float) * nPERIOD);
-    outor = (float *) malloc (sizeof (float) * nPERIOD);
+    outol.resize(nPERIOD);
+    outor.resize(nPERIOD);
 
-    memset (outil, 0, sizeof (float) * nPERIOD);
-    memset (outir, 0, sizeof (float) * nPERIOD);
-
-    memset (outol, 0, sizeof (float) * nPERIOD);
-    memset (outor, 0, sizeof (float) * nPERIOD);
-
-    U_Resample = new Resample(dq);
-    D_Resample = new Resample(uq);
+    U_Resample = std::make_unique<Resample>(dq);
+    D_Resample = std::make_unique<Resample>(uq);
 
 
     chromel=0.0;
     chromer=0.0;
 
 
-    PSl = new PitchShifter (window, hq, nfSAMPLE_RATE);
+    PSl = std::make_unique<PitchShifter> (window, hq, nfSAMPLE_RATE);
     PSl->ratio = 1.0f;
-    PSr = new PitchShifter (window, hq, nfSAMPLE_RATE);
+    PSr = std::make_unique<PitchShifter> (window, hq, nfSAMPLE_RATE);
     PSr->ratio = 1.0f;
 
     Ppreset = 0;
@@ -79,9 +73,7 @@ StereoHarm::StereoHarm (float *efxoutl_, float *efxoutr_, long int Quality, int 
 
 
 
-StereoHarm::~StereoHarm ()
-{
-};
+StereoHarm::~StereoHarm () = default;
 
 void
 StereoHarm::cleanup ()
@@ -89,10 +81,10 @@ StereoHarm::cleanup ()
     mira = 0;
     chromel=0;
     chromer=0;
-    memset(outil, 0, sizeof(float)*nPERIOD);
-    memset(outir, 0, sizeof(float)*nPERIOD);
-    memset(outol, 0, sizeof(float)*nPERIOD);
-    memset(outor, 0, sizeof(float)*nPERIOD);
+    memset(outil.data(), 0, sizeof(float)*nPERIOD);
+    memset(outir.data(), 0, sizeof(float)*nPERIOD);
+    memset(outol.data(), 0, sizeof(float)*nPERIOD);
+    memset(outor.data(), 0, sizeof(float)*nPERIOD);
 
 };
 
@@ -105,9 +97,9 @@ StereoHarm::out (float *smpsl, float *smpsr)
 
 
     if(DS_state != 0) {
-        memcpy(templ, smpsl,sizeof(float)*PERIOD);
-        memcpy(tempr, smpsr,sizeof(float)*PERIOD);
-        U_Resample->out(templ,tempr,smpsl,smpsr,PERIOD,u_up);
+        memcpy(templ.data(), smpsl,sizeof(float)*PERIOD);
+        memcpy(tempr.data(), smpsr,sizeof(float)*PERIOD);
+        U_Resample->out(templ.data(),tempr.data(),smpsl,smpsr,PERIOD,u_up);
     }
 
 
@@ -134,22 +126,22 @@ StereoHarm::out (float *smpsl, float *smpsr)
     }
 
     if (PSl->ratio != 1.0f) {
-        PSl->smbPitchShift (PSl->ratio, nPERIOD, window, hq, nfSAMPLE_RATE, outil, outol);
+        PSl->smbPitchShift (PSl->ratio, nPERIOD, window, hq, nfSAMPLE_RATE, outil.data(), outol.data());
     } else
-        memcpy(outol,outil,sizeof(float)*nPERIOD);
+        memcpy(outol.data(),outil.data(),sizeof(float)*nPERIOD);
 
 
     if (PSr->ratio != 1.0f) {
-        PSr->smbPitchShift (PSr->ratio, nPERIOD, window, hq, nfSAMPLE_RATE, outir, outor);
+        PSr->smbPitchShift (PSr->ratio, nPERIOD, window, hq, nfSAMPLE_RATE, outir.data(), outor.data());
     } else
-        memcpy(outor,outir,sizeof(float)*nPERIOD);
+        memcpy(outor.data(),outir.data(),sizeof(float)*nPERIOD);
 
 
     if(DS_state != 0) {
-        D_Resample->out(outol,outor,templ,tempr,nPERIOD,u_down);
+        D_Resample->out(outol.data(),outor.data(),templ.data(),tempr.data(),nPERIOD,u_down);
     } else {
-        memcpy(templ, outol,sizeof(float)*PERIOD);
-        memcpy(tempr, outor,sizeof(float)*PERIOD);
+        memcpy(templ.data(), outol.data(),sizeof(float)*PERIOD);
+        memcpy(tempr.data(), outor.data(),sizeof(float)*PERIOD);
 
     }
 
