@@ -37,7 +37,7 @@ class Filter
 {
 public:
     Filter (FilterParams * pars);
-    ~Filter ();
+    ~Filter () = default;
     void filterout (float * smp);
     void setfreq (float frequency);
     void setfreq_and_q (float frequency, float q_);
@@ -47,7 +47,7 @@ public:
 private:
     unsigned char category;
 
-    Filter_ * filter;
+    std::unique_ptr<Filter_> filter;
 };
 
 

@@ -44,7 +44,7 @@ public:
               SRC_LINEAR                  = 4
     */
 
-    ~Resample();
+    ~Resample() = default;
     void cleanup();
     void out(float *inl, float *inr, float *outl, float *outr, int frames, double ratio);
     void mono_out(float *inl, float *outl, int frames, double ratio, int o_frames);

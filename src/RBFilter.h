@@ -32,7 +32,7 @@ class RBFilter:public Filter_
 public:
     RBFilter (int Ftype, float Ffreq, float Fq,
               int Fstages);
-    ~RBFilter ();
+    ~RBFilter () = default;
     void filterout (float * smp);
     float filterout_s (float smp);
 

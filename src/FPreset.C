@@ -26,10 +26,6 @@ FPreset::FPreset()
 {
 };
 
-FPreset::~FPreset()
-{
-};
-
 void
 FPreset::ReadPreset(int eff, int num)
 {

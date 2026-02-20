@@ -23,11 +23,13 @@
 #ifndef DELAYLINE_H
 #define DELAYLINE_H
 
+#include <vector>
+
 class delayline
 {
 public:
     delayline(float maxdelay, int maxtaps_);	//construct the object with intended maximum delay time
-    ~delayline();
+    ~delayline() = default;
     void cleanup();
     void set_averaging(float tc_);	//use this if you want the time change averaging longer or shorter
     void set_mix(float mix_);
@@ -61,21 +63,23 @@ private:
     long maxdelaysmps;
     int rvptr, distance;
 
-    float *avgtime, *time;	//keeping it from changing too quickly
+    std::vector<float> avgtime, time;	//keeping it from changing too quickly
     float tconst, alpha, beta, mix, imix;	//don't allow change in delay time exceed 1 sample at a time
 
-    int *newtime;
-    int *oldtime;
-    int *crossfade;
-    float *xfade, fadetime;
-    float *cur_smps;
+    std::vector<int> newtime;
+    std::vector<int> oldtime;
+    std::vector<int> crossfade;
+    std::vector<float> xfade;
+    float fadetime;
+    std::vector<float> cur_smps;
 
     struct phasevars {
         float yn1[4];
         float xn1[4];
         float gain[4];
         int stages;
-    } *pstruct;
+    };
+    std::vector<phasevars> pstruct;
 
     float phaser(float fxn);
     float lagrange(float p0, float p1, float p2, float p3, float x_);
@@ -85,9 +89,10 @@ private:
         float lvars[4];
         float ivars[4];
         float fracts[4];
-    } *tapstruct;
+    };
+    std::vector<tapvars> tapstruct;
 
-    float *ringbuffer;
+    std::vector<float> ringbuffer;
 
 
 };

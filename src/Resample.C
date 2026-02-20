@@ -35,10 +35,6 @@ Resample::Resample(int type)
 }
 
 
-Resample::~Resample()
-{
-};
-
 void
 Resample::cleanup()
 {

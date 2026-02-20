@@ -57,7 +57,7 @@ Waveshaper::Waveshaper()
     }
 
 
-    temps = (float *) malloc (sizeof (float) * PERIOD * period_coeff);
+    temps.resize(PERIOD * period_coeff);
     u_up= (double)period_coeff;
     u_down = 1.0 / u_up;
 
@@ -87,17 +87,14 @@ Waveshaper::Waveshaper()
     Vfactor = 1.5f;
     Vdyno = 0.0f;
 
-    U_Resample = new Resample(Wave_up_q);  //Downsample, uses sinc interpolation for bandlimiting to avoid aliasing
-    D_Resample = new Resample(Wave_down_q);
+    U_Resample = std::make_unique<Resample>(Wave_up_q);  //Downsample, uses sinc interpolation for bandlimiting to avoid aliasing
+    D_Resample = std::make_unique<Resample>(Wave_down_q);
 
 
 
 
 };
 
-Waveshaper::~Waveshaper()
-{
-};
 void Waveshaper::cleanup()
 {
     compg = 0.0f;  //used by compression distortion
@@ -118,10 +115,10 @@ Waveshaper::waveshapesmps (int n, float * smps, int type,
 
     if(Wave_res_amount > 0) {
         nn=n*period_coeff;
-        U_Resample->mono_out(smps,temps,n,u_up,nn);
+        U_Resample->mono_out(smps,temps.data(),n,u_up,nn);
     }
 
-    else memcpy(temps,smps,sizeof(float)*n);
+    else memcpy(temps.data(),smps,sizeof(float)*n);
 
     int i;
     float ws = (float)drive / 127.0f + .00001f;
@@ -556,9 +553,9 @@ Waveshaper::waveshapesmps (int n, float * smps, int type,
     };
 
     if(Wave_res_amount>= 0) {
-        D_Resample->mono_out(temps,smps,nn,u_down,n);
+        D_Resample->mono_out(temps.data(),smps,nn,u_down,n);
     } else
-        memcpy(smps,temps,sizeof(float)*n);
+        memcpy(smps,temps.data(),sizeof(float)*n);
 
 
 };

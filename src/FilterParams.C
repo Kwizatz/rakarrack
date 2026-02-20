@@ -41,10 +41,6 @@ FilterParams::FilterParams (unsigned char Ptype_, unsigned char Pfreq_,
     defaults ();
 };
 
-FilterParams::~FilterParams ()
-{
-};
-
 
 void
 FilterParams::defaults ()
@@ -96,7 +92,7 @@ FilterParams::getfromFilterParams (FilterParams * pars)
 {
     defaults ();
 
-    if (pars == NULL)
+    if (pars == nullptr)
         return;
 
     Ptype = pars->Ptype;

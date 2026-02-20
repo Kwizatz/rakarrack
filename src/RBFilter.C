@@ -52,10 +52,6 @@ RBFilter::RBFilter (int Ftype, float Ffreq, float Fq,
     b_smooth_tc = 1.0f - a_smooth_tc;
 };
 
-RBFilter::~RBFilter ()
-{
-};
-
 void
 RBFilter::cleanup ()
 {
@@ -202,7 +198,7 @@ void
 RBFilter::singlefilterout (float * smp, fstage & x, parameters & par)
 {
     int i;
-    float *out = NULL;
+    float *out = nullptr;
     switch (type) {
     case 0:
         out = &x.low;
@@ -297,7 +293,7 @@ RBFilter::filterout_s (float smp)
 float inline
 RBFilter::singlefilterout_s (float smp, fstage & x, parameters & par)
 {
-    float *out = NULL;
+    float *out = nullptr;
     switch (type) {
     case 0:
         out = &x.low;

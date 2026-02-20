@@ -31,7 +31,7 @@ class Waveshaper
 {
 public:
     Waveshaper ();
-    ~Waveshaper ();
+    ~Waveshaper () = default;
 //Waveshaping
     void waveshapesmps (int n, float * smps, int type,
                         int drive, int eff);
@@ -50,13 +50,13 @@ public:
     float cratio;  //used by compression for hardness
     float tmpgain;  // compression distortion temp variable
     float ncSAMPLE_RATE;
-    float *temps;
+    std::vector<float> temps;
 
     float R, P, Vgbias, Vsupp, Ip, Vmin, Vg, Vfactor, Vdyno;  //Valve1 Modeling variables.
     float mu, V2bias, Is, Vg2, vfact, ffact, Vlv2out, V2dyno; //Valve2 variables
 
-    class Resample *U_Resample;
-    class Resample *D_Resample;
+    std::unique_ptr<Resample> U_Resample;
+    std::unique_ptr<Resample> D_Resample;
 
 
 };

@@ -32,7 +32,7 @@ class EffectLFO
 {
 public:
     EffectLFO ();
-    ~EffectLFO ();
+    ~EffectLFO () = default;
     void effectlfoout (float * outl, float * outr);
     void updateparams ();
     int Pfreq;

@@ -33,7 +33,7 @@ class FilterParams
 {
 public:
     FilterParams (unsigned char Ptype_, unsigned char Pfreq, unsigned char Pq_);
-    ~FilterParams ();
+    ~FilterParams () = default;
 
     void defaults ();
 

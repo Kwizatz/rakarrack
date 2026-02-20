@@ -61,10 +61,6 @@ EffectLFO::EffectLFO ()
 
 };
 
-EffectLFO::~EffectLFO ()
-{
-};
-
 
 /*
  * Update the changed parameters

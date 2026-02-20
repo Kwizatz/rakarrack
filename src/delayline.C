@@ -24,17 +24,17 @@ delayline::delayline(float maxdelay, int maxtaps_)
     maxtaps = maxtaps_;
     maxtime = fSAMPLE_RATE * maxdelay;
     maxdelaysmps = SAMPLE_RATE * lrintf(ceilf(maxdelay));
-    ringbuffer = (float *) malloc(sizeof(float) * maxdelaysmps);
-    avgtime = (float *) malloc(sizeof(float) * maxtaps);
-    time = (float *) malloc(sizeof(float) * maxtaps);
-    xfade = (float *) malloc(sizeof(float) * maxtaps);
-    cur_smps = (float *) malloc(sizeof(float) * maxtaps);
-    oldtime = (int *) malloc(sizeof(int) * maxtaps);
-    newtime = (int *) malloc(sizeof(int) * maxtaps);
-    crossfade = (int *) malloc(sizeof(int) * maxtaps);
+    ringbuffer.resize(maxdelaysmps);
+    avgtime.resize(maxtaps);
+    time.resize(maxtaps);
+    xfade.resize(maxtaps);
+    cur_smps.resize(maxtaps);
+    oldtime.resize(maxtaps);
+    newtime.resize(maxtaps);
+    crossfade.resize(maxtaps);
 
-    pstruct = (phasevars *) malloc(sizeof(struct phasevars) * maxtaps);
-    tapstruct = (tapvars *) malloc(sizeof(struct tapvars) * maxtaps);
+    pstruct.resize(maxtaps);
+    tapstruct.resize(maxtaps);
 
     zero_index = 0;
     tap = 0;
@@ -50,8 +50,6 @@ delayline::delayline(float maxdelay, int maxtaps_)
 
     cleanup();
 };
-
-delayline::~delayline(){}
 
 
 void

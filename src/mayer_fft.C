@@ -62,6 +62,7 @@ http://crca.ucsd.edu/~msp/software.html */
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <vector>
 
 
 float fft_filter::halsec[20]= {
@@ -454,18 +455,16 @@ void fft_filter::make_window(int n, float *window)
 void fft_filter::resample_impulse(int size, float* ir)
 {
 
-    float* fftBuf;
     float ratio = sqrtf(256.0f)/((float) size);
     int interval = size/128;
     int i,j;
     int fftLength = 512;
     while(fftLength<size) fftLength*=2;  //make sure it's a power of 2
 
-    fftBuf = (float*) malloc(fftLength*sizeof(float));
-    memset(fftBuf, 0.0f, fftLength*sizeof(float));
-    memcpy(fftBuf, ir, size*sizeof(float));
+    std::vector<float> fftBuf(fftLength, 0.0f);
+    memcpy(fftBuf.data(), ir, size*sizeof(float));
 
-    realfft(fftLength, fftBuf);
+    realfft(fftLength, fftBuf.data());
     for(i=0,j=fftLength/2; i<fftLength/2; i++, j++) {
         fftBuf[i]*=ratio;
         fftBuf[j]*=ratio;
@@ -500,8 +499,8 @@ void fft_filter::resample_impulse(int size, float* ir)
 
     }
     memset(ir, 0.0f, size*sizeof(float));
-    realifft(256, fftBuf);
-    memcpy(ir, fftBuf, 256*sizeof(float));
+    realifft(256, fftBuf.data());
+    memcpy(ir, fftBuf.data(), 256*sizeof(float));
 
     for(i=0; i<100; i++) {
         ir[i]=0.0f;

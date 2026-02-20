@@ -34,26 +34,22 @@ Filter::Filter (FilterParams * pars)
 
     switch (category) {
     case 1:
-        filter = new FormantFilter (pars);
+        filter = std::make_unique<FormantFilter>(pars);
         break;
     case 2:
-        filter = new SVFilter(Ftype, 1000.0f, pars->getq (), Fstages);
+        filter = std::make_unique<SVFilter>(Ftype, 1000.0f, pars->getq (), Fstages);
         filter->outgain = dB2rap (pars->getgain ());
         if (filter->outgain > 1.0f)
             filter->outgain = sqrtf (filter->outgain);
         break;
     default:
-        filter = new AnalogFilter (Ftype, 1000.0f, pars->getq (), Fstages);
+        filter = std::make_unique<AnalogFilter>(Ftype, 1000.0f, pars->getq (), Fstages);
         if ((Ftype >= 6) && (Ftype <= 8))
             filter->setgain (pars->getgain ());
         else
             filter->outgain = dB2rap (pars->getgain ());
         break;
     };
-};
-
-Filter::~Filter ()
-{
 };
 
 void
