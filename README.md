@@ -8,7 +8,13 @@ Original development seems to have stalled and now modern compilers do not let p
 Building From Source
 --------------------
 
-Using autotools is no longer recomended, prefer using CMake as the autotools build is deprecated and will be removed as soon as the CMake scripts are able to fulfill autotool duties one to one.
+Build using CMake:
+
+```bash
+cmake -B build -S .
+cmake --build build
+cmake --install build
+```
 
 Building For Arch or Manjaro
 ----------------------------
@@ -18,9 +24,9 @@ There is a PKGBUILD file at the [AeonGames Arch Repo](https://github.com/AeonGam
 Building For Windows
 --------------------
 
-Running on Windows is in the experimental stage right now, building for [MSYS2](https://www.msys2.org) is now possible using the CMake.
+Running on Windows is in the experimental stage right now, building for [MSYS2](https://www.msys2.org) is now possible using CMake. All build and compilation must be done within an MSYS2 environment.
 
 This is the partial list of dependencies for building on MSYS:
 
-`pacman -S --needed --noconfirm automake autoconf mingw-w64-x86_64-fltk mingw-w64-x86_64-dlfcn mingw-w64-x86_64-jack2 mingw-w64-x86_64-qjackctl mingw-w64-x86_64-xpm-nox mingw-w64-x86_64-rapidjson`
+`pacman -S --needed --noconfirm mingw-w64-x86_64-fltk mingw-w64-x86_64-dlfcn mingw-w64-x86_64-jack2 mingw-w64-x86_64-qjackctl mingw-w64-x86_64-xpm-nox mingw-w64-x86_64-rapidjson`
 

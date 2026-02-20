@@ -13,24 +13,12 @@ Rakarrack is a multi-effects processor emulating a guitar effects pedalboard, de
 
 ## Build System
 
-**Primary (Recommended): CMake**
+**CMake (sole build system):**
 ```bash
-# Configure and build
 cmake -B build -S .
 cmake --build build
-
-# Install
 cmake --install build
 ```
-
-**Legacy: Autotools (Deprecated)**
-```bash
-./autogen.sh
-./configure
-make
-```
-
-**Note:** The autotools build is deprecated and will be removed. Use CMake for all new work.
 
 ### Build Configuration Options
 

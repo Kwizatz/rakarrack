@@ -24,10 +24,12 @@ if(COMMAND cmake_policy)
   endif(POLICY CMP0053)
 endif(COMMAND cmake_policy)
 
-project(Rakarrack)
+project(Rakarrack VERSION 0.6.2)
 enable_testing()
 enable_language(CXX)
 enable_language(C)
+
+include(GNUInstallDirs)
 
 if(NOT ENV{MSYSTEM_PREFIX} STREQUAL "")
   list(APPEND CMAKE_PREFIX_PATH "$ENV{MSYSTEM_PREFIX}")
@@ -41,11 +43,11 @@ list(APPEND CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}")
 
 include(compiler)
 
-set(VERSION "0.6.2")
+set(VERSION "${PROJECT_VERSION}")
 set(WEBSITE "rakarrack.sf.net")
 set(PACKAGE "rakarrack")
-set(HELPDIR ${CMAKE_INSTALL_PREFIX}/share/doc/${PACKAGE})
-set(DATA_DIR ${CMAKE_INSTALL_PREFIX}/share/${PACKAGE})
+set(HELPDIR ${CMAKE_INSTALL_FULL_DATADIR}/doc/${PACKAGE})
+set(DATA_DIR ${CMAKE_INSTALL_FULL_DATADIR}/${PACKAGE})
 
 find_path (RAPIDJSON_INCLUDE_PATH rapidjson/rapidjson.h include)
 
@@ -67,3 +69,66 @@ pkg_search_module(SNDFILE REQUIRED sndfile IMPORTED_TARGET)
 configure_file(cmake/config.h.in src/config.h)
 
 add_subdirectory(src)
+add_subdirectory(extra)
+
+# --- Install rules ---
+
+# Data files
+install(FILES
+	data/Default.rkrb
+	data/Extra.rkrb
+	data/Extra1.rkrb
+	data/1.wav data/2.wav data/3.wav data/4.wav data/5.wav
+	data/6.wav data/7.wav data/8.wav data/9.wav
+	data/1.rvb data/2.rvb data/3.rvb data/4.rvb data/5.rvb
+	data/6.rvb data/7.rvb data/8.rvb data/9.rvb data/10.rvb
+	data/1.dly data/2.dly data/3.dly data/4.dly data/5.dly
+	data/6.dly data/7.dly data/8.dly data/9.dly data/10.dly data/11.dly
+	data/bg.png data/bg1.png data/bg2.png data/bg3.png
+	data/bg4.png data/bg5.png data/bg6.png data/bg_gray_furr.png
+	DESTINATION ${CMAKE_INSTALL_DATADIR}/${PACKAGE}
+)
+
+# Desktop file
+install(FILES data/rakarrack.desktop
+	DESTINATION ${CMAKE_INSTALL_DATADIR}/applications
+)
+
+# Man page
+install(FILES man/rakarrack.1
+	DESTINATION ${CMAKE_INSTALL_MANDIR}/man1
+)
+
+# Icons
+install(FILES
+	icons/icono_rakarrack_128x128.png
+	icons/icono_rakarrack_32x32.png
+	icons/icono_rakarrack_64x64.png
+	DESTINATION ${CMAKE_INSTALL_DATADIR}/pixmaps
+)
+
+# Documentation
+install(FILES COPYING AUTHORS ChangeLog NEWS README
+	DESTINATION ${CMAKE_INSTALL_DOCDIR}
+)
+
+# HTML help
+install(FILES
+	doc/help/help.html doc/help/aci.html doc/help/general.html
+	doc/help/effects.html doc/help/midiconverter.html doc/help/tuner.html
+	doc/help/midilearn.html doc/help/taptempo.html doc/help/metronome.html
+	doc/help/hardware.html doc/help/extra.html doc/help/credits.html
+	doc/help/presetlist.html doc/help/midiic.html doc/help/license.html
+	DESTINATION ${CMAKE_INSTALL_DOCDIR}/html
+)
+
+# HTML help CSS
+install(FILES doc/help/css/kde-default.css
+	DESTINATION ${CMAKE_INSTALL_DOCDIR}/html/css
+)
+
+# HTML help images
+file(GLOB HELP_IMAGES doc/help/imagenes/*.jpg doc/help/imagenes/*.png)
+install(FILES ${HELP_IMAGES}
+	DESTINATION ${CMAKE_INSTALL_DOCDIR}/html/imagenes
+)

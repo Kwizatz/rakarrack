@@ -192,3 +192,5 @@ target_link_libraries(rakarrack
 	PkgConfig::SAMPLERATE
 	PkgConfig::SNDFILE
 )
+
+install(TARGETS rakarrack RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
