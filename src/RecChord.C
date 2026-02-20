@@ -289,9 +289,7 @@ RecChord::RecChord ()
 }
 
 
-RecChord::~RecChord()
-{
-}
+RecChord::~RecChord() = default;
 
 
 void

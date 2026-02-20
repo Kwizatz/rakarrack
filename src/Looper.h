@@ -92,8 +92,8 @@ private:
     int kl, kl2, rvkl, rvkl2, maxx_delay, fade, dl, dl2, first_time1, first_time2, rplaystate;
     int barlen, looper_ts;
 
-    float *ldelay, *rdelay;
-    float *t2ldelay, *t2rdelay;
+    std::vector<float> ldelay, rdelay;
+    std::vector<float> t2ldelay, t2rdelay;
 
     float oldl, oldr;		//pt. lpf
 

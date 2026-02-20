@@ -32,17 +32,15 @@ Phaser::Phaser (float * efxoutl_, float * efxoutr_)
     efxoutl = efxoutl_;
     efxoutr = efxoutr_;
 
-    oldl = (float *) malloc(sizeof(float)* MAX_PHASER_STAGES * 2);
-    oldr = (float *) malloc(sizeof(float)* MAX_PHASER_STAGES * 2);
+    oldl.resize(MAX_PHASER_STAGES * 2);
+    oldr.resize(MAX_PHASER_STAGES * 2);
 
     Ppreset = 0;
     setpreset (Ppreset);
     cleanup ();
 };
 
-Phaser::~Phaser ()
-{
-};
+Phaser::~Phaser () = default;
 
 
 /*

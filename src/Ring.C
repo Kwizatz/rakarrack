@@ -35,10 +35,10 @@ Ring::Ring (float * efxoutl_, float * efxoutr_)
     efxoutl = efxoutl_;
     efxoutr = efxoutr_;
 
-    sin_tbl = (float *) malloc(sizeof(float) * SAMPLE_RATE);
-    tri_tbl = (float *) malloc(sizeof(float) * SAMPLE_RATE);
-    squ_tbl = (float *) malloc(sizeof(float) * SAMPLE_RATE);
-    saw_tbl = (float *) malloc(sizeof(float) * SAMPLE_RATE);
+    sin_tbl.resize(SAMPLE_RATE);
+    tri_tbl.resize(SAMPLE_RATE);
+    squ_tbl.resize(SAMPLE_RATE);
+    saw_tbl.resize(SAMPLE_RATE);
 
     Create_Tables();
 
@@ -62,9 +62,7 @@ Ring::Ring (float * efxoutl_, float * efxoutr_)
     cleanup ();
 };
 
-Ring::~Ring ()
-{
-};
+Ring::~Ring () = default;
 
 /*
 * Create Tables

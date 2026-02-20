@@ -28,7 +28,7 @@ public:
     void setlpf(int value);
     int note;
 
-    signed short int *schmittBuffer;
+    std::vector<signed short int> schmittBuffer;
     signed short int *schmittPointer;
     const char **notes;
     float trigfact;
@@ -49,9 +49,9 @@ private:
     int ultima;
     int blockSize;
 
-    AnalogFilter *lpfl, *lpfr, *hpfl, *hpfr;
+    std::unique_ptr<AnalogFilter> lpfl, lpfr, hpfl, hpfr;
 
-    class Sustainer *Sus;
+    std::unique_ptr<Sustainer> Sus;
 
 };
 

@@ -51,34 +51,30 @@ Recognize::Recognize (float *efxoutl_, float *efxoutr_, float trig)
     afreq = 0;
     trigfact = trig;
 
-    Sus = new Sustainer(efxoutl,efxoutr);
+    Sus = std::make_unique<Sustainer>(efxoutl,efxoutr);
     Sus->changepar(1,64);
     Sus->changepar(2,127);
 
 
-    lpfl = new AnalogFilter (2, 3000, 1, 0);
-    lpfr = new AnalogFilter (2, 3000, 1, 0);
-    hpfl = new AnalogFilter (3, 300, 1, 0);
-    hpfr = new AnalogFilter (3, 300, 1, 0);
+    lpfl = std::make_unique<AnalogFilter>(2, 3000, 1, 0);
+    lpfr = std::make_unique<AnalogFilter>(2, 3000, 1, 0);
+    hpfl = std::make_unique<AnalogFilter>(3, 300, 1, 0);
+    hpfr = std::make_unique<AnalogFilter>(3, 300, 1, 0);
 
 
     schmittInit (24);
 
 }
 
-Recognize::~Recognize ()
-
-{
-}
+Recognize::~Recognize () = default;
 
 
 void
 Recognize::schmittInit (int size)
 {
     blockSize = SAMPLE_RATE / size;
-    schmittBuffer =
-    (signed short int *) malloc (blockSize * sizeof (signed short int));
-    schmittPointer = schmittBuffer;
+    schmittBuffer.resize(blockSize);
+    schmittPointer = schmittBuffer.data();
 };
 
 
@@ -89,10 +85,10 @@ Recognize::schmittS16LE (signed short int *indata)
 
     for (i = 0; i < PERIOD; i++) {
         *schmittPointer++ = indata[i];
-        if (schmittPointer - schmittBuffer >= blockSize) {
+        if (schmittPointer - schmittBuffer.data() >= blockSize) {
             int endpoint, startpoint, t1, t2, A1, A2, tc, schmittTriggered;
 
-            schmittPointer = schmittBuffer;
+            schmittPointer = schmittBuffer.data();
 
             for (j = 0, A1 = 0, A2 = 0; j < blockSize; j++) {
                 if (schmittBuffer[j] > 0 && A1 < schmittBuffer[j])
@@ -132,7 +128,7 @@ Recognize::schmittS16LE (signed short int *indata)
 void
 Recognize::schmittFree ()
 {
-    free (schmittBuffer);
+    schmittBuffer.clear();
 };
 
 

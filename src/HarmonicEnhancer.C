@@ -31,8 +31,8 @@
 HarmEnhancer::HarmEnhancer(float *Rmag, float hfreq, float lfreq, float gain)
 {
 
-    inputl = (float *) malloc (sizeof (float) * PERIOD);
-    inputr = (float *) malloc (sizeof (float) * PERIOD);
+    inputl.resize(PERIOD);
+    inputr.resize(PERIOD);
 
     set_vol(0,gain);
     realvol = gain;
@@ -43,20 +43,18 @@ HarmEnhancer::HarmEnhancer(float *Rmag, float hfreq, float lfreq, float gain)
 
     hpffreq = hfreq;
     lpffreq = lfreq;
-    hpfl = new AnalogFilter(3, hfreq, 1, 0);
-    hpfr = new AnalogFilter(3, hfreq, 1, 0);
-    lpfl = new AnalogFilter(2, lfreq, 1, 0);
-    lpfr = new AnalogFilter(2, lfreq, 1, 0);
+    hpfl = std::make_unique<AnalogFilter>(3, hfreq, 1, 0);
+    hpfr = std::make_unique<AnalogFilter>(3, hfreq, 1, 0);
+    lpfl = std::make_unique<AnalogFilter>(2, lfreq, 1, 0);
+    lpfr = std::make_unique<AnalogFilter>(2, lfreq, 1, 0);
 
-    limiter = new Compressor (inputl, inputr);
+    limiter = std::make_unique<Compressor>(inputl.data(), inputr.data());
     limiter->Compressor_Change_Preset(0,4);
     calcula_mag(Rmag);
 }
 
 
-HarmEnhancer::~HarmEnhancer()
-{
-};
+HarmEnhancer::~HarmEnhancer() = default;
 
 void
 HarmEnhancer::cleanup()
@@ -189,15 +187,15 @@ HarmEnhancer::harm_out(float *smpsl, float *smpsr)
 
     int i,j;
 
-    memcpy(inputl,smpsl, sizeof(float)*PERIOD);
-    memcpy(inputr,smpsr, sizeof(float)*PERIOD);
+    memcpy(inputl.data(),smpsl, sizeof(float)*PERIOD);
+    memcpy(inputr.data(),smpsr, sizeof(float)*PERIOD);
 
 
 
-    hpfl->filterout(inputl);
-    hpfr->filterout(inputr);
+    hpfl->filterout(inputl.data());
+    hpfr->filterout(inputr.data());
 
-    limiter->out(inputl,inputr);
+    limiter->out(inputl.data(),inputr.data());
 
     for (i=0; i<PERIOD; i++) {
         float xl = inputl[i];
@@ -226,8 +224,8 @@ HarmEnhancer::harm_out(float *smpsl, float *smpsr)
 
     }
 
-    lpfl->filterout(inputl);
-    lpfr->filterout(inputr);
+    lpfl->filterout(inputl.data());
+    lpfr->filterout(inputr.data());
 
     for (i=0; i<PERIOD; i++) {
         smpsl[i] =(smpsl[i]+inputl[i]*vol);

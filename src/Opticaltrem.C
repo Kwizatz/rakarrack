@@ -59,9 +59,7 @@ Opticaltrem::Opticaltrem (float * efxoutl_, float * efxoutr_)
 
 }
 
-Opticaltrem::~Opticaltrem ()
-{
-}
+Opticaltrem::~Opticaltrem () = default;
 
 
 void

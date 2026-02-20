@@ -31,9 +31,9 @@
 
 metronome::metronome ()
 {
-    dulltick =  new AnalogFilter(4,1600.0f,80.0f,1);   //BPF
-    sharptick =  new AnalogFilter(4,2800.0f,80.0f,1);  //BPF
-    hpf =  new AnalogFilter(3,850.0f,60.0f,1);  //HPF
+    dulltick =  std::make_unique<AnalogFilter>(4,1600.0f,80.0f,1);   //BPF
+    sharptick =  std::make_unique<AnalogFilter>(4,2800.0f,80.0f,1);  //BPF
+    hpf =  std::make_unique<AnalogFilter>(3,850.0f,60.0f,1);  //HPF
     tick_interval = SAMPLE_RATE;
     tickctr = 0;
     markctr = 0;
@@ -43,9 +43,7 @@ metronome::metronome ()
 
 };
 
-metronome::~metronome ()
-{
-};
+metronome::~metronome () = default;
 
 void
 metronome::cleanup()

@@ -37,10 +37,10 @@ Gate::Gate (float * efxoutl_, float * efxoutr_)
     efxoutr = efxoutr_;
 
 
-    lpfl = new AnalogFilter (2, 22000, 1, 0);
-    lpfr = new AnalogFilter (2, 22000, 1, 0);
-    hpfl = new AnalogFilter (3, 20, 1, 0);
-    hpfr = new AnalogFilter (3, 20, 1, 0);
+    lpfl = std::make_unique<AnalogFilter>(2, 22000, 1, 0);
+    lpfr = std::make_unique<AnalogFilter>(2, 22000, 1, 0);
+    hpfl = std::make_unique<AnalogFilter>(3, 20, 1, 0);
+    hpfr = std::make_unique<AnalogFilter>(3, 20, 1, 0);
 
     env = 0.0;
     gate = 0.0;
@@ -50,9 +50,7 @@ Gate::Gate (float * efxoutl_, float * efxoutr_)
 
 }
 
-Gate::~Gate ()
-{
-}
+Gate::~Gate () = default;
 
 
 

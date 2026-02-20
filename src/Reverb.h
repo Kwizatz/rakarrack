@@ -121,16 +121,16 @@ private:
 
     //Valorile interne
 
-    float *comb[REV_COMBS * 2];
+    std::vector<float> comb[REV_COMBS * 2];
 
     float combfb[REV_COMBS * 2];	//feedback-ul fiecarui filtru "comb"
     float lpcomb[REV_COMBS * 2];	//pentru Filtrul LowPass
 
-    float *ap[REV_APS * 2];
-    float *inputbuf;
-    float *idelay;
+    std::vector<float> ap[REV_APS * 2];
+    std::vector<float> inputbuf;
+    std::vector<float> idelay;
 
-    class AnalogFilter *lpf, *hpf;	//filters
+    std::unique_ptr<AnalogFilter> lpf, hpf;	//filters
     class FPreset *Fpre;
 
 };

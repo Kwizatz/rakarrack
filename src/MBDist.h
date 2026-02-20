@@ -46,12 +46,12 @@ public:
 
     float *efxoutl;
     float *efxoutr;
-    float *lowl;
-    float *lowr;
-    float *midl;
-    float *midr;
-    float *highl;
-    float *highr;
+    std::vector<float> lowl;
+    std::vector<float> lowr;
+    std::vector<float> midl;
+    std::vector<float> midr;
+    std::vector<float> highl;
+    std::vector<float> highr;
 
 
 private:
@@ -87,12 +87,12 @@ private:
     //Parametrii reali
     float panning, lrcross;
     float volL,volM,volH;
-    AnalogFilter *lpf1l, *lpf1r, *hpf1l, *hpf1r;
-    AnalogFilter *lpf2l, *lpf2r, *hpf2l, *hpf2r;
-    AnalogFilter *DCl, *DCr;
+    std::unique_ptr<AnalogFilter> lpf1l, lpf1r, hpf1l, hpf1r;
+    std::unique_ptr<AnalogFilter> lpf2l, lpf2r, hpf2l, hpf2r;
+    std::unique_ptr<AnalogFilter> DCl, DCr;
 
-    class Waveshaper *mbwshape1l, *mbwshape2l, *mbwshape3l;
-    class Waveshaper *mbwshape1r, *mbwshape2r, *mbwshape3r;
+    std::unique_ptr<Waveshaper> mbwshape1l, mbwshape2l, mbwshape3l;
+    std::unique_ptr<Waveshaper> mbwshape1r, mbwshape2r, mbwshape3r;
 
     class FPreset *Fpre;
 

@@ -65,9 +65,9 @@ public:
 
     float *efxoutl;
     float *efxoutr;
-    float *outi;
-    float *outo;
-    float *templ, *tempr;
+    std::vector<float> outi;
+    std::vector<float> outo;
+    std::vector<float> templ, tempr;
 
     float outvolume;
 
@@ -99,12 +99,12 @@ private:
     void fsetq (int value);
 
 
-    AnalogFilter *pl;
+    std::unique_ptr<AnalogFilter> pl;
 
-    class Resample *U_Resample;
-    class Resample *D_Resample;
+    std::unique_ptr<Resample> U_Resample;
+    std::unique_ptr<Resample> D_Resample;
 
-    PitchShifter *PS;
+    std::unique_ptr<PitchShifter> PS;
     class FPreset *Fpre;
 
 };

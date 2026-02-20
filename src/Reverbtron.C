@@ -46,21 +46,21 @@ Reverbtron::Reverbtron (float * efxoutl_, float * efxoutr_,int DS, int uq, int d
     feedback = 0.0f;
     maxtime = 0.0f;
     adjust(DS);
-    templ = (float *) malloc (sizeof (float) * PERIOD);
-    tempr = (float *) malloc (sizeof (float) * PERIOD);
+    templ.resize(PERIOD);
+    tempr.resize(PERIOD);
 
     hrtf_size = nSAMPLE_RATE/2;
     maxx_size = (int) (nfSAMPLE_RATE * convlength);  //just to get the max memory allocated
-    time = (int *) malloc (sizeof (int) * 2000);
-    rndtime = (int *) malloc (sizeof (int) * 2000);
-    ftime = (float *) malloc (sizeof (float) * 2000);
-    data = (float *) malloc (sizeof (float) * 2000);
-    rnddata = (float *) malloc (sizeof (float) * 2000);
-    tdata = (float *) malloc (sizeof (float) * 2000);
-    lxn = (float *) malloc (sizeof (float) * (1 + maxx_size));
-    hrtf =  (float *) malloc (sizeof (float) * (1 + hrtf_size));
+    time.resize(2000);
+    rndtime.resize(2000);
+    ftime.resize(2000);
+    data.resize(2000);
+    rnddata.resize(2000);
+    tdata.resize(2000);
+    lxn.resize(1 + maxx_size);
+    hrtf.resize(1 + hrtf_size);
     imax = nSAMPLE_RATE/2;  // 1/2 second available
-    imdelay = (float *) malloc (sizeof (float) * imax);
+    imdelay.resize(imax);
     offset = 0;
     hoffset = 0;
     data_length=0;
@@ -69,23 +69,21 @@ Reverbtron::Reverbtron (float * efxoutl_, float * efxoutr_,int DS, int uq, int d
     idelay = 0.0f;
     decay = f_exp(-1.0f/(0.2f*nfSAMPLE_RATE));  //0.2 seconds
 
-    lpfl =  new AnalogFilter (0, 800, 1, 0);;
-    lpfr =  new AnalogFilter (0, 800, 1, 0);;
+    lpfl =  std::make_unique<AnalogFilter> (0, 800, 1, 0);
+    lpfr =  std::make_unique<AnalogFilter> (0, 800, 1, 0);
 
     lpfl->setSR(nSAMPLE_RATE);
     lpfr->setSR(nSAMPLE_RATE);
 
 
-    U_Resample = new Resample(dq);  //Downsample, uses sinc interpolation for bandlimiting to avoid aliasing
-    D_Resample = new Resample(uq);
+    U_Resample = std::make_unique<Resample>(dq);  //Downsample, uses sinc interpolation for bandlimiting to avoid aliasing
+    D_Resample = std::make_unique<Resample>(uq);
 
     setpreset (Ppreset);
     cleanup ();
 };
 
-Reverbtron::~Reverbtron ()
-{
-};
+Reverbtron::~Reverbtron () = default;
 
 /*
  * Cleanup the effect
@@ -93,8 +91,8 @@ Reverbtron::~Reverbtron ()
 void
 Reverbtron::cleanup ()
 {
-    memset(lxn,0,sizeof(float)*(maxx_size+1));
-    memset(hrtf,0,sizeof(float)*(hrtf_size+1));
+    std::fill(lxn.begin(), lxn.end(), 0.0f);
+    std::fill(hrtf.begin(), hrtf.end(), 0.0f);
 
     feedback = 0.0f;
     oldl = 0.0f;
@@ -117,9 +115,9 @@ Reverbtron::out (float * smpsl, float * smpsr)
     int doffset;
 
     if(DS_state != 0) {
-        memcpy(templ, smpsl,sizeof(float)*PERIOD);
-        memcpy(tempr, smpsr,sizeof(float)*PERIOD);
-        U_Resample->out(templ,tempr,smpsl,smpsr,PERIOD,u_up);
+        memcpy(templ.data(), smpsl,sizeof(float)*PERIOD);
+        memcpy(tempr.data(), smpsr,sizeof(float)*PERIOD);
+        U_Resample->out(templ.data(),tempr.data(),smpsl,smpsr,PERIOD,u_up);
     }
 
 
@@ -198,11 +196,11 @@ Reverbtron::out (float * smpsl, float * smpsr)
     };
 
     if(DS_state != 0) {
-        D_Resample->out(templ,tempr,efxoutl,efxoutr,nPERIOD,u_down);
+        D_Resample->out(templ.data(),tempr.data(),efxoutl,efxoutr,nPERIOD,u_down);
 
     } else {
-        memcpy(efxoutl, templ,sizeof(float)*PERIOD);
-        memcpy(efxoutr, tempr,sizeof(float)*PERIOD);
+        memcpy(efxoutl, templ.data(),sizeof(float)*PERIOD);
+        memcpy(efxoutr, tempr.data(),sizeof(float)*PERIOD);
     }
 
 
@@ -256,13 +254,13 @@ Reverbtron::setfile(int value)
         sprintf(Filename, "%s/%d.rvb",DATA_DIR,Filenum+1);
     }
 
-    if ((fs = fopen (Filename, "r")) == NULL) {
+    if ((fs = fopen (Filename, "r")) == nullptr) {
         loaddefault();
         return(0);
     }
     cleanup();
-    memset(tdata, 0, sizeof(float)*2000);
-    memset(ftime, 0, sizeof(float)*2000);
+    std::fill(tdata.begin(), tdata.end(), 0.0f);
+    std::fill(ftime.begin(), ftime.end(), 0.0f);
 
 
 //Name
@@ -328,8 +326,8 @@ void Reverbtron::convert_time()
     float tmpstretch = 1.0f;
     float normal = 0.9999f/maxdata;
 
-    memset(data, 0, sizeof(float)*2000);
-    memset(time, 0, sizeof(int)*2000);
+    std::fill(data.begin(), data.end(), 0.0f);
+    std::fill(time.begin(), time.end(), 0);
 
     if(Plength>=data_length) Plength = data_length;
     if(Plength==0) Plength=400;

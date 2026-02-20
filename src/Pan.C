@@ -45,9 +45,7 @@ Pan::Pan (float *efxoutl_, float *efxoutr_)
 
 
 
-Pan::~Pan ()
-{
-};
+Pan::~Pan () = default;
 
 void
 Pan::cleanup ()

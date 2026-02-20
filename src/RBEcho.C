@@ -52,16 +52,14 @@ RBEcho::RBEcho (float * efxoutl_, float * efxoutr_)
     Srate_Attack_Coeff = 1.0f / (fSAMPLE_RATE * ATTACK);
     maxx_delay = 1 + SAMPLE_RATE * MAX_DELAY;
 
-    ldelay = new delayline(2.0f, 3);
-    rdelay = new delayline(2.0f, 3);
+    ldelay = std::make_unique<delayline>(2.0f, 3);
+    rdelay = std::make_unique<delayline>(2.0f, 3);
 
     setpreset (Ppreset);
     cleanup ();
 };
 
-RBEcho::~RBEcho ()
-{
-};
+RBEcho::~RBEcho () = default;
 
 /*
  * Cleanup the effect

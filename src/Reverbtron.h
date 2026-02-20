@@ -94,23 +94,23 @@ private:
     int nSAMPLE_RATE{};
 
 
-    int *time{}, *rndtime{};
+    std::vector<int> time, rndtime;
     double u_up{};
     double u_down{};
     float nfSAMPLE_RATE{};
 
     float fstretch, idelay, ffade, maxtime, maxdata, decay, diffusion;
     float lpanning, rpanning, hidamp, alpha_hidamp, convlength, oldl;
-    float *data, *lxn, *imdelay, *ftime, *tdata, *rnddata, *hrtf;
-    float *templ, *tempr;
+    std::vector<float> data, lxn, imdelay, ftime, tdata, rnddata, hrtf;
+    std::vector<float> templ, tempr;
     float level,fb, feedback,levpanl,levpanr;
     float roomsize{};
 
-    class Resample *U_Resample;
-    class Resample *D_Resample;
+    std::unique_ptr<Resample> U_Resample;
+    std::unique_ptr<Resample> D_Resample;
 
 
-    class AnalogFilter *lpfl, *lpfr;	//filters
+    std::unique_ptr<AnalogFilter> lpfl, lpfr;	//filters
 
     class FPreset *Fpre;
 

@@ -100,7 +100,7 @@ private:
     float ratescale;
     int tflag;
 
-    class RBFilter *filterl[NUM_INF_BANDS], *filterr[NUM_INF_BANDS];
+    std::unique_ptr<RBFilter> filterl[NUM_INF_BANDS], filterr[NUM_INF_BANDS];
 
     class FPreset *Fpre;
 

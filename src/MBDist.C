@@ -37,35 +37,35 @@ MBDist::MBDist (float * efxoutl_, float * efxoutr_)
     efxoutl = efxoutl_;
     efxoutr = efxoutr_;
 
-    lowl = (float *) malloc (sizeof (float) * PERIOD);
-    lowr = (float *) malloc (sizeof (float) * PERIOD);
-    midl = (float *) malloc (sizeof (float) * PERIOD);
-    midr = (float *) malloc (sizeof (float) * PERIOD);
-    highl = (float *) malloc (sizeof (float) * PERIOD);
-    highr = (float *) malloc (sizeof (float) * PERIOD);
+    lowl.resize(PERIOD);
+    lowr.resize(PERIOD);
+    midl.resize(PERIOD);
+    midr.resize(PERIOD);
+    highl.resize(PERIOD);
+    highr.resize(PERIOD);
 
 
-    lpf1l = new AnalogFilter (2, 500.0f, .7071f, 0);
-    lpf1r = new AnalogFilter (2, 500.0f, .7071f, 0);
-    hpf1l = new AnalogFilter (3, 500.0f, .7071f, 0);
-    hpf1r = new AnalogFilter (3, 500.0f, .7071f, 0);
-    lpf2l = new AnalogFilter (2, 2500.0f, .7071f, 0);
-    lpf2r = new AnalogFilter (2, 2500.0f, .7071f, 0);
-    hpf2l = new AnalogFilter (3, 2500.0f, .7071f, 0);
-    hpf2r = new AnalogFilter (3, 2500.0f, .7071f, 0);
-    DCl = new AnalogFilter (3, 30, 1, 0);
-    DCr = new AnalogFilter (3, 30, 1, 0);
+    lpf1l = std::make_unique<AnalogFilter>(2, 500.0f, .7071f, 0);
+    lpf1r = std::make_unique<AnalogFilter>(2, 500.0f, .7071f, 0);
+    hpf1l = std::make_unique<AnalogFilter>(3, 500.0f, .7071f, 0);
+    hpf1r = std::make_unique<AnalogFilter>(3, 500.0f, .7071f, 0);
+    lpf2l = std::make_unique<AnalogFilter>(2, 2500.0f, .7071f, 0);
+    lpf2r = std::make_unique<AnalogFilter>(2, 2500.0f, .7071f, 0);
+    hpf2l = std::make_unique<AnalogFilter>(3, 2500.0f, .7071f, 0);
+    hpf2r = std::make_unique<AnalogFilter>(3, 2500.0f, .7071f, 0);
+    DCl = std::make_unique<AnalogFilter>(3, 30, 1, 0);
+    DCr = std::make_unique<AnalogFilter>(3, 30, 1, 0);
     DCl->setfreq (30.0f);
     DCr->setfreq (30.0f);
 
 
-    mbwshape1l = new Waveshaper();
-    mbwshape2l = new Waveshaper();
-    mbwshape3l = new Waveshaper();
+    mbwshape1l = std::make_unique<Waveshaper>();
+    mbwshape2l = std::make_unique<Waveshaper>();
+    mbwshape3l = std::make_unique<Waveshaper>();
 
-    mbwshape1r = new Waveshaper();
-    mbwshape2r = new Waveshaper();
-    mbwshape3r = new Waveshaper();
+    mbwshape1r = std::make_unique<Waveshaper>();
+    mbwshape2r = std::make_unique<Waveshaper>();
+    mbwshape3r = std::make_unique<Waveshaper>();
 
     //default values
     Ppreset = 0;
@@ -86,9 +86,7 @@ MBDist::MBDist (float * efxoutl_, float * efxoutr_)
     cleanup ();
 };
 
-MBDist::~MBDist ()
-{
-};
+MBDist::~MBDist () = default;
 
 /*
  * Cleanup the effect
@@ -135,33 +133,33 @@ MBDist::out (float * smpsl, float * smpsr)
     };
 
 
-    memcpy(lowl,efxoutl,sizeof(float) * PERIOD);
-    memcpy(midl,efxoutl,sizeof(float) * PERIOD);
-    memcpy(highl,efxoutl,sizeof(float) * PERIOD);
+    memcpy(lowl.data(),efxoutl,sizeof(float) * PERIOD);
+    memcpy(midl.data(),efxoutl,sizeof(float) * PERIOD);
+    memcpy(highl.data(),efxoutl,sizeof(float) * PERIOD);
 
-    lpf1l->filterout(lowl);
-    hpf1l->filterout(midl);
-    lpf2l->filterout(midl);
-    hpf2l->filterout(highl);
+    lpf1l->filterout(lowl.data());
+    hpf1l->filterout(midl.data());
+    lpf2l->filterout(midl.data());
+    hpf2l->filterout(highl.data());
 
-    if(volL> 0)  mbwshape1l->waveshapesmps (PERIOD, lowl, PtypeL, PdriveL, 1);
-    if(volM> 0)  mbwshape2l->waveshapesmps (PERIOD, midl, PtypeM, PdriveM, 1);
-    if(volH> 0)  mbwshape3l->waveshapesmps (PERIOD, highl, PtypeH, PdriveH, 1);
+    if(volL> 0)  mbwshape1l->waveshapesmps (PERIOD, lowl.data(), PtypeL, PdriveL, 1);
+    if(volM> 0)  mbwshape2l->waveshapesmps (PERIOD, midl.data(), PtypeM, PdriveM, 1);
+    if(volH> 0)  mbwshape3l->waveshapesmps (PERIOD, highl.data(), PtypeH, PdriveH, 1);
 
 
     if(Pstereo) {
-        memcpy(lowr,efxoutr,sizeof(float) * PERIOD);
-        memcpy(midr,efxoutr,sizeof(float) * PERIOD);
-        memcpy(highr,efxoutr,sizeof(float) * PERIOD);
+        memcpy(lowr.data(),efxoutr,sizeof(float) * PERIOD);
+        memcpy(midr.data(),efxoutr,sizeof(float) * PERIOD);
+        memcpy(highr.data(),efxoutr,sizeof(float) * PERIOD);
 
-        lpf1r->filterout(lowr);
-        hpf1r->filterout(midr);
-        lpf2r->filterout(midr);
-        hpf2r->filterout(highr);
+        lpf1r->filterout(lowr.data());
+        hpf1r->filterout(midr.data());
+        lpf2r->filterout(midr.data());
+        hpf2r->filterout(highr.data());
 
-        if(volL> 0)  mbwshape1r->waveshapesmps (PERIOD, lowr, PtypeL, PdriveL, 1);
-        if(volM> 0)  mbwshape2r->waveshapesmps (PERIOD, midr, PtypeM, PdriveM, 1);
-        if(volH> 0)  mbwshape3r->waveshapesmps (PERIOD, highr, PtypeH, PdriveH, 1);
+        if(volL> 0)  mbwshape1r->waveshapesmps (PERIOD, lowr.data(), PtypeL, PdriveL, 1);
+        if(volM> 0)  mbwshape2r->waveshapesmps (PERIOD, midr.data(), PtypeM, PdriveM, 1);
+        if(volH> 0)  mbwshape3r->waveshapesmps (PERIOD, highr.data(), PtypeH, PdriveH, 1);
 
 
     }

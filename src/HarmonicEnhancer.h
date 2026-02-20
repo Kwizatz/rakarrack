@@ -50,8 +50,8 @@ public:
 
 private:
 
-    float *inputl;
-    float *inputr;
+    std::vector<float> inputl;
+    std::vector<float> inputr;
     float vol;
     float itm1l;
     float itm1r;
@@ -60,10 +60,10 @@ private:
 
     float p[HARMONICS];
 
-    AnalogFilter *hpfl, *hpfr;
-    AnalogFilter *lpfl, *lpfr;
+    std::unique_ptr<AnalogFilter> hpfl, hpfr;
+    std::unique_ptr<AnalogFilter> lpfl, lpfr;
 
-    class Compressor *limiter;
+    std::unique_ptr<Compressor> limiter;
 
 };
 

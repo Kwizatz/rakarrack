@@ -36,32 +36,32 @@ NewDist::NewDist (float * efxoutl_, float * efxoutr_)
     efxoutl = efxoutl_;
     efxoutr = efxoutr_;
 
-    octoutl = (float *) malloc (sizeof (float) * PERIOD);
-    octoutr = (float *) malloc (sizeof (float) * PERIOD);
+    octoutl.resize(PERIOD);
+    octoutr.resize(PERIOD);
 
 
 
-    lpfl = new AnalogFilter (2, 22000, 1, 0);
-    lpfr = new AnalogFilter (2, 22000, 1, 0);
-    hpfl = new AnalogFilter (3, 20, 1, 0);
-    hpfr = new AnalogFilter (3, 20, 1, 0);
-    blockDCl = new AnalogFilter (2, 75.0f, 1, 0);
-    blockDCr = new AnalogFilter (2, 75.0f, 1, 0);
-    wshapel = new Waveshaper();
-    wshaper = new Waveshaper();
+    lpfl = std::make_unique<AnalogFilter>(2, 22000, 1, 0);
+    lpfr = std::make_unique<AnalogFilter>(2, 22000, 1, 0);
+    hpfl = std::make_unique<AnalogFilter>(3, 20, 1, 0);
+    hpfr = std::make_unique<AnalogFilter>(3, 20, 1, 0);
+    blockDCl = std::make_unique<AnalogFilter>(2, 75.0f, 1, 0);
+    blockDCr = std::make_unique<AnalogFilter>(2, 75.0f, 1, 0);
+    wshapel = std::make_unique<Waveshaper>();
+    wshaper = std::make_unique<Waveshaper>();
 
     blockDCl->setfreq (75.0f);
     blockDCr->setfreq (75.0f);
 
-    DCl = new AnalogFilter (3, 30, 1, 0);
-    DCr = new AnalogFilter (3, 30, 1, 0);
+    DCl = std::make_unique<AnalogFilter>(3, 30, 1, 0);
+    DCr = std::make_unique<AnalogFilter>(3, 30, 1, 0);
     DCl->setfreq (30.0f);
     DCr->setfreq (30.0f);
 
 
 
 
-    filterpars = new FilterParams (0, 64, 64);
+    filterpars = std::make_unique<FilterParams>(0, 64, 64);
 
     filterpars->Pcategory = 2;
     filterpars->Ptype = 0;
@@ -72,8 +72,8 @@ NewDist::NewDist (float * efxoutl_, float * efxoutr_)
 
 
 
-    filterl = new Filter (filterpars);
-    filterr = new Filter (filterpars);
+    filterl = std::make_unique<Filter>(filterpars.get());
+    filterr = std::make_unique<Filter>(filterpars.get());
 
     Ppreset=0;
     setpreset (Ppreset);
@@ -104,9 +104,7 @@ NewDist::NewDist (float * efxoutl_, float * efxoutr_)
     cleanup ();
 };
 
-NewDist::~NewDist ()
-{
-};
+NewDist::~NewDist () = default;
 
 /*
  * Cleanup the effect
@@ -193,8 +191,8 @@ NewDist::out (float * smpsl, float * smpsr)
         }
 
 
-        blockDCr->filterout (octoutr);
-        blockDCl->filterout (octoutl);
+        blockDCr->filterout (octoutr.data());
+        blockDCl->filterout (octoutl.data());
     }
 
 

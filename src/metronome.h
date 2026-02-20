@@ -46,7 +46,7 @@ private:
     int tickper;
     int ticktype;
 
-    class AnalogFilter *dulltick,*sharptick, *hpf;
+    std::unique_ptr<AnalogFilter> dulltick, sharptick, hpf;
 
 };
 

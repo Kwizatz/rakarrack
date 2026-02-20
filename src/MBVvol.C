@@ -37,28 +37,28 @@ MBVvol::MBVvol (float * efxoutl_, float * efxoutr_)
     efxoutl = efxoutl_;
     efxoutr = efxoutr_;
 
-    lowl = (float *) malloc (sizeof (float) * PERIOD);
-    lowr = (float *) malloc (sizeof (float) * PERIOD);
-    midll = (float *) malloc (sizeof (float) * PERIOD);
-    midlr = (float *) malloc (sizeof (float) * PERIOD);
-    midhl = (float *) malloc (sizeof (float) * PERIOD);
-    midhr = (float *) malloc (sizeof (float) * PERIOD);
-    highl = (float *) malloc (sizeof (float) * PERIOD);
-    highr = (float *) malloc (sizeof (float) * PERIOD);
+    lowl.resize(PERIOD);
+    lowr.resize(PERIOD);
+    midll.resize(PERIOD);
+    midlr.resize(PERIOD);
+    midhl.resize(PERIOD);
+    midhr.resize(PERIOD);
+    highl.resize(PERIOD);
+    highr.resize(PERIOD);
 
 
-    lpf1l = new AnalogFilter (2, 500.0f, .7071f, 0);
-    lpf1r = new AnalogFilter (2, 500.0f, .7071f, 0);
-    hpf1l = new AnalogFilter (3, 500.0f, .7071f, 0);
-    hpf1r = new AnalogFilter (3, 500.0f, .7071f, 0);
-    lpf2l = new AnalogFilter (2, 2500.0f, .7071f, 0);
-    lpf2r = new AnalogFilter (2, 2500.0f, .7071f, 0);
-    hpf2l = new AnalogFilter (3, 2500.0f, .7071f, 0);
-    hpf2r = new AnalogFilter (3, 2500.0f, .7071f, 0);
-    lpf3l = new AnalogFilter (2, 5000.0f, .7071f, 0);
-    lpf3r = new AnalogFilter (2, 5000.0f, .7071f, 0);
-    hpf3l = new AnalogFilter (3, 5000.0f, .7071f, 0);
-    hpf3r = new AnalogFilter (3, 5000.0f, .7071f, 0);
+    lpf1l = std::make_unique<AnalogFilter> (2, 500.0f, .7071f, 0);
+    lpf1r = std::make_unique<AnalogFilter> (2, 500.0f, .7071f, 0);
+    hpf1l = std::make_unique<AnalogFilter> (3, 500.0f, .7071f, 0);
+    hpf1r = std::make_unique<AnalogFilter> (3, 500.0f, .7071f, 0);
+    lpf2l = std::make_unique<AnalogFilter> (2, 2500.0f, .7071f, 0);
+    lpf2r = std::make_unique<AnalogFilter> (2, 2500.0f, .7071f, 0);
+    hpf2l = std::make_unique<AnalogFilter> (3, 2500.0f, .7071f, 0);
+    hpf2r = std::make_unique<AnalogFilter> (3, 2500.0f, .7071f, 0);
+    lpf3l = std::make_unique<AnalogFilter> (2, 5000.0f, .7071f, 0);
+    lpf3r = std::make_unique<AnalogFilter> (2, 5000.0f, .7071f, 0);
+    hpf3l = std::make_unique<AnalogFilter> (3, 5000.0f, .7071f, 0);
+    hpf3r = std::make_unique<AnalogFilter> (3, 5000.0f, .7071f, 0);
 
 
     //default values
@@ -71,9 +71,7 @@ MBVvol::MBVvol (float * efxoutl_, float * efxoutr_)
     cleanup ();
 };
 
-MBVvol::~MBVvol ()
-{
-};
+MBVvol::~MBVvol () = default;
 
 /*
  * Cleanup the effect
@@ -104,29 +102,29 @@ MBVvol::out (float * smpsl, float * smpsr)
     int i;
 
 
-    memcpy(lowl,smpsl,sizeof(float) * PERIOD);
-    memcpy(midll,smpsl,sizeof(float) * PERIOD);
-    memcpy(midhl,smpsl,sizeof(float) * PERIOD);
-    memcpy(highl,smpsl,sizeof(float) * PERIOD);
+    memcpy(lowl.data(),smpsl,sizeof(float) * PERIOD);
+    memcpy(midll.data(),smpsl,sizeof(float) * PERIOD);
+    memcpy(midhl.data(),smpsl,sizeof(float) * PERIOD);
+    memcpy(highl.data(),smpsl,sizeof(float) * PERIOD);
 
-    lpf1l->filterout(lowl);
-    hpf1l->filterout(midll);
-    lpf2l->filterout(midll);
-    hpf2l->filterout(midhl);
-    lpf3l->filterout(midhl);
-    hpf3l->filterout(highl);
+    lpf1l->filterout(lowl.data());
+    hpf1l->filterout(midll.data());
+    lpf2l->filterout(midll.data());
+    hpf2l->filterout(midhl.data());
+    lpf3l->filterout(midhl.data());
+    hpf3l->filterout(highl.data());
 
-    memcpy(lowr,smpsr,sizeof(float) * PERIOD);
-    memcpy(midlr,smpsr,sizeof(float) * PERIOD);
-    memcpy(midhr,smpsr,sizeof(float) * PERIOD);
-    memcpy(highr,smpsr,sizeof(float) * PERIOD);
+    memcpy(lowr.data(),smpsr,sizeof(float) * PERIOD);
+    memcpy(midlr.data(),smpsr,sizeof(float) * PERIOD);
+    memcpy(midhr.data(),smpsr,sizeof(float) * PERIOD);
+    memcpy(highr.data(),smpsr,sizeof(float) * PERIOD);
 
-    lpf1r->filterout(lowr);
-    hpf1r->filterout(midlr);
-    lpf2r->filterout(midlr);
-    hpf2r->filterout(midhr);
-    lpf3r->filterout(midhr);
-    hpf3r->filterout(highr);
+    lpf1r->filterout(lowr.data());
+    hpf1r->filterout(midlr.data());
+    lpf2r->filterout(midlr.data());
+    hpf2r->filterout(midhr.data());
+    lpf3r->filterout(midhr.data());
+    hpf3r->filterout(highr.data());
 
     lfo1.effectlfoout (&lfo1l, &lfo1r);
     lfo2.effectlfoout (&lfo2l, &lfo2r);

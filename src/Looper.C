@@ -55,18 +55,16 @@ Looper::Looper (float * efxoutl_, float * efxoutr_, float size)
     maxx_delay = lrintf(fSAMPLE_RATE * size);
     fade = (int) SAMPLE_RATE / 2;    //1/2 SR fade time available
 
-    ldelay = new float[maxx_delay];
-    rdelay = new float[maxx_delay];
-    t2ldelay = new float[maxx_delay];
-    t2rdelay = new float[maxx_delay];
+    ldelay.resize(maxx_delay);
+    rdelay.resize(maxx_delay);
+    t2ldelay.resize(maxx_delay);
+    t2rdelay.resize(maxx_delay);
 
     setpreset (Ppreset);
     cleanup ();
 };
 
-Looper::~Looper ()
-{
-};
+Looper::~Looper () = default;
 
 /*
  * Cleanup the effect

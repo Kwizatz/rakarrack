@@ -36,7 +36,7 @@ public:
 
     float *efxoutl;
     float *efxoutr;
-    signed short int *schmittBuffer;
+    std::vector<signed short int> schmittBuffer;
     signed short int *schmittPointer;
     const char **notes;
     int note;

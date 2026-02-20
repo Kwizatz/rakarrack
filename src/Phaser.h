@@ -70,7 +70,7 @@ private:
 
     //Valorile interne
     float panning, fb, depth, lrcross, fbl, fbr, phase;
-    float *oldl, *oldr;
+    std::vector<float> oldl, oldr;
     float oldlgain, oldrgain;
 
     EffectLFO lfo;		//lfo-ul Phaser

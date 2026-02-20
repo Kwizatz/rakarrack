@@ -34,8 +34,7 @@ Reverb::Reverb (float * efxoutl_, float * efxoutr_)
 {
     efxoutl = efxoutl_;
     efxoutr = efxoutr_;
-    inputbuf = new float[PERIOD];
-    //filterpars=NULL;
+    inputbuf.resize(PERIOD);
 
 
     //defaults
@@ -61,27 +60,22 @@ Reverb::Reverb (float * efxoutl_, float * efxoutr_)
         combk[i] = 0;
         lpcomb[i] = 0;
         combfb[i] = -0.97f;
-        comb[i] = NULL;
     };
 
     for (int i = 0; i < REV_APS * 2; i++) {
         aplen[i] = 500 + (int) (RND * 500);
         apk[i] = 0;
-        ap[i] = NULL;
     };
 
-    lpf =  new AnalogFilter (2, 22000, 1, 0);;
-    hpf =  new AnalogFilter (3, 20, 1, 0);
-    idelay = NULL;
+    lpf = std::make_unique<AnalogFilter>(2, 22000, 1, 0);
+    hpf = std::make_unique<AnalogFilter>(3, 20, 1, 0);
 
     setpreset (Ppreset);
     cleanup ();			//do not call this before the comb initialisation
 };
 
 
-Reverb::~Reverb ()
-{
-};
+Reverb::~Reverb () = default;
 
 /*
  * Cleanup the effect
@@ -100,7 +94,7 @@ Reverb::cleanup ()
         for (j = 0; j < aplen[i]; j++)
             ap[i][j] = 0.0;
 
-    if (idelay != NULL)
+    if (!idelay.empty())
         for (i = 0; i < idelaylen; i++)
             idelay[i] = 0.0;
 
@@ -167,7 +161,7 @@ Reverb::out (float * smps_l, float * smps_r)
     for (i = 0; i < PERIOD; i++) {
         inputbuf[i] = (smps_l[i] + smps_r[i]) * .5f;
         //Initial delay r
-        if (idelay != NULL) {
+        if (!idelay.empty()) {
             float tmp = inputbuf[i] + idelay[idelayk] * idelayfb;
             inputbuf[i] = idelay[idelayk];
             idelay[idelayk] = tmp;
@@ -178,8 +172,8 @@ Reverb::out (float * smps_l, float * smps_r)
     };
 
 
-    lpf->filterout (inputbuf);
-    hpf->filterout (inputbuf);
+    lpf->filterout (inputbuf.data());
+    hpf->filterout (inputbuf.data());
 
     processmono (0, efxoutl);	//left
     processmono (1, efxoutr);	//right
@@ -263,16 +257,12 @@ Reverb::setidelay (int Pidelay)
     this->Pidelay = Pidelay;
     delay = powf (50.0f * (float)Pidelay / 127.0f, 2.0f) - 1.0f;
 
-    if (idelay != nullptr)
-        { delete[] idelay; }
-    idelay = nullptr;
+    idelay.clear();
 
     idelaylen = lrintf (fSAMPLE_RATE * delay / 1000.0f);
     if (idelaylen > 1) {
         idelayk = 0;
-        idelay = new float[idelaylen];
-        for (int i = 0; i < idelaylen; i++)
-            idelay[i] = 0.0;
+        idelay.assign(idelaylen, 0.0f);
     };
 };
 
@@ -338,11 +328,7 @@ Reverb::settype (int Ptype)
         comblen[i] = lrintf(tmp);
         combk[i] = 0;
         lpcomb[i] = 0;
-        if (comb[i] != nullptr)
-        {
-            delete[] comb[i];
-        }
-        comb[i] = new float[comblen[i]];
+        comb[i].assign(comblen[i], 0.0f);
     };
 
     for (int i = 0; i < REV_APS * 2; i++) {
@@ -358,11 +344,7 @@ Reverb::settype (int Ptype)
             tmp = 10;
         aplen[i] = lrintf(tmp);
         apk[i] = 0;
-        if (ap[i] != nullptr)
-        {
-            delete[] ap[i];
-        }
-        ap[i] = new float[aplen[i]];
+        ap[i].assign(aplen[i], 0.0f);
     };
     settime (Ptime);
     cleanup ();

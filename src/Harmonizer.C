@@ -38,23 +38,23 @@ Harmonizer::Harmonizer (float *efxoutl_, float *efxoutr_, long int Quality, int 
     hq = Quality;
     adjust(DS);
 
-    templ = (float *) malloc (sizeof (float) * PERIOD);
-    tempr = (float *) malloc (sizeof (float) * PERIOD);
+    templ.resize(PERIOD);
+    tempr.resize(PERIOD);
 
 
-    outi = (float *) malloc (sizeof (float) * nPERIOD);
-    outo = (float *) malloc (sizeof (float) * nPERIOD);
+    outi.resize(nPERIOD);
+    outo.resize(nPERIOD);
 
-    memset (outi, 0, sizeof (float) * nPERIOD);
-    memset (outo, 0, sizeof (float) * nPERIOD);
+    std::fill(outi.begin(), outi.end(), 0.0f);
+    std::fill(outo.begin(), outo.end(), 0.0f);
 
-    U_Resample = new Resample(dq);
-    D_Resample = new Resample(uq);
+    U_Resample = std::make_unique<Resample>(dq);
+    D_Resample = std::make_unique<Resample>(uq);
 
 
-    pl = new AnalogFilter (6, 22000, 1, 0);
+    pl = std::make_unique<AnalogFilter>(6, 22000, 1, 0);
 
-    PS = new PitchShifter (window, hq, nfSAMPLE_RATE);
+    PS = std::make_unique<PitchShifter>(window, hq, nfSAMPLE_RATE);
     PS->ratio = 1.0f;
 
     Ppreset = 0;
@@ -69,16 +69,14 @@ Harmonizer::Harmonizer (float *efxoutl_, float *efxoutr_, long int Quality, int 
 
 
 
-Harmonizer::~Harmonizer ()
-{
-};
+Harmonizer::~Harmonizer () = default;
 
 void
 Harmonizer::cleanup ()
 {
     mira = 0;
-    memset(outi, 0, sizeof(float)*nPERIOD);
-    memset(outo, 0, sizeof(float)*nPERIOD);
+    std::fill(outi.begin(), outi.end(), 0.0f);
+    std::fill(outo.begin(), outo.end(), 0.0f);
 };
 
 
@@ -97,9 +95,9 @@ Harmonizer::out (float *smpsl, float *smpsr)
     int i;
 
     if((DS_state != 0) && (Pinterval !=12)) {
-        memcpy(templ, smpsl,sizeof(float)*PERIOD);
-        memcpy(tempr, smpsr,sizeof(float)*PERIOD);
-        U_Resample->out(templ,tempr,smpsl,smpsr,PERIOD,u_up);
+        memcpy(templ.data(), smpsl,sizeof(float)*PERIOD);
+        memcpy(tempr.data(), smpsr,sizeof(float)*PERIOD);
+        U_Resample->out(templ.data(),tempr.data(),smpsl,smpsr,PERIOD,u_up);
     }
 
 
@@ -116,17 +114,17 @@ Harmonizer::out (float *smpsl, float *smpsr)
         PS->ratio = r__ratio[0];
 
     if (Pinterval != 12) {
-        PS->smbPitchShift (PS->ratio, nPERIOD, window, hq, nfSAMPLE_RATE, outi, outo);
+        PS->smbPitchShift (PS->ratio, nPERIOD, window, hq, nfSAMPLE_RATE, outi.data(), outo.data());
 
         if((DS_state != 0) && (Pinterval != 12)) {
-            D_Resample->mono_out(outo,templ,nPERIOD,u_down,PERIOD);
+            D_Resample->mono_out(outo.data(),templ.data(),nPERIOD,u_down,PERIOD);
         } else {
-            memcpy(templ, outo,sizeof(float)*PERIOD);
+            memcpy(templ.data(), outo.data(),sizeof(float)*PERIOD);
         }
 
 
 
-        applyfilters (templ);
+        applyfilters (templ.data());
 
         for (i = 0; i < PERIOD; i++) {
             efxoutl[i] = templ[i] * gain * panning;

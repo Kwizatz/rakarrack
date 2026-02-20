@@ -73,7 +73,7 @@ private:
     //Parametrii reali
     unsigned int offset;
     float panning, lrcross;
-    float *sin_tbl, *tri_tbl, *saw_tbl, *squ_tbl;
+    std::vector<float> sin_tbl, tri_tbl, saw_tbl, squ_tbl;
     float sin,tri,saw,squ,scale,depth, idepth;
 
     class FPreset *Fpre;

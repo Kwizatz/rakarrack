@@ -81,7 +81,7 @@ private:
     float oldl, oldr;		//pt. lpf
     float  Srate_Attack_Coeff;
 
-    class delayline *ldelay, *rdelay;
+    std::unique_ptr<delayline> ldelay, rdelay;
     class FPreset *Fpre;
 };
 

@@ -80,16 +80,16 @@ private:
 
     float rfreq;
     float panning, lrcross, octave_memoryl, togglel, octave_memoryr, toggler, octmix;
-    float *octoutl, *octoutr;
+    std::vector<float> octoutl, octoutr;
 
 
     //Parametrii reali
-    AnalogFilter *lpfl, *lpfr, *hpfl, *hpfr, *blockDCl, *blockDCr, *DCl, *DCr;
-    class Waveshaper *wshapel, *wshaper;
+    std::unique_ptr<AnalogFilter> lpfl, lpfr, hpfl, hpfr, blockDCl, blockDCr, DCl, DCr;
+    std::unique_ptr<Waveshaper> wshapel, wshaper;
 
 
-    class Filter *filterl, *filterr;
-    class FilterParams *filterpars;
+    std::unique_ptr<Filter> filterl, filterr;
+    std::unique_ptr<FilterParams> filterpars;
 
     class FPreset *Fpre;
 
