@@ -12,10 +12,10 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
-add_executable(rakconvert rakconvert.C)
-add_executable(rakverb rakverb.C)
-add_executable(rakverb2 rakverb2.C)
-add_executable(rakgit2new rakgit2new.C)
+add_executable(rakconvert rakconvert.cpp)
+add_executable(rakverb rakverb.cpp)
+add_executable(rakverb2 rakverb2.cpp)
+add_executable(rakgit2new rakgit2new.cpp)
 
 install(TARGETS rakconvert rakverb rakverb2 rakgit2new
 	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}

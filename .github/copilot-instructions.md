@@ -5,7 +5,7 @@
 Rakarrack is a multi-effects processor emulating a guitar effects pedalboard, designed for Linux with Jack Audio Connection Kit. This is a fork that modernizes the original codebase for compatibility with modern compilers.
 
 **Key Technologies:**
-- C++ (file extension: `.C` for implementation files, `.h` for headers)
+- C++ (file extension: `.cpp` for implementation files, `.hpp` for headers)
 - FLTK (Fast Light Toolkit) for GUI
 - JACK Audio Connection Kit for audio I/O
 - FFTW3 for FFT operations
@@ -42,19 +42,19 @@ Use the MSYS2 MinGW 64-bit shell for all build and compilation steps.
 ### Core Components
 
 **Main Application Flow:**
-1. `main.C` - Entry point, command-line parsing, initialization
+1. `main.cpp` - Entry point, command-line parsing, initialization
 2. `rakarrack.fl` - FLTK FLUID file defining GUI layout (generates `rakarrack.cxx` and `rakarrack.h`)
-3. `jack.C` - JACK audio interface and callback setup
-4. `process.C` - Main processing loop, global variables
+3. `jack.cpp` - JACK audio interface and callback setup
+4. `process.cpp` - Main processing loop, global variables
 
 **Central Classes:**
-- `RKR` (in `global.h`) - Main effects processor, owns all effect instances and handles signal routing
+- `RKR` (in `global.hpp`) - Main effects processor, owns all effect instances and handles signal routing
 - `RKRGUI` (in `rakarrack.h`) - Main GUI window and user interface management
 
 ### Effects Architecture
 
 All effects inherit from the `Effect` base class (originally from ZynAddSubFX):
-- Base class in `Effect.h` defines interface: `out()`, `changepar()`, `getpar()`, `setpreset()`, `cleanup()`
+- Base class in `Effect.hpp` defines interface: `out()`, `changepar()`, `getpar()`, `setpreset()`, `cleanup()`
 - Each effect is a separate class (e.g., `Reverb`, `Distorsion`, `Chorus`, `Phaser`)
 - Effects process stereo float buffers in `out(float *smpsl, float *smpsr)`
 
@@ -92,14 +92,15 @@ The GUI is designed using FLTK's FLUID tool:
 
 ## File Naming Conventions
 
-- Implementation files use `.C` extension (not `.cpp` or `.cc`)
-- Headers use `.h` extension
-- Effect files named after the effect: `Echo.C`/`Echo.h`, `Reverb.C`/`Reverb.h`
+- Implementation files use `.cpp` extension
+- Headers use `.hpp` extension
+- Effect files named after the effect: `Echo.cpp`/`Echo.hpp`, `Reverb.cpp`/`Reverb.hpp`
+- FLUID-generated files retain their original extensions: `rakarrack.cxx`/`rakarrack.h`
 - Supporting modules: `AnalogFilter`, `EffectLFO`, `FilterParams`, `delayline`
 
 ## Important Constants and Macros
 
-Defined in `global.h`:
+Defined in `global.hpp`:
 - `POLY 8` - Maximum polyphony for note tracking
 - `MAX_DELAY 2` - Max delay in seconds
 - `SAMPLE_RATE` - Global sample rate (runtime determined)
@@ -136,9 +137,9 @@ When `ENABLE_MIDI=ON`:
 
 - **No test suite exists** - testing requires manual verification with JACK and audio input
 - No linting configuration present
-- Code originally from ZynAddSubFX effects engine (see `Effect.h` header)
+- Code originally from ZynAddSubFX effects engine (see `Effect.hpp` header)
 - Fork purpose: Fix modern compiler compatibility issues from original stalled development
 - Windows support is experimental
 - **C++26 standard** is set in `cmake/compiler.cmake`
 - Owned pointers use `std::unique_ptr`, dynamic buffers use `std::vector`, fixed arrays use `std::array`
-- Constants in `global.h` use `inline constexpr` instead of `#define`
+- Constants in `global.hpp` use `inline constexpr` instead of `#define`

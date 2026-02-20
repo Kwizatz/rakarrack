@@ -66,7 +66,7 @@ pkg_search_module(JACK REQUIRED jack IMPORTED_TARGET)
 pkg_search_module(SAMPLERATE REQUIRED samplerate IMPORTED_TARGET)
 pkg_search_module(SNDFILE REQUIRED sndfile IMPORTED_TARGET)
 
-configure_file(cmake/config.h.in src/config.h)
+configure_file(cmake/config.hpp.in src/config.hpp)
 
 add_subdirectory(src)
 add_subdirectory(extra)

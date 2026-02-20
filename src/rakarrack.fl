@@ -2,7 +2,7 @@
 version 1.0300 
 header_name {.h} 
 code_name {.cxx}
-decl {\#include "global.h"} {public local
+decl {\#include "global.hpp"} {public local
 }
 
 decl {\#include <search.h>} {public local
