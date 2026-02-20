@@ -16,6 +16,7 @@
 #include <math.h>
 #include "global.hpp"
 #include "AnalogFilter.hpp"
+#include "Sustainer.hpp"
 
 class Recognize
 {
