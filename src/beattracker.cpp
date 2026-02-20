@@ -1,4 +1,5 @@
 #include <math.h>
+#include <cstdio>
 #include "beattracker.hpp"
 
 beattracker:: beattracker ()

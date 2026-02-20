@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include "Looper.hpp"
+#include "FPreset.hpp"
 
 Looper::Looper (float * efxoutl_, float * efxoutr_, float size)
 {

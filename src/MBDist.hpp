@@ -26,7 +26,7 @@
 #ifndef MBDIST_H
 #define MBDIST_H
 
-#include "global.hpp"
+#include "dsp_constants.hpp"
 #include "AnalogFilter.hpp"
 #include "Waveshaper.hpp"
 

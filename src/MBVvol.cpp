@@ -22,9 +22,11 @@
 */
 
 #include <stdio.h>
+#include <cstring>
 #include <stdlib.h>
 #include <math.h>
 #include "MBVvol.hpp"
+#include "FPreset.hpp"
 
 /*
  * Waveshape (this is called by OscilGen::waveshape and Distorsion::process)

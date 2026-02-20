@@ -24,154 +24,8 @@
 #ifndef DXEMU_H
 #define DXEMU_H
 
-#include <memory>
-#include <array>
-#include <vector>
-#include <cmath>
-#include <cstdlib>
-#include <string>
+#include "dsp_constants.hpp"
 
-inline constexpr float D_PI = 6.283185f;
-inline constexpr float PI = 3.141598f;
-inline constexpr float LOG_10 = 2.302585f;
-inline constexpr float LOG_2 = 0.693147f;
-inline constexpr float LN2R = 1.442695041f;
-inline constexpr float CNST_E = 2.71828182845905f;
-inline constexpr float AMPLITUDE_INTERPOLATION_THRESHOLD = 0.0001f;
-inline constexpr int FF_MAX_VOWELS = 6;
-inline constexpr int FF_MAX_FORMANTS = 12;
-inline constexpr int FF_MAX_SEQUENCE = 8;
-inline constexpr int MAX_FILTER_STAGES = 5;
-inline constexpr float RND() { return static_cast<float>(rand()) / (RAND_MAX + 1.0f); }
-inline constexpr float RND1() { return static_cast<float>(rand()) / (static_cast<float>(RAND_MAX) + 1.0f); }
-inline void F2I(float f, int &i) { i = (f > 0) ? static_cast<int>(f) : static_cast<int>(f - 1.0f); }
-inline float dB2rap(float dB) { return expf(dB * LOG_10 / 20.0f); }
-inline float rap2dB(float rap) { return 20.0f * logf(rap) / LOG_10; }
-template<typename T>
-inline constexpr T CLAMP(T x, T low, T high) { return (x > high) ? high : ((x < low) ? low : x); }
-inline constexpr float INTERPOLATE_AMPLITUDE(float a, float b, float x, float size) { return a + (b - a) * x / size; }
-inline bool ABOVE_AMPLITUDE_THRESHOLD(float a, float b) { return (2.0f * fabsf(b - a) / (fabsf(b + a + 0.0000000001f))) > AMPLITUDE_INTERPOLATION_THRESHOLD; }
-inline constexpr int POLY = 8;
-inline constexpr float DENORMAL_GUARD = 1e-18f;
-inline constexpr uint32_t SwapFourBytes(uint32_t data) { return ((data >> 24) & 0x000000ff) | ((data >> 8) & 0x0000ff00) | ((data << 8) & 0x00ff0000) | ((data << 24) & 0xff000000); }
-inline constexpr float D_NOTE = 1.059463f;
-inline constexpr float LOG_D_NOTE = 0.057762f;
-inline constexpr float D_NOTE_SQRT = 1.029302f;
-inline constexpr int MAX_PEAKS = 8;
-inline constexpr int MAX_ALIENWAH_DELAY = 100;
-inline constexpr float ATTACK = 0.175f;
-inline constexpr int MAX_DELAY = 2;
-inline constexpr int MAXHARMS = 8;
-inline constexpr int MAX_PHASER_STAGES = 12;
-inline constexpr float MAX_CHORUS_DELAY = 250.0f;
-inline constexpr float LN2 = 1.0f;
-inline constexpr float MUG_CORR_FACT = 0.4f;
-inline constexpr float Thi = 0.67f;
-inline constexpr float Tlo = -0.65f;
-inline constexpr float Tlc = -0.6139445f;
-inline constexpr float Thc = 0.6365834f;
-inline constexpr float CRUNCH_GAIN = 100.0f;
-inline constexpr float DIV_TLC_CONST = 0.002f;
-inline constexpr float DIV_THC_CONST = 0.0016666f;
-inline constexpr float D_FLANGE_MAX_DELAY = 0.055f;
-inline constexpr float LFO_CONSTANT = 9.765625e-04f;
-inline constexpr float LOG_FMAX = 10.0f;
-inline constexpr float MINDEPTH = 20.0f;
-inline constexpr float MAXDEPTH = 15000.0f;
-inline constexpr int MAX_EQ_BANDS = 16;
-inline constexpr int CLOSED = 1;
-inline constexpr int OPENING = 2;
-inline constexpr int OPEN = 3;
-inline constexpr int CLOSING = 4;
-inline constexpr float ENV_TR = 0.0001f;
-inline constexpr int HARMONICS = 11;
-inline constexpr int REV_COMBS = 8;
-inline constexpr int REV_APS = 4;
-inline constexpr int MAX_SFILTER_STAGES = 12;
-
-union ls_pcast32 {
-    float f;
-    int32_t i;
-};
-
-/*
-static inline float f_pow2(float x)
-{
-        ls_pcast32 *px, tx, lx;
-        float dx;
-
-        px = (ls_pcast32 *)&x; // store address of float as long pointer
-        tx.f = (x-0.5f) + (3<<22); // temporary value for truncation
-        lx.i = tx.i - 0x4b400000; // integer power of 2
-        dx = x - (float)lx.i; // float remainder of power of 2
-
-        x = 1.0f + dx * (0.6960656421638072f + // cubic apporoximation of 2^x
-                   dx * (0.224494337302845f +  // for x in the range [0, 1]
-                   dx * (0.07944023841053369f)));
-        (*px).i += (lx.i << 23); // add integer power of 2 to exponent
-
-        return (*px).f;
-}
-*/
-/*
-#define P2a0  1.00000534060469
-#define P2a1   0.693057900547259
-#define P2a2   0.239411678986933
-#define P2a3   0.0532229404911678
-#define P2a4   0.00686649174914722
-#include <math.h>
-static inline float f_pow2(float x)
-{
-float y,xx, intpow;
-long xint = (int) fabs(ceil(x));
-xx = x - ceil(x);
-xint = xint<<xint;
-if(x>0) intpow = (float) xint;
-else intpow = 1.0f;
-
-y = intpow*(xx*(xx*(xx*(xx*P2a4 + P2a3) + P2a2) + P2a1) + P2a0);
-
-return y;
-
-}
-*/
-
-//The below pow function really works & is good to 16 bits, but is it faster than math lib powf()???
-//globals
-#include <cmath>
-static constexpr std::array<float, 5> a = { 1.00000534060469f, 0.693057900547259f, 0.239411678986933f, 0.0532229404911678f, 0.00686649174914722f };
-static constexpr std::array<float, 25> pw2 = {1.0f, 2.0f, 4.0f, 8.0f, 16.0f, 32.0f, 64.0f, 128.0f, 256.0f, 512.0f, 1024.0f, 2048.0f, 4096.0f, 8192.0f, 16384.0f, 32768.0f, 65536.0f, 131072.0f, 262144.0f, 524288.0f, 1048576.0f, 2097152.0f, 4194304.0f, 8388608.0f, 16777216.0f};
-static constexpr std::array<float, 25> ipw2 = {1.0f, 5.0e-01f, 2.5e-01f, 1.25e-01f, 6.25e-02f, 3.125e-02f, 1.5625e-02f, 7.8125e-03f, 3.90625e-03f, 1.953125e-03f, 9.765625e-04f, 4.8828125e-04f, 2.44140625e-04f, 1.220703125e-04f, 6.103515625e-05f, 3.0517578125e-05f, 1.52587890625e-05f, 7.62939453125e-06f, 3.814697265625e-06f, 1.9073486328125e-06f, 9.5367431640625e-07f, 4.76837158203125e-07f, 2.38418579101562e-07f, 1.19209289550781e-07f, 5.96046447753906e-08f};
-
-static inline float f_pow2(float x)
-{
-    float y = 0.0f;
-
-    if(x >=24) return pw2[24];
-    else if (x <= -24.0f) return ipw2[24];
-    else {
-        float whole =  ceilf(x);
-        int xint = (int) whole;
-        x = x - whole;
-
-        if (xint>=0) {
-            y = pw2[xint]*(x*(x*(x*(x*a[4] + a[3]) + a[2]) + a[1]) + a[0]);
-
-        } else  {
-
-            y = ipw2[-xint]*(x*(x*(x*(x*a[4] + a[3]) + a[2]) + a[1]) + a[0]);
-
-        }
-
-        return y;
-    }
-
-}
-
-inline float f_exp(float x) { return f_pow2(x * LN2R); }
-
-#include <X11/xpm.h>
-#include "config.hpp"
 #include <signal.h>
 #include <dirent.h>
 #include <search.h>
@@ -180,92 +34,87 @@ inline float f_exp(float x) { return f_pow2(x * LN2R); }
 #include <jack/midiport.h>
 #ifdef ENABLE_MIDI
 #include <alsa/asoundlib.h>
-#include "MIDIConverter.hpp"
 #endif
 #include <FL/Fl_Preferences.H>
-#include "FPreset.hpp"
-#include "Reverb.hpp"
-#include "Chorus.hpp"
-#include "Echo.hpp"
-#include "Phaser.hpp"
-#include "Distorsion.hpp"
-#include "EQ.hpp"
-#include "Compressor.hpp"
-#include "Alienwah.hpp"
-#include "DynamicFilter.hpp"
-#include "Pan.hpp"
-#include "Harmonizer.hpp"
-#include "MusicDelay.hpp"
-#include "Gate.hpp"
-#include "Tuner.hpp"
-#include "RecognizeNote.hpp"
-#include "RecChord.hpp"
-#include "NewDist.hpp"
-#include "APhaser.hpp"
-#include "Valve.hpp"
-#include "Dual_Flange.hpp"
-#include "Ring.hpp"
-#include "Exciter.hpp"
-#include "MBDist.hpp"
-#include "Arpie.hpp"
-#include "Expander.hpp"
-#include "Shuffle.hpp"
-#include "Synthfilter.hpp"
-#include "MBVvol.hpp"
-#include "Convolotron.hpp"
-#include "Resample.hpp"
-#include "Looper.hpp"
-#include "RyanWah.hpp"
-#include "RBEcho.hpp"
-#include "CoilCrafter.hpp"
-#include "ShelfBoost.hpp"
-#include "Vocoder.hpp"
-#include "Sustainer.hpp"
-#include "Sequence.hpp"
-#include "Shifter.hpp"
-#include "StompBox.hpp"
-#include "Reverbtron.hpp"
-#include "Echotron.hpp"
-#include "StereoHarm.hpp"
-#include "CompBand.hpp"
-#include "Opticaltrem.hpp"
-#include "Vibe.hpp"
-#include "Infinity.hpp"
-#include "beattracker.hpp"
+#ifndef _WIN32
+#include <X11/xpm.h>
+#endif
+
+// Forward declarations for types used via std::unique_ptr in RKR class.
+class FPreset;
+class Reverb;
+class Chorus;
+class Echo;
+class Phaser;
+class Analog_Phaser;
+class Distorsion;
+class EQ;
+class Compressor;
+class DynamicFilter;
+class Alienwah;
+class Pan;
+class Harmonizer;
+class MusicDelay;
+class Gate;
+class NewDist;
+class Tuner;
+class Recognize;
+class RecChord;
+class Valve;
+class Dflange;
+class Ring;
+class Exciter;
+class MBDist;
+class Arpie;
+class Expander;
+class Shuffle;
+class Synthfilter;
+class MBVvol;
+class Convolotron;
+class Resample;
+class AnalogFilter;
+class Looper;
+class RyanWah;
+class RBEcho;
+class CoilCrafter;
+class ShelfBoost;
+class Vocoder;
+class Sustainer;
+class Sequence;
+class Shifter;
+class StompBox;
+class Reverbtron;
+class Echotron;
+class StereoHarm;
+class CompBand;
+class Opticaltrem;
+class Vibe;
+class Infinity;
+class beattracker;
+class metronome;
+#ifdef ENABLE_MIDI
+class MIDIConverter;
+#endif
+
+// Program state globals (defined in process.cpp)
 extern int Pexitprogram, preset;
 extern int commandline, gui;
 extern int exitwithhelp, nojack;
 extern int maxx_len;
 extern int error_num;
-extern int PERIOD;
-extern int reconota;
 extern int needtoloadstate;
 extern int needtoloadbank;
 extern int stecla;
 extern int looper_lqua;
-extern unsigned int SAMPLE_RATE;
-extern std::array<int, POLY> note_active;
-extern std::array<int, POLY> rnote;
-extern std::array<int, POLY> gate;
-extern std::array<int, 50> pdata;
-extern float val_sum;
-extern float fPERIOD;
-extern float fSAMPLE_RATE;
-extern float cSAMPLE_RATE;
-extern std::array<float, 12> r__ratio;
-extern int Wave_res_amount;
-extern int Wave_up_q;
-extern int Wave_down_q;
-extern std::array<float, 12> freqs;
-extern std::array<float, 12> lfreqs;
-extern float aFreq;
 extern char *s_uuid;
 extern char *statefile;
 extern char *filetoload;
 extern char *banktoload;
+#ifndef _WIN32
 extern Pixmap p;
 extern Pixmap mask;
 extern XWMHints *hints;
+#endif
 
 class RKR
 {

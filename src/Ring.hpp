@@ -24,7 +24,7 @@
 #ifndef RING_H
 #define RING_H
 
-#include "global.hpp"
+#include "dsp_constants.hpp"
 
 
 class Ring

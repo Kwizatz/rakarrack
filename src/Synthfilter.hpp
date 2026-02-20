@@ -29,7 +29,7 @@
 
 #ifndef SYNTHFILTER_H
 #define SYNTHFILTER_H
-#include "global.hpp"
+#include "dsp_constants.hpp"
 #include "EffectLFO.hpp"
 
 

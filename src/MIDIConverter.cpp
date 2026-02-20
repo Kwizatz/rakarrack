@@ -8,10 +8,11 @@
  * Please see the file COPYING for details.
  */
 #include "MIDIConverter.hpp"
+#include <cstring>
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "global.hpp"
+#include "dsp_constants.hpp"
 
 
 MIDIConverter::MIDIConverter (char *jname)

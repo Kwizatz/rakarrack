@@ -25,6 +25,8 @@
 
 
 #include "Shifter.hpp"
+#include <cstring>
+#include "FPreset.hpp"
 
 
 

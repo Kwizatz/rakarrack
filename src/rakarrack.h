@@ -3,13 +3,14 @@
 #ifndef rakarrack_h
 #define rakarrack_h
 #include <FL/Fl.H>
-#include "global.h"
+#include "global.hpp"
 #include <FL/Fl_Value_Slider.H>
 #include <FL/Fl_Scroll.H>
 #include <FL/Fl_Progress.H>
 #include <FL/Fl_Tooltip.H>
 #include <FL/x.H>
 #include <FL/Fl_PNG_Image.H>
+#include <FL/Fl_Shared_Image.H>
 #include <FL/Fl_Tiled_Image.H>
 #include <FL/Fl_Help_Dialog.H>
 #include <FL/Fl_File_Chooser.H>

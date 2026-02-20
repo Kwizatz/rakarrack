@@ -22,10 +22,12 @@
 */
 
 #include <stdio.h>
+#include <cstring>
 #include <stdlib.h>
 #include <math.h>
 
 #include "Echotron.hpp"
+#include "FPreset.hpp"
 
 Echotron::Echotron (float * efxoutl_, float * efxoutr_)
 {

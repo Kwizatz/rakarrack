@@ -26,7 +26,8 @@
 #ifndef MBVVOL_H
 #define MBVVOL_H
 
-#include "global.hpp"
+#include "dsp_constants.hpp"
+#include "AnalogFilter.hpp"
 #include "EffectLFO.hpp"
 
 

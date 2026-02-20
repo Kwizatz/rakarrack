@@ -5,6 +5,18 @@ code_name {.cxx}
 decl {\#include "global.hpp"} {public local
 }
 
+decl {\#include "AllEffects.hpp"} {public local
+}
+
+decl {\#ifdef ENABLE_MIDI} {public local
+}
+
+decl {\#include "MIDIConverter.hpp"} {public local
+}
+
+decl {\#endif} {public local
+}
+
 decl {\#include <search.h>} {public local
 }
 
@@ -24,6 +36,9 @@ decl {\#include <FL/x.H>} {public local
 } 
 
 decl {\#include <FL/Fl_PNG_Image.H>} {public local
+} 
+
+decl {\#include <FL/Fl_Shared_Image.H>} {public local
 } 
 
 decl {\#include <FL/Fl_Tiled_Image.H>} {public local
@@ -990,7 +1005,7 @@ rkr->savemiditable(filename);}
             callback {
 char *filename;
 char name[128];
-sprintf(name,"%s %s",rkr->jackcliname, VERSION);
+sprintf(name,"%s %s",rkr->jackcliname.data(), VERSION);
 
 filename=fl_file_chooser("Convert Reverb IR File:","(*.wav)",NULL,0);
 if (filename==NULL) return;
@@ -10466,14 +10481,14 @@ rkr->calculavol(2);}
 char *filename;
 
 \#define EXT ".rkrb"
-filename=fl_file_chooser("Save Bank File:","(*" EXT ")",rkr->Bank_Saved,0);
+filename=fl_file_chooser("Save Bank File:","(*" EXT ")",rkr->Bank_Saved.data(),0);
 if (filename==NULL) return;
 filename=fl_filename_setext(filename,EXT);
 \#undef EXT
 ok=rkr->savebank(filename);
 if (ok)
 {
-strcpy(rkr->Bank_Saved,filename);
+strcpy(rkr->Bank_Saved.data(),filename);
 BankWin_Label(filename);
 }}
           xywh {524 117 44 14} labelfont 1 labelcolor 7 when 0
@@ -10646,11 +10661,11 @@ unlight_preset(rkr->Selected_Preset);
           label U
           user_data 77
           callback {is_modified();
-int ok=rkr->loadbank(rkr->BankFilename);
+int ok=rkr->loadbank(rkr->BankFilename.data());
 if(ok) 
 {
 rkr->a_bank=3;
-BankWin_Label(rkr->BankFilename);
+BankWin_Label(rkr->BankFilename.data());
 Put_Loaded_Bank();
 unlight_preset(rkr->Selected_Preset);
 }}
@@ -10682,7 +10697,7 @@ Put_Loaded();}
           user_data 77
           callback {char *filename;
 \#define EXT ".rkr"
-filename=fl_file_chooser("Save Preset:","(*" EXT ")",rkr->Preset_Name,0);
+filename=fl_file_chooser("Save Preset:","(*" EXT ")",rkr->Preset_Name.data(),0);
 if (filename==NULL) return;
 filename=fl_filename_setext(filename,EXT);
 \#undef EXT
@@ -10721,7 +10736,7 @@ BankWindow->hide();}
           xywh {448 50 64 18} shortcut 0x62 color 62 labelsize 12
         }
         Fl_Input WPreset_Name {
-          callback {strcpy(rkr->Preset_Name,o->value());}
+          callback {strcpy(rkr->Preset_Name.data(),o->value());}
           xywh {174 72 338 30} color 62 labelcolor 7 align 20 textsize 24 textcolor 7
           code0 {o->maximum_size(22);}
         }
@@ -11055,7 +11070,7 @@ if(rkr->CheckOldBank(filename)==0)
             callback {
 char *filename;
 char name[128];
-sprintf(name,"%s %s",rkr->jackcliname, VERSION);
+sprintf(name,"%s %s",rkr->jackcliname.data(), VERSION);
 
 filename=fl_file_chooser("Convert Old Bank File:","(*.rkrb)",NULL,0);
 if (filename==NULL) return;
@@ -11457,7 +11472,7 @@ filename=fl_file_chooser("Browse:","(*.png)",NULL,0);
 if (filename==NULL) return;
 filename=fl_filename_setext(filename,".png");
 BackFiname->value(filename);
-strcpy(rkr->BackgroundImage,filename);
+strcpy(rkr->BackgroundImage.data(),filename);
 PutBackground();}
             xywh {410 455 65 20}
           }
@@ -12051,7 +12066,7 @@ else BMidiIn->deactivate();}
             callback {int valor;
 valor = (int) o->value();
 if(o->text(valor) != NULL)
-strcpy(rkr->MID,o->text(valor));
+strcpy(rkr->MID.data(),o->text(valor));
 else return;
 o->select(valor,1);
 \#ifdef ENABLE_MIDI
@@ -12145,7 +12160,7 @@ else JackIn->deactivate();}
           }
           Fl_Input Username {
             label {Username:}
-            callback {strncpy(rkr->UserRealName, o->value(),sizeof(rkr->UserRealName)-1);}
+            callback {strncpy(rkr->UserRealName.data(), o->value(),rkr->UserRealName.size()-1);}
             xywh {80 32 240 21} labelsize 11 labelcolor 7 textsize 11 textcolor 7
           }
           Fl_Check_Button MES_DIS {
@@ -12185,7 +12200,7 @@ filename=fl_file_chooser("Browse:","(*.rkrb)",NULL,0);
 if (filename==NULL) return;
 filename=fl_filename_setext(filename,".rkrb");
 BFiname->value(filename);
-strcpy(rkr->BankFilename,filename);}
+strcpy(rkr->BankFilename.data(),filename);}
             xywh {415 60 65 20}
           }
           Fl_File_Input Udir {
@@ -12199,7 +12214,7 @@ strcpy(rkr->BankFilename,filename);}
 dir=fl_dir_chooser("Browse:",NULL,0);
 if (dir==NULL) return;
 Udir->value(dir);
-strcpy(rkr->UDirFilename,dir);
+strcpy(rkr->UDirFilename.data(),dir);
 ScanDir();}
             xywh {415 112 65 20}
           }
@@ -12234,7 +12249,7 @@ rkr->RControl=1;}
       Fl_Button CopyF {
         label {Copy from: }
         user_data 77
-        callback {memcpy(rkr->XUserMIDI,rkr->Bank[TPresets->value()].XUserMIDI,sizeof(rkr->XUserMIDI));
+        callback {memcpy(rkr->XUserMIDI.data(),rkr->Bank[TPresets->value()].XUserMIDI.data(),sizeof(rkr->XUserMIDI));
 
 DisAssigns();}
         xywh {430 20 95 30}
@@ -12242,7 +12257,7 @@ DisAssigns();}
       Fl_Button CopyT {
         label {Copy to: }
         user_data 77
-        callback {memcpy(rkr->Bank[TPresets->value()].XUserMIDI,rkr->XUserMIDI, sizeof(rkr->XUserMIDI));}
+        callback {memcpy(rkr->Bank[TPresets->value()].XUserMIDI.data(),rkr->XUserMIDI.data(), sizeof(rkr->XUserMIDI));}
         xywh {535 20 95 30}
       }
       Fl_Group Ares {
@@ -12340,7 +12355,7 @@ DisAssigns();}
       Fl_Button ClearP {
         label {Clear Preset}
         user_data 77
-        callback {memset(rkr->XUserMIDI, 0, sizeof(rkr->XUserMIDI));
+        callback {memset(rkr->XUserMIDI.data(), 0, sizeof(rkr->XUserMIDI));
 DisAssigns();}
         xywh {245 285 150 30}
       }
@@ -12422,7 +12437,7 @@ if(o->value()< 1) o->value(1);}
         label {Copy to All}
         user_data 77
         callback {int i;
-for(i=1;i<61;i++) memcpy(rkr->Bank[i].XUserMIDI,rkr->XUserMIDI, sizeof(rkr->XUserMIDI));}
+for(i=1;i<61;i++) memcpy(rkr->Bank[i].XUserMIDI.data(),rkr->XUserMIDI.data(), sizeof(rkr->XUserMIDI));}
         xywh {480 412 150 30}
       }
       Fl_Button CloseML {
@@ -12610,22 +12625,22 @@ tta=0;
 Analyzer_ON=0;
 Scope_ON=0;
 
-Sco->init(rkr->anall, rkr->analr, PERIOD);
-Analy->init(rkr->anall, rkr->analr, PERIOD, SAMPLE_RATE);
+Sco->init(rkr->anall.data(), rkr->analr.data(), PERIOD);
+Analy->init(rkr->anall.data(), rkr->analr.data(), PERIOD, SAMPLE_RATE);
 
 memset(tmp,0, sizeof(tmp));
-sprintf(tmp,"%s   v%s",rkr->jackcliname,VERSION); 
+sprintf(tmp,"%s   v%s",rkr->jackcliname.data(),VERSION); 
 Principal->copy_label(tmp);
-BankWin_Label(rkr->BankFilename);
+BankWin_Label(rkr->BankFilename.data());
 memset(tmp,0, sizeof(tmp));
-sprintf(tmp,"%s   v%s - Effects Order",rkr->jackcliname,VERSION);
+sprintf(tmp,"%s   v%s - Effects Order",rkr->jackcliname.data(),VERSION);
 Order->copy_label(tmp);
 memset(tmp,0, sizeof(tmp));
-sprintf(tmp,"%s   v%s - Settings",rkr->jackcliname,VERSION);
+sprintf(tmp,"%s   v%s - Settings",rkr->jackcliname.data(),VERSION);
 Settings->copy_label(tmp);
-sprintf(tmp,"%s   v%s - MIDI Learn",rkr->jackcliname,VERSION);
+sprintf(tmp,"%s   v%s - MIDI Learn",rkr->jackcliname.data(),VERSION);
 MIDILearn->copy_label(tmp);
-sprintf(tmp,"%s   v%s - ACI",rkr->jackcliname,VERSION);
+sprintf(tmp,"%s   v%s - ACI",rkr->jackcliname.data(),VERSION);
 Trigger->copy_label(tmp);
 
 
@@ -12791,7 +12806,7 @@ char tmp[256];
 sprintf (tmp, "%s/bg.png", DATA_DIR);
 
 rakarrack.get(rkr->PrefNom("Enable Background Image"),rkr->EnableBackgroundImage,1);
-rakarrack.get(rkr->PrefNom("Background Image"),rkr->BackgroundImage,tmp,256);
+rakarrack.get(rkr->PrefNom("Background Image"),rkr->BackgroundImage.data(),tmp,256);
 PutBackground();
 rakarrack.get(rkr->PrefNom("FontSize"),rkr->relfontsize,0);
 if( rkr->relfontsize!=0) chfsize(rkr->relfontsize);
@@ -12902,8 +12917,8 @@ rakarrack.get(rkr->PrefNom("MIDI Table"),rkr->midi_table,0);
 if(!rkr->midi_table) scroll->deactivate();
 
 
-rakarrack.get(rkr->PrefNom("UserName"),rkr->UserRealName,"",127);
-rakarrack.get(rkr->PrefNom("User Directory"),rkr->UDirFilename,DATA_DIR,127);
+rakarrack.get(rkr->PrefNom("UserName"),rkr->UserRealName.data(),"",127);
+rakarrack.get(rkr->PrefNom("User Directory"),rkr->UDirFilename.data(),DATA_DIR,127);
 rakarrack.get(rkr->PrefNom("Preserve Gain/Master"),rkr->actuvol,0);
 rakarrack.get(rkr->PrefNom("Metronome Volume"),rkr->Metro_Vol,50);
 rkr->efx_Looper->setmvol(rkr->Metro_Vol);
@@ -13216,7 +13231,7 @@ rakarrack.set(rkr->PrefNom("Settings H"),Settings->h());
 
 if((whati==3) || (whati==0))
 {
-rakarrack.set(rkr->PrefNom("UserName"),rkr->UserRealName);
+rakarrack.set(rkr->PrefNom("UserName"),rkr->UserRealName.data());
 rakarrack.set(rkr->PrefNom("Preserve Gain/Master"),rkr->actuvol);
 rakarrack.set(rkr->PrefNom("Metronome Volume"),rkr->Metro_Vol);
 
@@ -13273,11 +13288,11 @@ rakarrack.set(rkr->PrefNom("Looper Size"),L_SIZE->value());
 
 
 rakarrack.set(rkr->PrefNom("FontSize"),rkr->relfontsize);
-rakarrack.set(rkr->PrefNom("Bank Filename"),rkr->BankFilename);
-rakarrack.set(rkr->PrefNom("User Directory"),rkr->UDirFilename);
+rakarrack.set(rkr->PrefNom("Bank Filename"),rkr->BankFilename.data());
+rakarrack.set(rkr->PrefNom("User Directory"),rkr->UDirFilename.data());
 
 rakarrack.set(rkr->PrefNom("Enable Background Image"),rkr->EnableBackgroundImage);
-rakarrack.set(rkr->PrefNom("Background Image"),rkr->BackgroundImage);
+rakarrack.set(rkr->PrefNom("Background Image"),rkr->BackgroundImage.data());
 rakarrack.set(rkr->PrefNom("Auto Connect MIDI IN"),rkr->aconnect_MI);
 rakarrack.set(rkr->PrefNom("Auto Connect Jack"),rkr->aconnect_JA);
 rakarrack.set(rkr->PrefNom("Auto Connect Jack In"),rkr->aconnect_JIA);
@@ -13364,8 +13379,8 @@ for(i=1; i<=JackIn->size();i++)
 int i;
 
 
-WPreset_Name->value(rkr->Preset_Name);
-DAuthor->copy_label(rkr->Author);
+WPreset_Name->value(rkr->Preset_Name.data());
+DAuthor->copy_label(rkr->Author.data());
 
 Nivel_Entrada->value((int) (rkr->Input_Gain*100.0)-50);
 rkr->calculavol(1);
@@ -13691,10 +13706,10 @@ if ((Fl::event_button()==3) && (Fl::event()==FL_RELEASE))
 Fl_Widget *w = ob->child(num-1);
 
 
-if (strlen(rkr->Bank[num].Preset_Name) >0)
+if (strlen(rkr->Bank[num].Preset_Name.data()) >0)
 { 
   Fl_Widget *m = fl_message_icon();
-  m->parent()->copy_label(rkr->jackcliname);
+  m->parent()->copy_label(rkr->jackcliname.data());
   ok=fl_choice("Overwrite \\"%s\\"?","No","Yes", NULL, w->label());
   if (!ok)
   { 
@@ -13706,7 +13721,7 @@ if (strlen(rkr->Bank[num].Preset_Name) >0)
  o->value(0);
  o->redraw();
  rkr->Preset_to_Bank(num);
- w->copy_label(rkr->Preset_Name);
+ w->copy_label(rkr->Preset_Name.data());
  rkr->modified=1;
 }
 
@@ -13747,7 +13762,7 @@ y +=elh+2;
 for (j=1; j<5; j++)
 {
    
-     Fl_Button* butX = new Fl_Button(x+1, y+1, elw,elh,rkr->Bank[num].Preset_Name);
+     Fl_Button* butX = new Fl_Button(x+1, y+1, elw,elh,rkr->Bank[num].Preset_Name.data());
       butX->type(0);
       butX->color(fore_color);
       butX->box(FL_UP_BOX);
@@ -14472,43 +14487,43 @@ switch (rkr->efx_order[i])
  switch(i)
  {
     case 0:
-       L1->copy_label(rkr->efx_names[Busca_Eff(rkr->efx_order[i])].Nom);
+       L1->copy_label(rkr->efx_names[Busca_Eff(rkr->efx_order[i])].Nom.data());
        if((rkr->deachide) && (!rkr->active[i])) L1->hide(); else L1->show();
        break;
     case 1:
-       L2->copy_label(rkr->efx_names[Busca_Eff(rkr->efx_order[i])].Nom);
+       L2->copy_label(rkr->efx_names[Busca_Eff(rkr->efx_order[i])].Nom.data());
        if((rkr->deachide) && (!rkr->active[i])) L2->hide(); else L2->show();
        break;
     case 2:
-       L3->copy_label(rkr->efx_names[Busca_Eff(rkr->efx_order[i])].Nom);
+       L3->copy_label(rkr->efx_names[Busca_Eff(rkr->efx_order[i])].Nom.data());
        if((rkr->deachide) && (!rkr->active[i])) L3->hide(); else L3->show();
        break;
     case 3:
-       L4->copy_label(rkr->efx_names[Busca_Eff(rkr->efx_order[i])].Nom);
+       L4->copy_label(rkr->efx_names[Busca_Eff(rkr->efx_order[i])].Nom.data());
        if((rkr->deachide) && (!rkr->active[i])) L4->hide(); else L4->show();
        break;
     case 4:
-       L5->copy_label(rkr->efx_names[Busca_Eff(rkr->efx_order[i])].Nom);
+       L5->copy_label(rkr->efx_names[Busca_Eff(rkr->efx_order[i])].Nom.data());
        if((rkr->deachide) && (!rkr->active[i])) L5->hide(); else L5->show();
        break;
     case 5:
-       L6->copy_label(rkr->efx_names[Busca_Eff(rkr->efx_order[i])].Nom);
+       L6->copy_label(rkr->efx_names[Busca_Eff(rkr->efx_order[i])].Nom.data());
        if((rkr->deachide) && (!rkr->active[i])) L6->hide(); else L6->show();
        break;
     case 6:
-       L7->copy_label(rkr->efx_names[Busca_Eff(rkr->efx_order[i])].Nom);
+       L7->copy_label(rkr->efx_names[Busca_Eff(rkr->efx_order[i])].Nom.data());
        if((rkr->deachide) && (!rkr->active[i])) L7->hide(); else L7->show();
        break;
     case 7:
-       L8->copy_label(rkr->efx_names[Busca_Eff(rkr->efx_order[i])].Nom);
+       L8->copy_label(rkr->efx_names[Busca_Eff(rkr->efx_order[i])].Nom.data());
        if((rkr->deachide) && (!rkr->active[i])) L8->hide(); else L8->show();
        break;
     case 8:
-       L9->copy_label(rkr->efx_names[Busca_Eff(rkr->efx_order[i])].Nom);
+       L9->copy_label(rkr->efx_names[Busca_Eff(rkr->efx_order[i])].Nom.data());
        if((rkr->deachide) && (!rkr->active[i])) L9->hide(); else L9->show();
        break;
     case 9:
-       L10->copy_label(rkr->efx_names[Busca_Eff(rkr->efx_order[i])].Nom);
+       L10->copy_label(rkr->efx_names[Busca_Eff(rkr->efx_order[i])].Nom.data());
        if((rkr->deachide) && (!rkr->active[i])) L10->hide(); else L10->show();
        break;
 }
@@ -14690,7 +14705,7 @@ JackIn->clear();
 int k;
 while (BMidiIn->text(i) != NULL)
 {
-if (strcmp(BMidiIn->text(i),rkr->MID)==0 ) BMidiIn->select(i,1);
+if (strcmp(BMidiIn->text(i),rkr->MID.data())==0 ) BMidiIn->select(i,1);
 i++; 
 }
 
@@ -14700,7 +14715,7 @@ while (JackCo->text(i) != NULL)
 {
 
 for (k=0; k < rkr->cuan_jack; k++)
-if (strcmp(JackCo->text(i),rkr->jack_po[k].name)==0 ) JackCo->select(i,1);
+if (strcmp(JackCo->text(i),rkr->jack_po[k].name.data())==0 ) JackCo->select(i,1);
 
 i++; 
 }
@@ -14712,7 +14727,7 @@ while (JackIn->text(i) != NULL)
 {
 
 for (k=0; k < rkr->cuan_ijack; k++)
-if (strcmp(JackIn->text(i),rkr->jack_poi[k].name)==0 ) JackIn->select(i,1);
+if (strcmp(JackIn->text(i),rkr->jack_poi[k].name.data())==0 ) JackIn->select(i,1);
 
 i++; 
 }
@@ -14726,10 +14741,10 @@ rkr->m_displayed = 0;
 Enable_Back->value(rkr->EnableBackgroundImage);
 Enable_DeacHide->value(rkr->deachide);
 
-BFiname->value(rkr->BankFilename);
-BackFiname->value(rkr->BackgroundImage);
-Udir->value(rkr->UDirFilename);
-Username->value(rkr->UserRealName);
+BFiname->value(rkr->BankFilename.data());
+BackFiname->value(rkr->BackgroundImage.data());
+Udir->value(rkr->UDirFilename.data());
+Username->value(rkr->UserRealName.data());
 Pre_Serve->value(rkr->actuvol);
 LM_Volume->value(rkr->Metro_Vol);
 Filter_DC->value(rkr->DC_Offset);
@@ -14939,7 +14954,7 @@ Font_Bro->value(rkr->font+1);} {}
 
 
 memset(tmp,0, sizeof(tmp));
-sprintf(tmp,"%s   v%s - Bank Manager - %s",rkr->jackcliname,VERSION,fl_filename_name(filename));
+sprintf(tmp,"%s   v%s - Bank Manager - %s",rkr->jackcliname.data(),VERSION,fl_filename_name(filename));
 BankWindow->copy_label(tmp);} {}
   }
   Function {is_modified()} {open
@@ -14951,7 +14966,7 @@ if (rkr->modified)
 {
 
  Fl_Widget *w = fl_message_icon();
- w->parent()->copy_label(rkr->jackcliname);
+ w->parent()->copy_label(rkr->jackcliname.data());
  
 
  ok=fl_choice("Bank was modified, but not saved", "Discard","Save",NULL);
@@ -14981,7 +14996,7 @@ for (int t=0; t<ob->children();t++)
     long long temp = (long long) w->user_data();
     if (temp > 0)
     {
-     w->copy_label(rkr->Bank[k].Preset_Name);
+     w->copy_label(rkr->Bank[k].Preset_Name.data());
      k++;
     }
   
@@ -16814,7 +16829,7 @@ for (int t=0; t<ob->children();t++)
   }
   Function {PutBackground()} {} {
     code {delete back;
-back = new Fl_Tiled_Image(new Fl_PNG_Image(rkr->BackgroundImage),1600,1200);
+back = new Fl_Tiled_Image(new Fl_PNG_Image(rkr->BackgroundImage.data()),1600,1200);
 if(!rkr->EnableBackgroundImage)
 back->color_average(back_color,0.0);
 
@@ -17143,10 +17158,10 @@ char tmp[256];
 memset(tmp,0, sizeof(tmp));
 
 
-sprintf(tmp,"%s   v%s - MIDI Learn - Preset : %s",rkr->jackcliname,VERSION,rkr->Bank[rkr->Selected_Preset].Preset_Name);
+sprintf(tmp,"%s   v%s - MIDI Learn - Preset : %s",rkr->jackcliname.data(),VERSION,rkr->Bank[rkr->Selected_Preset].Preset_Name.data());
 MIDILearn->copy_label(tmp);
 
-memset(rkr->ML_clist,0,sizeof(rkr->ML_clist));
+memset(rkr->ML_clist.data(),0,sizeof(rkr->ML_clist));
 Epar->clear();
 k=0;
 
@@ -17154,7 +17169,7 @@ switch(rkr->ML_filter)
 {
   
  case 0:
- for(i=0; i<rkr->NumParams; i++) Epar->add(rkr->efx_params[i].Nom);  
+ for(i=0; i<rkr->NumParams; i++) Epar->add(rkr->efx_params[i].Nom.data());  
  break;
 
  case 1:
@@ -17162,7 +17177,7 @@ switch(rkr->ML_filter)
       {
         if(rkr->efx_params[i].Effect==50)
          { 
-         Epar->add(rkr->efx_params[i].Nom); 
+         Epar->add(rkr->efx_params[i].Nom.data()); 
          rkr->ML_clist[k]=rkr->efx_params[i].Ato;
          k++;
          }
@@ -17174,7 +17189,7 @@ switch(rkr->ML_filter)
       {
         if(rkr->efx_params[i].Effect==rkr->efx_order[j])
          { 
-         Epar->add(rkr->efx_params[i].Nom); 
+         Epar->add(rkr->efx_params[i].Nom.data()); 
          rkr->ML_clist[k]=rkr->efx_params[i].Ato;
          k++;
          }
@@ -17193,7 +17208,7 @@ Epar->redraw();
 
 
 TPresets->clear();
-for(i=1; i<=60; i++)  TPresets->add(rkr->Bank[i].Preset_Name);
+for(i=1; i<=60; i++)  TPresets->add(rkr->Bank[i].Preset_Name.data());
 TPresets->select(rkr->Selected_Preset,1);
 TPresets->redraw();
 
@@ -17461,7 +17476,7 @@ for (i=0; i<10;i++)
 {
 rkr->new_order[i]=rkr->efx_order[i];
 rkr->saved_order[i]=rkr->efx_order[i];
-Order_Bro->add(rkr->efx_names[Busca_Eff(rkr->efx_order[i])].Nom);
+Order_Bro->add(rkr->efx_names[Busca_Eff(rkr->efx_order[i])].Nom.data());
 }
 
 Fill_Avail(rkr->eff_filter);
@@ -17471,7 +17486,7 @@ Order_Bro->select(1);} {}
   Function {Show_Next_Time()} {} {
     code {if(rkr->mess_dis) return;
 Fl_Widget *w = fl_message_icon();
-w->parent()->copy_label(rkr->jackcliname);         
+w->parent()->copy_label(rkr->jackcliname.data());         
 fl_message("This setting will be changed the next time you run rakarrack");} {}
   }
   Function {update_looper()} {} {
@@ -17716,7 +17731,7 @@ for (i=0; i<rkr->NumEffects;i++)
  
   if((rkr->efx_names[i].Type&rkr->eff_filter)==rkr->eff_filter) 
  { 
-  Avail_Bro->add(rkr->efx_names[i].Nom);
+  Avail_Bro->add(rkr->efx_names[i].Nom.data());
   rkr->availables[t]=rkr->efx_names[i].Pos;
   t++;
  }
@@ -17853,14 +17868,14 @@ return(1000);} {}
     }
     closedir(dir);
   
-    dir=opendir(rkr->UDirFilename);
+    dir=opendir(rkr->UDirFilename.data());
     if (dir==NULL) return;
   
     while ((fs=readdir(dir)))
     {
     if (strstr(fs->d_name,".rkrb")!=NULL)
       {
-        sprintf(nombank,"%s/%s",rkr->UDirFilename,fs->d_name);
+        sprintf(nombank,"%s/%s",rkr->UDirFilename.data(),fs->d_name);
         AddBankName(nombank);
         if(rkr->CheckOldBank(nombank)==0)
         {
@@ -18184,7 +18199,7 @@ rkr->M_table[num-2000].preset=o->value();} {}
      Fl_Choice *p = (Fl_Choice * ) w; 
      p->clear(); 
      for(int i=1; i<=60;i++)
-     p->add(rkr->B_Names[value][i].Preset_Name);
+     p->add(rkr->B_Names[value][i].Preset_Name.data());
      break;
     }
   }} {}
@@ -18213,20 +18228,20 @@ rkr->M_table[num-2000].preset=o->value();} {}
   Function {RandomPreset()} {} {
     code {int i,j,l;
 int SelEff[10];
-int numEff = (int) (RND*6) + 1;
+int numEff = (int) (RND()*6) + 1;
 long long k;
 
 
 S_new->do_callback();
 
-SelEff[0]=(int)(RND*rkr->NumEffects);
+SelEff[0]=(int)(RND()*rkr->NumEffects);
 
 for(i=1;i<10;i++) 
 {
  l=0;
  while (l==0)
  {
-   SelEff[i]=(int)(RND* rkr->NumEffects);
+   SelEff[i]=(int)(RND()* rkr->NumEffects);
    for(j=0;j<i;j++)
     {
       if(SelEff[j]==SelEff[i])
@@ -18501,7 +18516,7 @@ for(i=0;i<10;i++)
  Fl_Widget *w = FindWidget(SelEff[i]);
  Fl_Choice *s = (Fl_Choice *) w;
  k = (long long) s->user_data();
- int Esel = (int)(RND * s->size());
+ int Esel = (int)(RND() * s->size());
  s->value(Esel);
  s->do_callback(w,k);
 }

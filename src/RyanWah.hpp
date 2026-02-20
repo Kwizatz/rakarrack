@@ -24,7 +24,7 @@
 
 #ifndef RYANWAH_H
 #define RYANWAH_H
-#include "global.hpp"
+#include "dsp_constants.hpp"
 #include "EffectLFO.hpp"
 #include "RBFilter.hpp"
 #include "AnalogFilter.hpp"

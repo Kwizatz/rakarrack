@@ -25,7 +25,7 @@
 
 #ifndef ALIENWAH_H
 #define ALIENWAH_H
-#include "global.hpp"
+#include "dsp_constants.hpp"
 #include "EffectLFO.hpp"
 
 

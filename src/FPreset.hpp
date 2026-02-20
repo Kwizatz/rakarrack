@@ -21,7 +21,7 @@
 #ifndef FPRESET_H
 #define FPRESET_H
 
-#include "global.hpp"
+#include "dsp_constants.hpp"
 
 class FPreset
 {

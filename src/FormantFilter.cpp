@@ -200,7 +200,7 @@ FormantFilter::filterout (float * smp)
     for (j = 0; j < numformants; j++) {
         for (i = 0; i < PERIOD; i++)
             tmpbuf[i] = inbuffer[i] * outgain;
-        formant[j]->filterout (tmpbuf);
+        formant[j]->filterout (tmpbuf.data());
 
         if (ABOVE_AMPLITUDE_THRESHOLD
                 (oldformantamp[j], currentformants[j].amp))

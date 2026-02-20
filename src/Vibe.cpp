@@ -25,6 +25,7 @@
 
 #include <math.h>
 #include "Vibe.hpp"
+#include "FPreset.hpp"
 
 Vibe::Vibe (float * efxoutl_, float * efxoutr_)
 {

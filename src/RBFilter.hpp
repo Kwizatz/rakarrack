@@ -25,7 +25,7 @@
 #ifndef RB_FILTER_H
 #define RB_FILTER_H
 
-#include "global.hpp"
+#include "dsp_constants.hpp"
 #include "Filter_.hpp"
 class RBFilter:public Filter_
 {

@@ -24,7 +24,7 @@
 
 #ifndef PHASER_H
 #define PHASER_H
-#include "global.hpp"
+#include "dsp_constants.hpp"
 #include "EffectLFO.hpp"
 
 class Phaser

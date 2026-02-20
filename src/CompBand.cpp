@@ -28,9 +28,11 @@
 */
 
 #include <stdio.h>
+#include <cstring>
 #include <stdlib.h>
 #include <math.h>
 #include "CompBand.hpp"
+#include "FPreset.hpp"
 
 /*
  * Waveshape (this is called by OscilGen::waveshape and Distorsion::process)

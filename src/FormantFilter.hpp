@@ -26,7 +26,7 @@
 #ifndef FORMANT_FILTER_H
 #define FORMANT_FILTER_H
 
-#include "global.hpp"
+#include "dsp_constants.hpp"
 #include "Filter_.hpp"
 #include "AnalogFilter.hpp"
 #include "FilterParams.hpp"

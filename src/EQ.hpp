@@ -25,7 +25,7 @@
 #ifndef EQ_H
 #define EQ_H
 
-#include "global.hpp"
+#include "dsp_constants.hpp"
 #include "AnalogFilter.hpp"
 
 class EQ

@@ -21,9 +21,11 @@
 */
 
 #include <stdio.h>
+#include <cstring>
 #include <stdlib.h>
 #include <math.h>
 #include "Sequence.hpp"
+#include "FPreset.hpp"
 #include <time.h>
 #include "f_sin.hpp"
 
@@ -146,7 +148,7 @@ Sequence::out (float * smpsl, float * smpsr)
     if ((rndflag) && (tcount < hPERIOD + 1)) { //This is an Easter Egg
         srand(time(nullptr));
         for (i = 0; i<8; i++) {
-            fsequence[i] = RND1;
+            fsequence[i] = RND1();
         }
     }
 

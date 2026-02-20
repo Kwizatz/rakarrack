@@ -22,9 +22,11 @@
 */
 
 #include <stdio.h>
+#include <cstring>
 #include <stdlib.h>
 #include <math.h>
 #include "Convolotron.hpp"
+#include "FPreset.hpp"
 
 Convolotron::Convolotron (float * efxoutl_, float * efxoutr_,int DS, int uq, int dq)
 {

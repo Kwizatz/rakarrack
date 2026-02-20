@@ -23,9 +23,11 @@
 */
 
 #include <stdio.h>
+#include <cstring>
 #include <stdlib.h>
 #include <math.h>
 #include "Distorsion.hpp"
+#include "FPreset.hpp"
 
 Distorsion::Distorsion (float * efxoutl_, float * efxoutr_)
 {

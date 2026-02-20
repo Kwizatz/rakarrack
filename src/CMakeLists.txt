@@ -94,6 +94,7 @@ set(RAKARRACK_SOURCES
 	rakarrack.cxx
 )
 set(RAKARRACK_HEADERS
+	AllEffects.hpp
 	Alienwah.hpp
 	AnalogFilter.hpp
 	APhaser.hpp
@@ -106,6 +107,7 @@ set(RAKARRACK_HEADERS
 	Convolotron.hpp
 	delayline.hpp
 	Distorsion.hpp
+	dsp_constants.hpp
 	Dual_Flange.hpp
 	DynamicFilter.hpp
 	Echo.hpp
@@ -191,6 +193,16 @@ target_link_libraries(rakarrack
 	PkgConfig::SAMPLERATE
 	PkgConfig::SNDFILE
 	nlohmann_json::nlohmann_json
+)
+target_precompile_headers(rakarrack PRIVATE
+	dsp_constants.hpp
+	<memory>
+	<array>
+	<vector>
+	<cmath>
+	<cstdlib>
+	<cstring>
+	<string>
 )
 
 install(TARGETS rakarrack RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

@@ -25,7 +25,7 @@
 
 #ifndef EFFECT_METRONOME_H
 #define EFFECT_METRONOME_H
-#include "global.hpp"
+#include "dsp_constants.hpp"
 #include "AnalogFilter.hpp"
 
 class metronome

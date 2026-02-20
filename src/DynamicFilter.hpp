@@ -24,7 +24,8 @@
 
 #ifndef DYNAMICFILTER_H
 #define DYNAMICFILTER_H
-#include "global.hpp"
+#include "dsp_constants.hpp"
+#include "FilterParams.hpp"
 #include "EffectLFO.hpp"
 #include "Filter.hpp"
 

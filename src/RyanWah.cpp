@@ -24,6 +24,7 @@
 
 #include <math.h>
 #include "RyanWah.hpp"
+#include "FPreset.hpp"
 #include "AnalogFilter.hpp"
 #include <stdio.h>
 

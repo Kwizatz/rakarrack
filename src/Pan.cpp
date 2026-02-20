@@ -23,6 +23,7 @@
 
 
 #include "Pan.hpp"
+#include "FPreset.hpp"
 
 
 

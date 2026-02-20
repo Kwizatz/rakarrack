@@ -24,7 +24,8 @@
 #ifndef VOCODER_H
 #define VOCODER_H
 
-#include "global.hpp"
+#include "dsp_constants.hpp"
+#include "Resample.hpp"
 #include "AnalogFilter.hpp"
 
 class Vocoder

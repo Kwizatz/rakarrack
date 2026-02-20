@@ -30,7 +30,7 @@
 #ifndef DUAL_FLANGE_H
 #define DUAL_FLANGE_H
 
-#include "global.hpp"
+#include "dsp_constants.hpp"
 #include "EffectLFO.hpp"
 #include "delayline.hpp"
 

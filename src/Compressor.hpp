@@ -28,7 +28,7 @@
 #ifndef COMPRESSOR_H
 #define COMPRESSOR_H
 
-#include "global.hpp"
+#include "dsp_constants.hpp"
 #include "FPreset.hpp"
 
 class Compressor

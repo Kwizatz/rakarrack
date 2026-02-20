@@ -28,6 +28,7 @@
 
 #include <math.h>
 #include "Gate.hpp"
+#include "FPreset.hpp"
 
 
 Gate::Gate (float * efxoutl_, float * efxoutr_)

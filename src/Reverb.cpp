@@ -27,6 +27,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include "Reverb.hpp"
+#include "FPreset.hpp"
 
 /*TODO: EarlyReflections,Prdelay,Perbalance */
 
@@ -56,14 +57,14 @@ Reverb::Reverb (float * efxoutl_, float * efxoutr_)
     rs_coeff = rs / (float) REV_COMBS;
 
     for (int i = 0; i < REV_COMBS * 2; i++) {
-        comblen[i] = 800 + (int) (RND * 1400);
+        comblen[i] = 800 + (int) (RND() * 1400);
         combk[i] = 0;
         lpcomb[i] = 0;
         combfb[i] = -0.97f;
     };
 
     for (int i = 0; i < REV_APS * 2; i++) {
-        aplen[i] = 500 + (int) (RND * 500);
+        aplen[i] = 500 + (int) (RND() * 500);
         apk[i] = 0;
     };
 
@@ -315,7 +316,7 @@ Reverb::settype (int Ptype)
     float tmp;
     for (int i = 0; i < REV_COMBS * 2; i++) {
         if (Ptype == 0)
-            tmp = 800.0f + (float)(RND*1400.0f);
+            tmp = 800.0f + (float)(RND()*1400.0f);
         else
             tmp = (float)combtunings[Ptype][i % REV_COMBS];
         tmp *= roomsize;
@@ -333,7 +334,7 @@ Reverb::settype (int Ptype)
 
     for (int i = 0; i < REV_APS * 2; i++) {
         if (Ptype == 0)
-            tmp = 500.0f + (float)(RND*500.0f);
+            tmp = 500.0f + (float)(RND()*500.0f);
         else
             tmp = (float)aptunings[Ptype][i % REV_APS];
         tmp *= roomsize;

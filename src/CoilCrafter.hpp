@@ -23,7 +23,7 @@
 #ifndef COILCRAFTER_H
 #define COILCRAFTER_H
 
-#include "global.hpp"
+#include "dsp_constants.hpp"
 #include "HarmonicEnhancer.hpp"
 #include "AnalogFilter.hpp"
 

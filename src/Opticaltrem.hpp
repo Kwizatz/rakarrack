@@ -26,7 +26,7 @@
 #ifndef Opticaltrem_H
 #define Opticaltrem_H
 
-#include "global.hpp"
+#include "dsp_constants.hpp"
 #include "EffectLFO.hpp"
 
 class Opticaltrem

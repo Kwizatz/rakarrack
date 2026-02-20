@@ -22,9 +22,11 @@
 */
 
 #include <stdio.h>
+#include <cstring>
 #include <stdlib.h>
 #include <math.h>
 #include "Vocoder.hpp"
+#include "FPreset.hpp"
 
 Vocoder::Vocoder (float * efxoutl_, float * efxoutr_, float *auxresampled_,int bands, int DS, int uq, int dq)
 {

@@ -23,7 +23,7 @@
 #ifndef BEAT_H
 #define BEAT_H
 
-#include "global.hpp"
+#include "dsp_constants.hpp"
 #include "RBFilter.hpp"
 
 

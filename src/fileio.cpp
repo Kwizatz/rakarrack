@@ -24,6 +24,7 @@
 #include <string>
 #include <cstring>
 #include "global.hpp"
+#include "AllEffects.hpp"
 
 void RKR::putbuf(char *buf, int j)
 {

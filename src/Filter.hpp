@@ -25,7 +25,7 @@
 #ifndef FILTER_H
 #define FILTER_H
 
-#include "global.hpp"
+#include "dsp_constants.hpp"
 #include "Filter_.hpp"
 #include "AnalogFilter.hpp"
 #include "FormantFilter.hpp"

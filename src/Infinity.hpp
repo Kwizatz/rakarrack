@@ -22,7 +22,7 @@
 
 #ifndef INFINITY_H
 #define INFINITY_H
-#include "global.hpp"
+#include "dsp_constants.hpp"
 #include "RBFilter.hpp"
 
 #define NUM_INF_BANDS 8

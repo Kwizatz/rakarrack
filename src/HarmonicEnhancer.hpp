@@ -26,7 +26,8 @@
 #ifndef HARM_ENHANCER_H
 #define HARM_ENHANCER_H
 
-#include "global.hpp"
+#include "dsp_constants.hpp"
+#include "Compressor.hpp"
 #include "AnalogFilter.hpp"
 
 

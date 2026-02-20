@@ -891,7 +891,7 @@ void RKRGUI::cb_Save_MTable(Fl_Menu_* o, void* v) {
 void RKRGUI::cb_ConvertReverb_i(Fl_Menu_*, void*) {
   char *filename;
 char name[128];
-sprintf(name,"%s %s",rkr->jackcliname, VERSION);
+sprintf(name,"%s %s",rkr->jackcliname.data(), VERSION);
 
 filename=fl_file_chooser("Convert Reverb IR File:","(*.wav)",NULL,0);
 if (filename==NULL) return;
@@ -9609,14 +9609,14 @@ void RKRGUI::cb_MIDI_LABEL_i(Fl_Box*, void*) {
 char *filename;
 
 #define EXT ".rkrb"
-filename=fl_file_chooser("Save Bank File:","(*" EXT ")",rkr->Bank_Saved,0);
+filename=fl_file_chooser("Save Bank File:","(*" EXT ")",rkr->Bank_Saved.data(),0);
 if (filename==NULL) return;
 filename=fl_filename_setext(filename,EXT);
 #undef EXT
 ok=rkr->savebank(filename);
 if (ok)
 {
-strcpy(rkr->Bank_Saved,filename);
+strcpy(rkr->Bank_Saved.data(),filename);
 BankWin_Label(filename);
 };
 }
@@ -9773,11 +9773,11 @@ void RKRGUI::cb_L_B3(Fl_Button* o, void* v) {
 
 void RKRGUI::cb_L_B4_i(Fl_Button*, void*) {
   is_modified();
-int ok=rkr->loadbank(rkr->BankFilename);
+int ok=rkr->loadbank(rkr->BankFilename.data());
 if(ok) 
 {
 rkr->a_bank=3;
-BankWin_Label(rkr->BankFilename);
+BankWin_Label(rkr->BankFilename.data());
 Put_Loaded_Bank();
 unlight_preset(rkr->Selected_Preset);
 };
@@ -9812,7 +9812,7 @@ void RKRGUI::cb_L_preset(Fl_Button* o, void* v) {
 void RKRGUI::cb_S_preset_i(Fl_Button*, void*) {
   char *filename;
 #define EXT ".rkr"
-filename=fl_file_chooser("Save Preset:","(*" EXT ")",rkr->Preset_Name,0);
+filename=fl_file_chooser("Save Preset:","(*" EXT ")",rkr->Preset_Name.data(),0);
 if (filename==NULL) return;
 filename=fl_filename_setext(filename,EXT);
 #undef EXT
@@ -9856,7 +9856,7 @@ void RKRGUI::cb_B_preset(Fl_Button* o, void* v) {
 }
 
 void RKRGUI::cb_WPreset_Name_i(Fl_Input* o, void*) {
-  strcpy(rkr->Preset_Name,o->value());
+  strcpy(rkr->Preset_Name.data(),o->value());
 }
 void RKRGUI::cb_WPreset_Name(Fl_Input* o, void* v) {
   ((RKRGUI*)(o->parent()->parent()->user_data()))->cb_WPreset_Name_i(o,v);
@@ -10101,7 +10101,7 @@ void RKRGUI::cb_Save_Bank(Fl_Menu_* o, void* v) {
 void RKRGUI::cb_Convert_Old_Bank_i(Fl_Menu_*, void*) {
   char *filename;
 char name[128];
-sprintf(name,"%s %s",rkr->jackcliname, VERSION);
+sprintf(name,"%s %s",rkr->jackcliname.data(), VERSION);
 
 filename=fl_file_chooser("Convert Old Bank File:","(*.rkrb)",NULL,0);
 if (filename==NULL) return;
@@ -10523,7 +10523,7 @@ filename=fl_file_chooser("Browse:","(*.png)",NULL,0);
 if (filename==NULL) return;
 filename=fl_filename_setext(filename,".png");
 BackFiname->value(filename);
-strcpy(rkr->BackgroundImage,filename);
+strcpy(rkr->BackgroundImage.data(),filename);
 PutBackground();
 }
 void RKRGUI::cb_BI_Browser(Fl_Button* o, void* v) {
@@ -11048,7 +11048,7 @@ void RKRGUI::cb_BMidiIn_i(Fl_Browser* o, void*) {
   int valor;
 valor = (int) o->value();
 if(o->text(valor) != NULL)
-strcpy(rkr->MID,o->text(valor));
+strcpy(rkr->MID.data(),o->text(valor));
 else return;
 o->select(valor,1);
 rkr->Conecta();
@@ -11122,7 +11122,7 @@ void RKRGUI::cb_D_IJ_Connect(Fl_Check_Button* o, void* v) {
 }
 
 void RKRGUI::cb_Username_i(Fl_Input* o, void*) {
-  strncpy(rkr->UserRealName, o->value(),sizeof(rkr->UserRealName)-1);
+  strncpy(rkr->UserRealName.data(), o->value(),rkr->UserRealName.size()-1);
 }
 void RKRGUI::cb_Username(Fl_Input* o, void* v) {
   ((RKRGUI*)(o->parent()->parent()->parent()->user_data()))->cb_Username_i(o,v);
@@ -11156,7 +11156,7 @@ filename=fl_file_chooser("Browse:","(*.rkrb)",NULL,0);
 if (filename==NULL) return;
 filename=fl_filename_setext(filename,".rkrb");
 BFiname->value(filename);
-strcpy(rkr->BankFilename,filename);
+strcpy(rkr->BankFilename.data(),filename);
 }
 void RKRGUI::cb_BF_Browser(Fl_Button* o, void* v) {
   ((RKRGUI*)(o->parent()->parent()->parent()->user_data()))->cb_BF_Browser_i(o,v);
@@ -11167,7 +11167,7 @@ void RKRGUI::cb_UD_Browser_i(Fl_Button*, void*) {
 dir=fl_dir_chooser("Browse:",NULL,0);
 if (dir==NULL) return;
 Udir->value(dir);
-strcpy(rkr->UDirFilename,dir);
+strcpy(rkr->UDirFilename.data(),dir);
 ScanDir();
 }
 void RKRGUI::cb_UD_Browser(Fl_Button* o, void* v) {
@@ -11200,7 +11200,7 @@ void RKRGUI::cb_GMM(Fl_Button* o, void* v) {
 }
 
 void RKRGUI::cb_CopyF_i(Fl_Button*, void*) {
-  memcpy(rkr->XUserMIDI,rkr->Bank[TPresets->value()].XUserMIDI,sizeof(rkr->XUserMIDI));
+  memcpy(rkr->XUserMIDI.data(),rkr->Bank[TPresets->value()].XUserMIDI.data(),sizeof(rkr->XUserMIDI));
 
 DisAssigns();
 }
@@ -11209,7 +11209,7 @@ void RKRGUI::cb_CopyF(Fl_Button* o, void* v) {
 }
 
 void RKRGUI::cb_CopyT_i(Fl_Button*, void*) {
-  memcpy(rkr->Bank[TPresets->value()].XUserMIDI,rkr->XUserMIDI, sizeof(rkr->XUserMIDI));
+  memcpy(rkr->Bank[TPresets->value()].XUserMIDI.data(),rkr->XUserMIDI.data(), sizeof(rkr->XUserMIDI));
 }
 void RKRGUI::cb_CopyT(Fl_Button* o, void* v) {
   ((RKRGUI*)(o->parent()->user_data()))->cb_CopyT_i(o,v);
@@ -11245,7 +11245,7 @@ void RKRGUI::cb_ClearA(Fl_Button* o, void* v) {
 }
 
 void RKRGUI::cb_ClearP_i(Fl_Button*, void*) {
-  memset(rkr->XUserMIDI, 0, sizeof(rkr->XUserMIDI));
+  memset(rkr->XUserMIDI.data(), 0, sizeof(rkr->XUserMIDI));
 DisAssigns();
 }
 void RKRGUI::cb_ClearP(Fl_Button* o, void* v) {
@@ -11334,7 +11334,7 @@ void RKRGUI::cb_Disp_Control(Fl_Value_Input* o, void* v) {
 
 void RKRGUI::cb_CopyTAll_i(Fl_Button*, void*) {
   int i;
-for(i=1;i<61;i++) memcpy(rkr->Bank[i].XUserMIDI,rkr->XUserMIDI, sizeof(rkr->XUserMIDI));
+for(i=1;i<61;i++) memcpy(rkr->Bank[i].XUserMIDI.data(),rkr->XUserMIDI.data(), sizeof(rkr->XUserMIDI));
 }
 void RKRGUI::cb_CopyTAll(Fl_Button* o, void* v) {
   ((RKRGUI*)(o->parent()->user_data()))->cb_CopyTAll_i(o,v);
@@ -22490,22 +22490,22 @@ RKRGUI::RKRGUI(int argc, char**argv,RKR *rkr_) {
   Analyzer_ON=0;
   Scope_ON=0;
   
-  Sco->init(rkr->anall, rkr->analr, PERIOD);
-  Analy->init(rkr->anall, rkr->analr, PERIOD, SAMPLE_RATE);
+  Sco->init(rkr->anall.data(), rkr->analr.data(), PERIOD);
+  Analy->init(rkr->anall.data(), rkr->analr.data(), PERIOD, SAMPLE_RATE);
   
   memset(tmp,0, sizeof(tmp));
-  sprintf(tmp,"%s   v%s",rkr->jackcliname,VERSION); 
+  sprintf(tmp,"%s   v%s",rkr->jackcliname.data(),VERSION); 
   Principal->copy_label(tmp);
-  BankWin_Label(rkr->BankFilename);
+  BankWin_Label(rkr->BankFilename.data());
   memset(tmp,0, sizeof(tmp));
-  sprintf(tmp,"%s   v%s - Effects Order",rkr->jackcliname,VERSION);
+  sprintf(tmp,"%s   v%s - Effects Order",rkr->jackcliname.data(),VERSION);
   Order->copy_label(tmp);
   memset(tmp,0, sizeof(tmp));
-  sprintf(tmp,"%s   v%s - Settings",rkr->jackcliname,VERSION);
+  sprintf(tmp,"%s   v%s - Settings",rkr->jackcliname.data(),VERSION);
   Settings->copy_label(tmp);
-  sprintf(tmp,"%s   v%s - MIDI Learn",rkr->jackcliname,VERSION);
+  sprintf(tmp,"%s   v%s - MIDI Learn",rkr->jackcliname.data(),VERSION);
   MIDILearn->copy_label(tmp);
-  sprintf(tmp,"%s   v%s - ACI",rkr->jackcliname,VERSION);
+  sprintf(tmp,"%s   v%s - ACI",rkr->jackcliname.data(),VERSION);
   Trigger->copy_label(tmp);
   
   
@@ -22671,7 +22671,7 @@ void RKRGUI::load_stat() {
   sprintf (tmp, "%s/bg.png", DATA_DIR);
   
   rakarrack.get(rkr->PrefNom("Enable Background Image"),rkr->EnableBackgroundImage,1);
-  rakarrack.get(rkr->PrefNom("Background Image"),rkr->BackgroundImage,tmp,256);
+  rakarrack.get(rkr->PrefNom("Background Image"),rkr->BackgroundImage.data(),tmp,256);
   PutBackground();
   rakarrack.get(rkr->PrefNom("FontSize"),rkr->relfontsize,0);
   if( rkr->relfontsize!=0) chfsize(rkr->relfontsize);
@@ -22782,8 +22782,8 @@ void RKRGUI::load_stat() {
   if(!rkr->midi_table) scroll->deactivate();
   
   
-  rakarrack.get(rkr->PrefNom("UserName"),rkr->UserRealName,"",127);
-  rakarrack.get(rkr->PrefNom("User Directory"),rkr->UDirFilename,DATA_DIR,127);
+  rakarrack.get(rkr->PrefNom("UserName"),rkr->UserRealName.data(),"",127);
+  rakarrack.get(rkr->PrefNom("User Directory"),rkr->UDirFilename.data(),DATA_DIR,127);
   rakarrack.get(rkr->PrefNom("Preserve Gain/Master"),rkr->actuvol,0);
   rakarrack.get(rkr->PrefNom("Metronome Volume"),rkr->Metro_Vol,50);
   rkr->efx_Looper->setmvol(rkr->Metro_Vol);
@@ -23095,7 +23095,7 @@ void RKRGUI::save_stat(int whati) {
   
   if((whati==3) || (whati==0))
   {
-  rakarrack.set(rkr->PrefNom("UserName"),rkr->UserRealName);
+  rakarrack.set(rkr->PrefNom("UserName"),rkr->UserRealName.data());
   rakarrack.set(rkr->PrefNom("Preserve Gain/Master"),rkr->actuvol);
   rakarrack.set(rkr->PrefNom("Metronome Volume"),rkr->Metro_Vol);
   
@@ -23152,11 +23152,11 @@ void RKRGUI::save_stat(int whati) {
   
   
   rakarrack.set(rkr->PrefNom("FontSize"),rkr->relfontsize);
-  rakarrack.set(rkr->PrefNom("Bank Filename"),rkr->BankFilename);
-  rakarrack.set(rkr->PrefNom("User Directory"),rkr->UDirFilename);
+  rakarrack.set(rkr->PrefNom("Bank Filename"),rkr->BankFilename.data());
+  rakarrack.set(rkr->PrefNom("User Directory"),rkr->UDirFilename.data());
   
   rakarrack.set(rkr->PrefNom("Enable Background Image"),rkr->EnableBackgroundImage);
-  rakarrack.set(rkr->PrefNom("Background Image"),rkr->BackgroundImage);
+  rakarrack.set(rkr->PrefNom("Background Image"),rkr->BackgroundImage.data());
   rakarrack.set(rkr->PrefNom("Auto Connect MIDI IN"),rkr->aconnect_MI);
   rakarrack.set(rkr->PrefNom("Auto Connect Jack"),rkr->aconnect_JA);
   rakarrack.set(rkr->PrefNom("Auto Connect Jack In"),rkr->aconnect_JIA);
@@ -23244,8 +23244,8 @@ void RKRGUI::Put_Loaded() {
   int i;
   
   
-  WPreset_Name->value(rkr->Preset_Name);
-  DAuthor->copy_label(rkr->Author);
+  WPreset_Name->value(rkr->Preset_Name.data());
+  DAuthor->copy_label(rkr->Author.data());
   
   Nivel_Entrada->value((int) (rkr->Input_Gain*100.0)-50);
   rkr->calculavol(1);
@@ -23574,10 +23574,10 @@ inline void RKRGUI::preset_click_i(Fl_Button* o, void*) {
   Fl_Widget *w = ob->child(num-1);
   
   
-  if (strlen(rkr->Bank[num].Preset_Name) >0)
+  if (strlen(rkr->Bank[num].Preset_Name.data()) >0)
   { 
     Fl_Widget *m = fl_message_icon();
-    m->parent()->copy_label(rkr->jackcliname);
+    m->parent()->copy_label(rkr->jackcliname.data());
     ok=fl_choice("Overwrite \"%s\"?","No","Yes", NULL, w->label());
    if (!ok)
    { 
@@ -23591,7 +23591,7 @@ inline void RKRGUI::preset_click_i(Fl_Button* o, void*) {
    o->value(0);
    o->redraw();
    rkr->Preset_to_Bank(num);
-   w->copy_label(rkr->Preset_Name);
+   w->copy_label(rkr->Preset_Name.data());
    rkr->modified=1;
   }
   
@@ -23633,7 +23633,7 @@ void RKRGUI::make_window_banks() {
   for (j=1; j<5; j++)
   {
      
-       Fl_Button* butX = new Fl_Button(x+1, y+1, elw,elh,rkr->Bank[num].Preset_Name);
+       Fl_Button* butX = new Fl_Button(x+1, y+1, elw,elh,rkr->Bank[num].Preset_Name.data());
         butX->type(0);
         butX->color(fore_color);
         butX->box(FL_UP_BOX);
@@ -24359,43 +24359,43 @@ void RKRGUI::reordena() {
    switch(i)
    {
       case 0:
-         L1->copy_label(rkr->efx_names[Busca_Eff(rkr->efx_order[i])].Nom);
+         L1->copy_label(rkr->efx_names[Busca_Eff(rkr->efx_order[i])].Nom.data());
          if((rkr->deachide) && (!rkr->active[i])) L1->hide(); else L1->show();
          break;
       case 1:
-         L2->copy_label(rkr->efx_names[Busca_Eff(rkr->efx_order[i])].Nom);
+         L2->copy_label(rkr->efx_names[Busca_Eff(rkr->efx_order[i])].Nom.data());
          if((rkr->deachide) && (!rkr->active[i])) L2->hide(); else L2->show();
          break;
       case 2:
-         L3->copy_label(rkr->efx_names[Busca_Eff(rkr->efx_order[i])].Nom);
+         L3->copy_label(rkr->efx_names[Busca_Eff(rkr->efx_order[i])].Nom.data());
          if((rkr->deachide) && (!rkr->active[i])) L3->hide(); else L3->show();
          break;
       case 3:
-         L4->copy_label(rkr->efx_names[Busca_Eff(rkr->efx_order[i])].Nom);
+         L4->copy_label(rkr->efx_names[Busca_Eff(rkr->efx_order[i])].Nom.data());
          if((rkr->deachide) && (!rkr->active[i])) L4->hide(); else L4->show();
          break;
       case 4:
-         L5->copy_label(rkr->efx_names[Busca_Eff(rkr->efx_order[i])].Nom);
+         L5->copy_label(rkr->efx_names[Busca_Eff(rkr->efx_order[i])].Nom.data());
          if((rkr->deachide) && (!rkr->active[i])) L5->hide(); else L5->show();
          break;
       case 5:
-         L6->copy_label(rkr->efx_names[Busca_Eff(rkr->efx_order[i])].Nom);
+         L6->copy_label(rkr->efx_names[Busca_Eff(rkr->efx_order[i])].Nom.data());
          if((rkr->deachide) && (!rkr->active[i])) L6->hide(); else L6->show();
          break;
       case 6:
-         L7->copy_label(rkr->efx_names[Busca_Eff(rkr->efx_order[i])].Nom);
+         L7->copy_label(rkr->efx_names[Busca_Eff(rkr->efx_order[i])].Nom.data());
          if((rkr->deachide) && (!rkr->active[i])) L7->hide(); else L7->show();
          break;
       case 7:
-         L8->copy_label(rkr->efx_names[Busca_Eff(rkr->efx_order[i])].Nom);
+         L8->copy_label(rkr->efx_names[Busca_Eff(rkr->efx_order[i])].Nom.data());
          if((rkr->deachide) && (!rkr->active[i])) L8->hide(); else L8->show();
          break;
       case 8:
-         L9->copy_label(rkr->efx_names[Busca_Eff(rkr->efx_order[i])].Nom);
+         L9->copy_label(rkr->efx_names[Busca_Eff(rkr->efx_order[i])].Nom.data());
          if((rkr->deachide) && (!rkr->active[i])) L9->hide(); else L9->show();
          break;
       case 9:
-         L10->copy_label(rkr->efx_names[Busca_Eff(rkr->efx_order[i])].Nom);
+         L10->copy_label(rkr->efx_names[Busca_Eff(rkr->efx_order[i])].Nom.data());
          if((rkr->deachide) && (!rkr->active[i])) L10->hide(); else L10->show();
          break;
   }
@@ -24580,7 +24580,7 @@ void RKRGUI::MiraConfig() {
   int k;
   while (BMidiIn->text(i) != NULL)
   {
-  if (strcmp(BMidiIn->text(i),rkr->MID)==0 ) BMidiIn->select(i,1);
+  if (strcmp(BMidiIn->text(i),rkr->MID.data())==0 ) BMidiIn->select(i,1);
   i++; 
   }
   
@@ -24590,7 +24590,7 @@ void RKRGUI::MiraConfig() {
   {
   
   for (k=0; k < rkr->cuan_jack; k++)
-  if (strcmp(JackCo->text(i),rkr->jack_po[k].name)==0 ) JackCo->select(i,1);
+  if (strcmp(JackCo->text(i),rkr->jack_po[k].name.data())==0 ) JackCo->select(i,1);
   
   i++; 
   }
@@ -24602,7 +24602,7 @@ void RKRGUI::MiraConfig() {
   {
   
   for (k=0; k < rkr->cuan_ijack; k++)
-  if (strcmp(JackIn->text(i),rkr->jack_poi[k].name)==0 ) JackIn->select(i,1);
+  if (strcmp(JackIn->text(i),rkr->jack_poi[k].name.data())==0 ) JackIn->select(i,1);
   
   i++; 
   }
@@ -24616,10 +24616,10 @@ void RKRGUI::MiraConfig() {
   Enable_Back->value(rkr->EnableBackgroundImage);
   Enable_DeacHide->value(rkr->deachide);
   
-  BFiname->value(rkr->BankFilename);
-  BackFiname->value(rkr->BackgroundImage);
-  Udir->value(rkr->UDirFilename);
-  Username->value(rkr->UserRealName);
+  BFiname->value(rkr->BankFilename.data());
+  BackFiname->value(rkr->BackgroundImage.data());
+  Udir->value(rkr->UDirFilename.data());
+  Username->value(rkr->UserRealName.data());
   Pre_Serve->value(rkr->actuvol);
   LM_Volume->value(rkr->Metro_Vol);
   Filter_DC->value(rkr->DC_Offset);
@@ -24830,7 +24830,7 @@ void RKRGUI::BankWin_Label(char *filename) {
   
   
   memset(tmp,0, sizeof(tmp));
-  sprintf(tmp,"%s   v%s - Bank Manager - %s",rkr->jackcliname,VERSION,fl_filename_name(filename));
+  sprintf(tmp,"%s   v%s - Bank Manager - %s",rkr->jackcliname.data(),VERSION,fl_filename_name(filename));
   BankWindow->copy_label(tmp);
 }
 
@@ -24842,7 +24842,7 @@ void RKRGUI::is_modified() {
   {
   
    Fl_Widget *w = fl_message_icon();
-   w->parent()->copy_label(rkr->jackcliname);
+   w->parent()->copy_label(rkr->jackcliname.data());
    
   
    ok=fl_choice("Bank was modified, but not saved", "Discard","Save",NULL);
@@ -24873,7 +24873,7 @@ void RKRGUI::Put_Loaded_Bank() {
       long long temp = (long long) w->user_data();
       if (temp > 0)
       {
-       w->copy_label(rkr->Bank[k].Preset_Name);
+       w->copy_label(rkr->Bank[k].Preset_Name.data());
        k++;
       }
     
@@ -26712,7 +26712,7 @@ void RKRGUI::unlight_preset(int npreset) {
 
 void RKRGUI::PutBackground() {
   delete back;
-  back = new Fl_Tiled_Image(new Fl_PNG_Image(rkr->BackgroundImage),1600,1200);
+  back = new Fl_Tiled_Image(new Fl_PNG_Image(rkr->BackgroundImage.data()),1600,1200);
   if(!rkr->EnableBackgroundImage)
   back->color_average(back_color,0.0);
   
@@ -27047,10 +27047,10 @@ void RKRGUI::FillML(int type) {
   memset(tmp,0, sizeof(tmp));
   
   
-  sprintf(tmp,"%s   v%s - MIDI Learn - Preset : %s",rkr->jackcliname,VERSION,rkr->Bank[rkr->Selected_Preset].Preset_Name);
+  sprintf(tmp,"%s   v%s - MIDI Learn - Preset : %s",rkr->jackcliname.data(),VERSION,rkr->Bank[rkr->Selected_Preset].Preset_Name.data());
   MIDILearn->copy_label(tmp);
   
-  memset(rkr->ML_clist,0,sizeof(rkr->ML_clist));
+  memset(rkr->ML_clist.data(),0,sizeof(rkr->ML_clist));
   Epar->clear();
   k=0;
   
@@ -27058,7 +27058,7 @@ void RKRGUI::FillML(int type) {
   {
     
    case 0:
-   for(i=0; i<rkr->NumParams; i++) Epar->add(rkr->efx_params[i].Nom);  
+   for(i=0; i<rkr->NumParams; i++) Epar->add(rkr->efx_params[i].Nom.data());  
    break;
   
    case 1:
@@ -27066,7 +27066,7 @@ void RKRGUI::FillML(int type) {
         {
           if(rkr->efx_params[i].Effect==50)
            { 
-           Epar->add(rkr->efx_params[i].Nom); 
+           Epar->add(rkr->efx_params[i].Nom.data()); 
            rkr->ML_clist[k]=rkr->efx_params[i].Ato;
            k++;
            }
@@ -27078,7 +27078,7 @@ void RKRGUI::FillML(int type) {
         {
           if(rkr->efx_params[i].Effect==rkr->efx_order[j])
            { 
-           Epar->add(rkr->efx_params[i].Nom); 
+           Epar->add(rkr->efx_params[i].Nom.data()); 
            rkr->ML_clist[k]=rkr->efx_params[i].Ato;
            k++;
            }
@@ -27097,7 +27097,7 @@ void RKRGUI::FillML(int type) {
   
   
   TPresets->clear();
-  for(i=1; i<=60; i++)  TPresets->add(rkr->Bank[i].Preset_Name);
+  for(i=1; i<=60; i++)  TPresets->add(rkr->Bank[i].Preset_Name.data());
   TPresets->select(rkr->Selected_Preset,1);
   TPresets->redraw();
   
@@ -27367,7 +27367,7 @@ void RKRGUI::Prepare_Order() {
   {
   rkr->new_order[i]=rkr->efx_order[i];
   rkr->saved_order[i]=rkr->efx_order[i];
-  Order_Bro->add(rkr->efx_names[Busca_Eff(rkr->efx_order[i])].Nom);
+  Order_Bro->add(rkr->efx_names[Busca_Eff(rkr->efx_order[i])].Nom.data());
   }
   
   Fill_Avail(rkr->eff_filter);
@@ -27378,7 +27378,7 @@ void RKRGUI::Prepare_Order() {
 void RKRGUI::Show_Next_Time() {
   if(rkr->mess_dis) return;
   Fl_Widget *w = fl_message_icon();
-  w->parent()->copy_label(rkr->jackcliname);         
+  w->parent()->copy_label(rkr->jackcliname.data());         
   fl_message("This setting will be changed the next time you run rakarrack");
 }
 
@@ -27624,7 +27624,7 @@ void RKRGUI::Fill_Avail(int filter) {
    
     if((rkr->efx_names[i].Type&rkr->eff_filter)==rkr->eff_filter) 
    { 
-    Avail_Bro->add(rkr->efx_names[i].Nom);
+    Avail_Bro->add(rkr->efx_names[i].Nom.data());
     rkr->availables[t]=rkr->efx_names[i].Pos;
     t++;
    }
@@ -27762,14 +27762,14 @@ void RKRGUI::ScanDir() {
     }
     closedir(dir);
   
-    dir=opendir(rkr->UDirFilename);
+    dir=opendir(rkr->UDirFilename.data());
     if (dir==NULL) return;
   
     while ((fs=readdir(dir)))
     {
     if (strstr(fs->d_name,".rkrb")!=NULL)
       {
-        sprintf(nombank,"%s/%s",rkr->UDirFilename,fs->d_name);
+        sprintf(nombank,"%s/%s",rkr->UDirFilename.data(),fs->d_name);
         AddBankName(nombank);
         if(rkr->CheckOldBank(nombank)==0)
         {
@@ -28099,7 +28099,7 @@ void RKRGUI::fill_mptable(int num,int value) {
        Fl_Choice *p = (Fl_Choice * ) w; 
        p->clear(); 
        for(int i=1; i<=60;i++)
-       p->add(rkr->B_Names[value][i].Preset_Name);
+       p->add(rkr->B_Names[value][i].Preset_Name.data());
        break;
       }
     }
@@ -28131,20 +28131,20 @@ void RKRGUI::Put_MidiTable() {
 void RKRGUI::RandomPreset() {
   int i,j,l;
   int SelEff[10];
-  int numEff = (int) (RND*6) + 1;
+  int numEff = (int) (RND()*6) + 1;
   long long k;
   
   
   S_new->do_callback();
   
-  SelEff[0]=(int)(RND*rkr->NumEffects);
+  SelEff[0]=(int)(RND()*rkr->NumEffects);
   
   for(i=1;i<10;i++) 
   {
    l=0;
    while (l==0)
    {
-     SelEff[i]=(int)(RND* rkr->NumEffects);
+     SelEff[i]=(int)(RND()* rkr->NumEffects);
      for(j=0;j<i;j++)
       {
         if(SelEff[j]==SelEff[i])
@@ -28419,7 +28419,7 @@ void RKRGUI::RandomPreset() {
    Fl_Widget *w = FindWidget(SelEff[i]);
    Fl_Choice *s = (Fl_Choice *) w;
    k = (long long) s->user_data();
-   int Esel = (int)(RND * s->size());
+   int Esel = (int)(RND() * s->size());
    s->value(Esel);
    s->do_callback(w,k);
   }

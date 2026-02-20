@@ -27,6 +27,7 @@
 #include <FL/Fl_Widget.H>
 #include "icono_rakarrack_32x32.xpm"
 #include "global.hpp"
+#include "AllEffects.hpp"
 
 int
 RKR::Message (int prio, const char *labelwin, const char *message_text)

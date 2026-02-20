@@ -24,7 +24,8 @@
 #ifndef ECHOTRON_H
 #define ECHOTRON_H
 
-#include "global.hpp"
+#include "dsp_constants.hpp"
+#include "RBFilter.hpp"
 #include "AnalogFilter.hpp"
 #include "EffectLFO.hpp"
 #include "delayline.hpp"

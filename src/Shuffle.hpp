@@ -26,7 +26,7 @@
 #ifndef SHUFFLE_H
 #define SHUFFLE_H
 
-#include "global.hpp"
+#include "dsp_constants.hpp"
 #include "AnalogFilter.hpp"
 
 

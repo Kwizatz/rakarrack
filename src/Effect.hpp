@@ -23,7 +23,7 @@
 #ifndef EFFECT_H
 #define EFFECT_H
 
-#include "global.hpp"
+#include "dsp_constants.hpp"
 #include "FilterParams.hpp"
 
 

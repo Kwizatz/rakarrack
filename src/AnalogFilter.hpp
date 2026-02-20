@@ -25,7 +25,7 @@
 #ifndef ANALOG_FILTER_H
 #define ANALOG_FILTER_H
 
-#include "global.hpp"
+#include "dsp_constants.hpp"
 #include "Filter_.hpp"
 
 class AnalogFilter:public Filter_

@@ -27,7 +27,7 @@
 #define FILTER_PARAMS_H
 
 
-#include "global.hpp"
+#include "dsp_constants.hpp"
 
 class FilterParams
 {

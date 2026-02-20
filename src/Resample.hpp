@@ -26,7 +26,7 @@
 #define RESAMPLE_H
 
 #include <samplerate.h>
-#include "global.hpp"
+#include "dsp_constants.hpp"
 
 
 

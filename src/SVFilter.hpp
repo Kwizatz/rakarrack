@@ -25,7 +25,7 @@
 #ifndef SV_FILTER_H
 #define SV_FILTER_H
 
-#include "global.hpp"
+#include "dsp_constants.hpp"
 #include "Filter_.hpp"
 class SVFilter:public Filter_
 {

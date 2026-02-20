@@ -24,7 +24,9 @@
 #ifndef SHIFTER_H
 #define SHIFTER_H
 
-#include "global.hpp"
+#include "dsp_constants.hpp"
+#include "smbPitchShift_mayerfft.hpp"
+#include "Resample.hpp"
 #include "smbPitchShift.hpp"
 
 

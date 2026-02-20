@@ -24,6 +24,7 @@
 
 #include <math.h>
 #include "Infinity.hpp"
+#include "FPreset.hpp"
 #include <stdio.h>
 
 Infinity::Infinity (float * efxoutl_, float * efxoutr_)

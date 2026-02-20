@@ -26,6 +26,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include "MusicDelay.hpp"
+#include "FPreset.hpp"
 
 MusicDelay::MusicDelay (float * efxoutl_, float * efxoutr_)
 {

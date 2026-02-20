@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include "RBEcho.hpp"
+#include "FPreset.hpp"
 
 RBEcho::RBEcho (float * efxoutl_, float * efxoutr_)
 {

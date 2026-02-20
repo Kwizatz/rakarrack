@@ -24,7 +24,7 @@
 #ifndef VALVE_H
 #define VALVE_H
 
-#include "global.hpp"
+#include "dsp_constants.hpp"
 #include "AnalogFilter.hpp"
 #include "HarmonicEnhancer.hpp"
 

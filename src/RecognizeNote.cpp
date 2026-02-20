@@ -33,6 +33,7 @@
 
 
 #include "RecognizeNote.hpp"
+#include <cstdio>
 
 
 

@@ -22,7 +22,7 @@
 #ifndef STOMPBOX_H
 #define STOMPBOX_H
 
-#include "global.hpp"
+#include "dsp_constants.hpp"
 #include "AnalogFilter.hpp"
 #include "Waveshaper.hpp"
 

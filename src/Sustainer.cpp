@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include "Sustainer.hpp"
+#include "FPreset.hpp"
 
 Sustainer::Sustainer (float * efxoutl_, float * efxoutr_)
 {

@@ -25,6 +25,7 @@
 #include <cmath>
 #include <cstdio>
 #include "Chorus.hpp"
+#include "FPreset.hpp"
 
 Chorus::Chorus (float * efxoutl_, float * efxoutr_)
 {

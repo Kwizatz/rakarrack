@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include "CoilCrafter.hpp"
+#include "FPreset.hpp"
 
 
 

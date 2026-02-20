@@ -25,7 +25,7 @@
 #ifndef WAVESHAPER_H
 #define WAVESHAPER_H
 
-#include "global.hpp"
+#include "dsp_constants.hpp"
 #include "Resample.hpp"
 
 class Waveshaper

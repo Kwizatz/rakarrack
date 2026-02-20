@@ -25,7 +25,7 @@
 #define CONVOLOTRON_H
 
 #include <sndfile.h>
-#include "global.hpp"
+#include "dsp_constants.hpp"
 #include "Resample.hpp"
 #include "mayer_fft.hpp"
 

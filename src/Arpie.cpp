@@ -22,9 +22,11 @@
 */
 
 #include <stdio.h>
+#include <cstring>
 #include <stdlib.h>
 #include <math.h>
 #include "Arpie.hpp"
+#include "FPreset.hpp"
 
 Arpie::Arpie (float * efxoutl_, float * efxoutr_)
 {

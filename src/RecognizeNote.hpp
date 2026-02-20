@@ -14,7 +14,7 @@
 #define RECOGNIZE_H_
 
 #include <math.h>
-#include "global.hpp"
+#include "dsp_constants.hpp"
 #include "AnalogFilter.hpp"
 #include "Sustainer.hpp"
 

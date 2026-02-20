@@ -25,7 +25,7 @@
 #ifndef CHORUS_H
 #define CHORUS_H
 #include <vector>
-#include "global.hpp"
+#include "dsp_constants.hpp"
 #include "EffectLFO.hpp"
 #include "delayline.hpp"
 

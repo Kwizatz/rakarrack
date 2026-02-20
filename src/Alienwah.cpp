@@ -24,6 +24,7 @@
 
 #include <math.h>
 #include "Alienwah.hpp"
+#include "FPreset.hpp"
 #include <stdio.h>
 
 Alienwah::Alienwah (float * efxoutl_, float * efxoutr_)

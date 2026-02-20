@@ -25,7 +25,9 @@
 #ifndef NEWDIST_H
 #define NEWDIST_H
 
-#include "global.hpp"
+#include "dsp_constants.hpp"
+#include "FilterParams.hpp"
+#include "Filter.hpp"
 #include "AnalogFilter.hpp"
 #include "Waveshaper.hpp"
 

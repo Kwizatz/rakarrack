@@ -24,7 +24,8 @@
 #ifndef REVERBTRON_H
 #define REVERBTRON_H
 
-#include "global.hpp"
+#include "dsp_constants.hpp"
+#include "Resample.hpp"
 #include "AnalogFilter.hpp"
 
 

@@ -22,9 +22,11 @@
 */
 
 #include <stdio.h>
+#include <cstring>
 #include <stdlib.h>
 #include <math.h>
 #include "Ring.hpp"
+#include "FPreset.hpp"
 
 
 

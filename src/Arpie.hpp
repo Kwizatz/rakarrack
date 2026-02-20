@@ -25,7 +25,7 @@
 #ifndef ARPIE_H
 #define ARPIE_H
 
-#include "global.hpp"
+#include "dsp_constants.hpp"
 
 class Arpie
 {

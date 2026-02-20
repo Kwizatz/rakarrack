@@ -25,6 +25,8 @@
 
 
 #include "StereoHarm.hpp"
+#include <cstring>
+#include "FPreset.hpp"
 
 
 

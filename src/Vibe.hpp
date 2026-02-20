@@ -26,7 +26,7 @@
 #ifndef Vibe_H
 #define Vibe_H
 
-#include "global.hpp"
+#include "dsp_constants.hpp"
 #include "EffectLFO.hpp"
 
 class Vibe

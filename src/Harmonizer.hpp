@@ -26,7 +26,9 @@
 #ifndef HARMONIZER_H
 #define HARMONIZER_H
 
-#include "global.hpp"
+#include "dsp_constants.hpp"
+#include "smbPitchShift_mayerfft.hpp"
+#include "Resample.hpp"
 #include "AnalogFilter.hpp"
 #include "smbPitchShift.hpp"
 

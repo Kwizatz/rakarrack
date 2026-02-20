@@ -25,6 +25,7 @@
 
 #include <math.h>
 #include "Opticaltrem.hpp"
+#include "FPreset.hpp"
 
 Opticaltrem::Opticaltrem (float * efxoutl_, float * efxoutr_)
 {

@@ -36,7 +36,8 @@
 *
 *****************************************************************************/
 
-#include "global.hpp"
+#include "dsp_constants.hpp"
+#include <cstring>
 #include "smbPitchShift.hpp"
 
 

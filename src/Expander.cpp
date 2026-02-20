@@ -26,6 +26,7 @@
 
 #include <math.h>
 #include "Expander.hpp"
+#include "FPreset.hpp"
 
 
 Expander::Expander (float * efxoutl_, float * efxoutr_)

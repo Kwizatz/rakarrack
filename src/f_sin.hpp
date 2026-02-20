@@ -11,7 +11,7 @@ The author makes no guarantee of its suitability for any purpose.
 #define FSIN_H
 
 #include <math.h>
-#include "global.hpp"
+#include "dsp_constants.hpp"
 
 //globals
 static const float p2 = M_PI/2.0f;

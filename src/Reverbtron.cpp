@@ -22,9 +22,11 @@
 */
 
 #include <stdio.h>
+#include <cstring>
 #include <stdlib.h>
 #include <math.h>
 #include "Reverbtron.hpp"
+#include "FPreset.hpp"
 
 Reverbtron::Reverbtron (float * efxoutl_, float * efxoutr_,int DS, int uq, int dq)
 {
@@ -380,9 +382,9 @@ void Reverbtron::convert_time()
     if(hrtf_tmp>data_length) hrtf_tmp = data_length -1;
     if(hlength>data_length) hlength =  data_length -1;
     for (i =0; i<hrtf_tmp; i++) {
-        tmptime = (int) (RND * hrtf_size);
+        tmptime = (int) (RND() * hrtf_size);
         rndtime[i] = tmptime;  //randomly jumble the head of the transfer function
-        rnddata[i] = 3.0f*(0.5f - RND)*data[tmptime];
+        rnddata[i] = 3.0f*(0.5f - RND())*data[tmptime];
     }
 
     if(Pfade > 0) {

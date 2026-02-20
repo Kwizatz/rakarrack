@@ -25,7 +25,7 @@
 
 #include <math.h>
 
-#include "global.hpp"
+#include "dsp_constants.hpp"
 #include "metronome.hpp"
 
 

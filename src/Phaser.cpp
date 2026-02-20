@@ -24,6 +24,7 @@
 
 #include <math.h>
 #include "Phaser.hpp"
+#include "FPreset.hpp"
 #include <stdio.h>
 #define PHASER_LFO_SHAPE 2
 

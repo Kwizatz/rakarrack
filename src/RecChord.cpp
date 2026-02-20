@@ -23,6 +23,7 @@
 
 
 #include "RecChord.hpp"
+#include <cstring>
 
 
 RecChord::RecChord ()

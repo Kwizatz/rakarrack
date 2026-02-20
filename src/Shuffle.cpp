@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include "Distorsion.hpp"
+#include "FPreset.hpp"
 #include "Shuffle.hpp"
 
 /*

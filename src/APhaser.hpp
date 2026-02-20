@@ -26,7 +26,7 @@
 
 #ifndef APHASER_H
 #define APHASER_H
-#include "global.hpp"
+#include "dsp_constants.hpp"
 #include "EffectLFO.hpp"
 
 

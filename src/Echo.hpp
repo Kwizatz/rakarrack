@@ -27,7 +27,7 @@
 #ifndef ECHO_H
 #define ECHO_H
 
-#include "global.hpp"
+#include "dsp_constants.hpp"
 #include "delayline.hpp"
 
 class Echo

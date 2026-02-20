@@ -24,7 +24,7 @@
 #ifndef AUTOPAN_H
 #define AUTOPAN_H
 
-#include "global.hpp"
+#include "dsp_constants.hpp"
 #include "EffectLFO.hpp"
 
 class Pan

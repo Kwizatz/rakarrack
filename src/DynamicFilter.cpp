@@ -24,6 +24,7 @@
 
 #include <math.h>
 #include "DynamicFilter.hpp"
+#include "FPreset.hpp"
 #include <stdio.h>
 
 DynamicFilter::DynamicFilter (float * efxoutl_, float * efxoutr_)

@@ -23,7 +23,9 @@
 #ifndef SEQUENCE_H
 #define SEQUENCE_H
 
-#include "global.hpp"
+#include "dsp_constants.hpp"
+#include "Resample.hpp"
+#include "smbPitchShift_mayerfft.hpp"
 #include "RBFilter.hpp"
 #include "smbPitchShift.hpp"
 #include "beattracker.hpp"

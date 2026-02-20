@@ -25,7 +25,7 @@
 
 #ifndef EFFECT_LFO_H
 #define EFFECT_LFO_H
-#include "global.hpp"
+#include "dsp_constants.hpp"
 
 
 class EffectLFO

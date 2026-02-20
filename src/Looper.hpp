@@ -26,7 +26,7 @@
 #ifndef LOOPER_H
 #define LOOPER_H
 
-#include "global.hpp"
+#include "dsp_constants.hpp"
 #include "metronome.hpp"
 
 class Looper

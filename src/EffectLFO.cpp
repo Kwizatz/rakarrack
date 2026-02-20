@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include <math.h>
 
-#include "global.hpp"
+#include "dsp_constants.hpp"
 #include "EffectLFO.hpp"
 #include "f_sin.hpp"
 
@@ -53,10 +53,10 @@ EffectLFO::EffectLFO ()
     rreg = lreg = oldrreg = oldlreg = 0.0f;
     updateparams ();
 
-    ampl1 = (1.0f - lfornd) + lfornd * (float)RND;
-    ampl2 = (1.0f - lfornd) + lfornd * (float)RND;
-    ampr1 = (1.0f - lfornd) + lfornd * (float)RND;
-    ampr2 = (1.0f - lfornd) + lfornd * (float)RND;
+    ampl1 = (1.0f - lfornd) + lfornd * RND();
+    ampl2 = (1.0f - lfornd) + lfornd * RND();
+    ampr1 = (1.0f - lfornd) + lfornd * RND();
+    ampr2 = (1.0f - lfornd) + lfornd * RND();
 
 
 };
@@ -88,12 +88,12 @@ EffectLFO::updateparams ()
 
     if ((h = incx*ratediv) > 0.02) h = 0.02;  //keeps it stable
 
-    a = 10.0f + (((float) RND) - 0.5f)*8.0f;
-    b = 28.0f + (((float) RND) - 0.5f)*12.0f;
-    c = 1.25f + 3.0f * ((float) RND);
+    a = 10.0f + (((float) RND()) - 0.5f)*8.0f;
+    b = 28.0f + (((float) RND()) - 0.5f)*12.0f;
+    c = 1.25f + 3.0f * ((float) RND());
 
 // printf("incx %f x0 %f y0 %f z0 %f out %f c %f b %f a %f\n",incx,x0,y0,z0, (2.0f * radius - 1.0f), c, b, a);
-    x0 = 0.1f + 0.1f * ((float) RND);
+    x0 = 0.1f + 0.1f * ((float) RND());
     y0 = 0.0f;
     z0 = 0.2f;
     x1 = y1 = z1 = radius = 0.0f;
@@ -162,7 +162,7 @@ float EffectLFO::getlfoshape (float x)
     case 9:                  //Sample/Hold Random
         if(fmod(x,0.5f)<=(2.0f*incx)) {          //this function is called by left, then right...so must toggle each time called
             rreg = lreg;
-            lreg = RND1;
+            lreg = RND1();
 
         }
 
@@ -222,7 +222,7 @@ EffectLFO::effectlfoout (float * outl, float * outr)
     if (xl > 1.0) {
         xl -= 1.0f;
         ampl1 = ampl2;
-        ampl2 = (1.0f - lfornd) + lfornd * (float)RND;
+        ampl2 = (1.0f - lfornd) + lfornd * RND();
     };
     if(lfotype==8) out = scale*x0;  //fractal parameter
     *outl = (out + 1.0f) * 0.5f;
@@ -237,7 +237,7 @@ EffectLFO::effectlfoout (float * outl, float * outr)
     if (xr > 1.0) {
         xr -= 1.0f;
         ampr1 = ampr2;
-        ampr2 = (1.0f - lfornd) + lfornd * (float)RND;
+        ampr2 = (1.0f - lfornd) + lfornd * RND();
     };
     *outr = (out + 1.0f) * 0.5f;
 };

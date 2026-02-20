@@ -22,7 +22,7 @@
 #ifndef EXCITER_H
 #define EXCITER_H
 
-#include "global.hpp"
+#include "dsp_constants.hpp"
 #include "HarmonicEnhancer.hpp"
 
 

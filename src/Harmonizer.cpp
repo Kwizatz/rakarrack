@@ -25,6 +25,8 @@
 
 
 #include "Harmonizer.hpp"
+#include <cstring>
+#include "FPreset.hpp"
 
 
 

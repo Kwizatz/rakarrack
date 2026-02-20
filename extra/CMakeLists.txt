@@ -17,6 +17,9 @@ add_executable(rakverb rakverb.cpp)
 add_executable(rakverb2 rakverb2.cpp)
 add_executable(rakgit2new rakgit2new.cpp)
 
+target_link_libraries(rakverb PkgConfig::SNDFILE)
+target_link_libraries(rakverb2 PkgConfig::SNDFILE)
+
 install(TARGETS rakconvert rakverb rakverb2 rakgit2new
 	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )

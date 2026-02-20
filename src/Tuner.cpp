@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "global.hpp"
+#include "dsp_constants.hpp"
 
 
 Tuner::Tuner ()

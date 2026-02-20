@@ -25,7 +25,7 @@
 #ifndef MUSDELAY_H
 #define MUSDELAY_H
 
-#include "global.hpp"
+#include "dsp_constants.hpp"
 
 
 class MusicDelay

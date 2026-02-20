@@ -27,7 +27,7 @@
 #ifndef RBECHO_H
 #define RBECHO_H
 
-#include "global.hpp"
+#include "dsp_constants.hpp"
 #include "delayline.hpp"
 
 class RBEcho

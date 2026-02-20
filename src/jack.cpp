@@ -28,6 +28,10 @@
 #include <jack/transport.h>
 #include "jack.hpp"
 #include "global.hpp"
+#include "AllEffects.hpp"
+#ifdef ENABLE_MIDI
+#include "MIDIConverter.hpp"
+#endif
 
 
 RKR *JackOUT;

@@ -24,7 +24,7 @@
 #ifndef RECCHORD_H
 #define RECCHORD_H
 
-#include "global.hpp"
+#include "dsp_constants.hpp"
 
 class RecChord
 {

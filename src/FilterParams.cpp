@@ -76,7 +76,7 @@ FilterParams::defaults (int n)
 {
     int j = n;
     for (int i = 0; i < FF_MAX_FORMANTS; i++) {
-        Pvowels[j].formants[i].freq = (unsigned char) (RND*127.0);	//some random freqs
+        Pvowels[j].formants[i].freq = (unsigned char) (RND()*127.0);	//some random freqs
         Pvowels[j].formants[i].q = 64;
         Pvowels[j].formants[i].amp = 127;
     };

@@ -19,6 +19,8 @@
 */
 
 #include "FPreset.hpp"
+#include <cstdio>
+#include <cstring>
 
 
 
@@ -37,7 +39,7 @@ FPreset::ReadPreset(int eff, int num)
     int k=0;
     int reff=0;
     memset(tempfile,0,sizeof(tempfile));
-    memset(pdata,0,sizeof(pdata));
+    pdata.fill(0);
     sprintf (tempfile, "%s%s", getenv ("HOME"), "/.rkrintpreset");
     if (( fn = fopen (tempfile, "r")) != NULL) {
         while (fgets (buf, sizeof buf, fn) != NULL)

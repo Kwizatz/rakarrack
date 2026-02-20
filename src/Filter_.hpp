@@ -25,7 +25,7 @@
 #ifndef FILTER__H
 #define FILTER__H
 
-#include "global.hpp"
+#include "dsp_constants.hpp"
 
 
 

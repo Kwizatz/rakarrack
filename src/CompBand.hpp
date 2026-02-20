@@ -30,7 +30,8 @@
 #ifndef COMPBANDL_H
 #define COMPBANDL_H
 
-#include "global.hpp"
+#include "dsp_constants.hpp"
+#include "AnalogFilter.hpp"
 #include "Compressor.hpp"
 
 

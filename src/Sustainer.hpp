@@ -23,7 +23,7 @@
 #ifndef SUSTAINER_H
 #define SUSTAINER_H
 
-#include "global.hpp"
+#include "dsp_constants.hpp"
 
 class Sustainer
 {
