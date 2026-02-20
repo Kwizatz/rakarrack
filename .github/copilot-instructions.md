@@ -151,3 +151,6 @@ When `ENABLE_MIDI=ON`:
 - Code originally from ZynAddSubFX effects engine (see `Effect.h` header)
 - Fork purpose: Fix modern compiler compatibility issues from original stalled development
 - Windows support is experimental
+- **C++26 standard** is set in `cmake/compiler.cmake`
+- Owned pointers use `std::unique_ptr`, dynamic buffers use `std::vector`, fixed arrays use `std::array`
+- Constants in `global.h` use `inline constexpr` instead of `#define`
