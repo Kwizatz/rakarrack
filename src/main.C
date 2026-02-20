@@ -231,7 +231,7 @@ main (int argc, char *argv[])
         {
 
             rkr.jdis=1;
-            rkr.Message (1,rkr.jackcliname,
+            rkr.Message (1,rkr.jackcliname.data(),
                          "Jack Shut Down, try to save your work");
         }
 

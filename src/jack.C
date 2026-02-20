@@ -87,23 +87,23 @@ JACKstart (RKR * rkr_, jack_client_t * jackclient_)
 
         for (int i = 0; i < JackOUT->cuan_jack; i += 2) {
             jack_connect (jackclient, jack_port_name (outport_left),
-                          JackOUT->jack_po[i].name);
+                          JackOUT->jack_po[i].name.data());
             jack_connect (jackclient, jack_port_name (outport_right),
-                          JackOUT->jack_po[i + 1].name);
+                          JackOUT->jack_po[i + 1].name.data());
         }
     }
 
     if ((JackOUT->aconnect_JIA) && (!needtoloadstate)) {
 
         if(JackOUT->cuan_ijack == 1) {
-            jack_connect (jackclient,JackOUT->jack_poi[0].name,jack_port_name(inputport_left));
-            jack_connect (jackclient,JackOUT->jack_poi[0].name, jack_port_name(inputport_right));
+            jack_connect (jackclient,JackOUT->jack_poi[0].name.data(),jack_port_name(inputport_left));
+            jack_connect (jackclient,JackOUT->jack_poi[0].name.data(), jack_port_name(inputport_right));
         }
 
         else {
             for (int i = 0; i < JackOUT->cuan_ijack; i += 2) {
-                jack_connect (jackclient,JackOUT->jack_poi[i].name, jack_port_name (inputport_left));
-                jack_connect (jackclient,JackOUT->jack_poi[i + 1].name,jack_port_name (inputport_right));
+                jack_connect (jackclient,JackOUT->jack_poi[i].name.data(), jack_port_name (inputport_left));
+                jack_connect (jackclient,JackOUT->jack_poi[i + 1].name.data(),jack_port_name (inputport_right));
             }
         }
 
@@ -223,22 +223,22 @@ jackprocess (jack_nframes_t nframes, void *arg)
 #endif
 
 
-    memcpy (JackOUT->efxoutl, inl,
+    memcpy (JackOUT->efxoutl.data(), inl,
             sizeof (jack_default_audio_sample_t) * nframes);
-    memcpy (JackOUT->efxoutr, inr,
+    memcpy (JackOUT->efxoutr.data(), inr,
             sizeof (jack_default_audio_sample_t) * nframes);
-    memcpy (JackOUT->auxdata, aux,
+    memcpy (JackOUT->auxdata.data(), aux,
             sizeof (jack_default_audio_sample_t) * nframes);
 
 
 
 
-    JackOUT->Alg (JackOUT->efxoutl, JackOUT->efxoutr, inl, inr ,0);
+    JackOUT->Alg (JackOUT->efxoutl.data(), JackOUT->efxoutr.data(), inl, inr ,0);
 
 
-    memcpy (outl, JackOUT->efxoutl,
+    memcpy (outl, JackOUT->efxoutl.data(),
             sizeof (jack_default_audio_sample_t) * nframes);
-    memcpy (outr, JackOUT->efxoutr,
+    memcpy (outr, JackOUT->efxoutr.data(),
             sizeof (jack_default_audio_sample_t) * nframes);
 
 

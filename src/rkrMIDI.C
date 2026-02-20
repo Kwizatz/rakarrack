@@ -35,7 +35,7 @@ RKR::InitMIDI ()
     int err = snd_seq_open (&midi_in, "default", SND_SEQ_OPEN_INPUT, 0);
     if (err < 0)
         printf ("Cannot activate ALSA seq client\n");
-    snd_seq_set_client_name (midi_in, jackcliname);
+    snd_seq_set_client_name (midi_in, jackcliname.data());
     snd_config_update_free_global ();
 
 
@@ -44,7 +44,7 @@ RKR::InitMIDI ()
 
     // Create Alsa Seq Client
 
-    sprintf (portname, "%s IN",jackcliname);
+    snprintf (portname, sizeof(portname), "%s IN",jackcliname.data());
     snd_seq_create_simple_port (midi_in, portname,
                                 SND_SEQ_PORT_CAP_WRITE |
                                 SND_SEQ_PORT_CAP_SUBS_WRITE,
@@ -692,7 +692,7 @@ RKR::Conecta ()
                     Cyoin = client;
                     Pyoin = puerto;
                 }
-                if (strstr (temp, MID) != 0) {
+                if (strstr (temp, MID.data()) != 0) {
                     Ccin = client;
                     Pcin = puerto;
                 }

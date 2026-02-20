@@ -980,11 +980,11 @@ RKR::savefile (char *filename)
 
     memset (buf, 0, sizeof (buf));
     if (Author[0] != 0){
-        sprintf (buf, "%s\n", Author);
+        snprintf (buf, sizeof(buf), "%s\n", Author.data());
     }
     else {
         if (UserRealName[0] != 0)
-            sprintf (buf, "%s\n", UserRealName);
+            snprintf (buf, sizeof(buf), "%s\n", UserRealName.data());
         else
             sprintf (buf, "%s\n", getenv ("USER"));
     }
@@ -993,7 +993,7 @@ RKR::savefile (char *filename)
     //Preset Name
 
     memset (buf, 0, sizeof (buf));
-    fputs (Preset_Name, fn);
+    fputs (Preset_Name.data(), fn);
     fputs ("\n", fn);
 
 
@@ -1090,7 +1090,7 @@ RKR::loadfile (char *filename)
 
     //Author
 
-    memset (Author,0, 64);
+    memset (Author.data(), 0, Author.size());
     memset (buf, 0, sizeof (buf));
     fgets (buf, sizeof buf, fn);
 
@@ -1101,7 +1101,7 @@ RKR::loadfile (char *filename)
 
     // Preset Name
 
-    memset (Preset_Name, 0,64);
+    memset (Preset_Name.data(), 0, Preset_Name.size());
     memset(buf, 0, sizeof (buf));
     fgets (buf, sizeof buf, fn);
 
@@ -1655,7 +1655,7 @@ RKR::loadnames()
 
         case 3:
             memset (temp, 0, sizeof (temp));
-            sprintf (temp, "%s",BankFilename);
+            sprintf (temp, "%s",BankFilename.data());
             break;
 
         }
@@ -1666,7 +1666,7 @@ RKR::loadnames()
             New_Bank();
             while (!feof (fn)) {
                 fread (&Bank, sizeof (Bank), 1, fn);
-                for(j=1; j<=60; j++) strcpy(B_Names[k][j].Preset_Name,Bank[j].Preset_Name);
+                for(j=1; j<=60; j++) strcpy(B_Names[k][j].Preset_Name.data(),Bank[j].Preset_Name.data());
             }
             fclose (fn);
         }
@@ -1685,7 +1685,7 @@ RKR::loadbank (char *filename)
 
 
     memset(meslabel,0, sizeof(meslabel));
-    sprintf(meslabel, "%s %s",jackcliname,VERSION);
+    snprintf(meslabel, sizeof(meslabel), "%s %s",jackcliname.data(),VERSION);
 
 
     err_message = CheckOldBank(filename);
@@ -1863,17 +1863,17 @@ RKR::New ()
 
     for (j=0; j<10; j++) active[j]=0;
 
-    memset(Preset_Name, 0,sizeof (Preset_Name));
+    memset(Preset_Name.data(), 0, Preset_Name.size());
     memset(efx_Convol->Filename,0,sizeof(efx_Convol->Filename));
     memset(efx_Reverbtron->Filename,0,sizeof(efx_Reverbtron->Filename));
     memset(efx_Echotron->Filename,0,sizeof(efx_Echotron->Filename));
-    memset (Author,0, sizeof (Author));
-    strcpy(Author,UserRealName);
+    memset (Author.data(), 0, Author.size());
+    strcpy(Author.data(),UserRealName.data());
     Input_Gain = .5f;
     Master_Volume = .5f;
     Fraction_Bypass = 1.0f;
     Bypass = 0;
-    memset(lv, 0 , sizeof(lv));
+    memset(lv.data(), 0 , sizeof(lv));
 
     for (j = 0; j < NumEffects; j++) {
         for (k = 0; k < 16; k++) {
@@ -1942,7 +1942,7 @@ RKR::New ()
     Bypass_B = 0;
 
 
-    memset(XUserMIDI,0,sizeof(XUserMIDI));
+    memset(XUserMIDI.data(),0,sizeof(XUserMIDI));
 
 
 
@@ -2072,18 +2072,18 @@ RKR::New_Bank ()
 
 
     for (i = 0; i < 62; i++) {
-        memset(Bank[i].Preset_Name, 0, sizeof (Bank[i].Preset_Name));
-        memset(Bank[i].Author, 0, sizeof (Bank[i].Author));
-        strcpy(Bank[i].Author,UserRealName);
-        memset(Bank[i].ConvoFiname,0, sizeof(Bank[i].ConvoFiname));
-        memset(Bank[i].RevFiname,0,sizeof(Bank[i].RevFiname));
-        memset(Bank[i].EchoFiname,0,sizeof(Bank[i].EchoFiname));
+        memset(Bank[i].Preset_Name.data(), 0, Bank[i].Preset_Name.size());
+        memset(Bank[i].Author.data(), 0, Bank[i].Author.size());
+        strcpy(Bank[i].Author.data(),UserRealName.data());
+        memset(Bank[i].ConvoFiname.data(), 0, Bank[i].ConvoFiname.size());
+        memset(Bank[i].RevFiname.data(), 0, Bank[i].RevFiname.size());
+        memset(Bank[i].EchoFiname.data(), 0, Bank[i].EchoFiname.size());
 
         Bank[i].Input_Gain = .5f;
         Bank[i].Master_Volume = .5f;
         Bank[i].Balance = 1.0f;
         Bank[i].Bypass = 0;
-        memset(Bank[i].lv , 0 , sizeof(Bank[i].lv));
+        memset(Bank[i].lv.data(), 0, sizeof(Bank[i].lv));
 
         for (j = 0; j < NumEffects; j++) {
             for (k = 0; k < 16; k++) {
@@ -2093,7 +2093,7 @@ RKR::New_Bank ()
 
         }
 
-        memset(Bank[i].XUserMIDI, 0, sizeof(Bank[i].XUserMIDI));
+        memset(Bank[i].XUserMIDI.data(), 0, sizeof(Bank[i].XUserMIDI));
 
     }
 
@@ -2110,16 +2110,16 @@ RKR::Bank_to_Preset (int i)
     int j, k;
 
 
-    memset(Preset_Name, 0,sizeof (Preset_Name));
-    strcpy (Preset_Name, Bank[i].Preset_Name);
-    memset(Author, 0,sizeof (Author));
-    strcpy (Author, Bank[i].Author);
+    memset(Preset_Name.data(), 0, Preset_Name.size());
+    strcpy (Preset_Name.data(), Bank[i].Preset_Name.data());
+    memset(Author.data(), 0, Author.size());
+    strcpy (Author.data(), Bank[i].Author.data());
     memset(efx_Convol->Filename, 0, sizeof (efx_Convol->Filename));
-    strcpy (efx_Convol->Filename,Bank[i].ConvoFiname);
+    strcpy (efx_Convol->Filename,Bank[i].ConvoFiname.data());
     memset(efx_Reverbtron->Filename, 0, sizeof (efx_Reverbtron->Filename));
-    strcpy (efx_Reverbtron->Filename,Bank[i].RevFiname);
+    strcpy (efx_Reverbtron->Filename,Bank[i].RevFiname.data());
     memset(efx_Echotron->Filename, 0, sizeof (efx_Echotron->Filename));
-    strcpy (efx_Echotron->Filename,Bank[i].EchoFiname);
+    strcpy (efx_Echotron->Filename,Bank[i].EchoFiname.data());
 
 
     for (j = 0; j <=NumEffects; j++) {
@@ -2185,7 +2185,7 @@ RKR::Bank_to_Preset (int i)
     Bypass_B = Bypass;
 
 
-    memcpy(XUserMIDI, Bank[i].XUserMIDI, sizeof(XUserMIDI));
+    memcpy(XUserMIDI.data(), Bank[i].XUserMIDI.data(), sizeof(XUserMIDI));
 
 
 
@@ -2208,16 +2208,16 @@ RKR::Preset_to_Bank (int i)
 
 
     int j, k;
-    memset(Bank[i].Preset_Name, 0, sizeof (Bank[i].Preset_Name));
-    strcpy (Bank[i].Preset_Name, Preset_Name);
-    memset(Bank[i].Author, 0, sizeof (Bank[i].Author));
-    strcpy (Bank[i].Author, Author);
-    memset(Bank[i].ConvoFiname,0, sizeof(Bank[i].ConvoFiname));
-    strcpy(Bank[i].ConvoFiname, efx_Convol->Filename);
-    memset(Bank[i].RevFiname, 0, sizeof(Bank[i].RevFiname));
-    strcpy(Bank[i].RevFiname, efx_Reverbtron->Filename);
-    memset(Bank[i].EchoFiname, 0, sizeof(Bank[i].EchoFiname));
-    strcpy(Bank[i].EchoFiname, efx_Echotron->Filename);
+    memset(Bank[i].Preset_Name.data(), 0, Bank[i].Preset_Name.size());
+    strcpy (Bank[i].Preset_Name.data(), Preset_Name.data());
+    memset(Bank[i].Author.data(), 0, Bank[i].Author.size());
+    strcpy (Bank[i].Author.data(), Author.data());
+    memset(Bank[i].ConvoFiname.data(), 0, Bank[i].ConvoFiname.size());
+    strcpy(Bank[i].ConvoFiname.data(), efx_Convol->Filename);
+    memset(Bank[i].RevFiname.data(), 0, Bank[i].RevFiname.size());
+    strcpy(Bank[i].RevFiname.data(), efx_Reverbtron->Filename);
+    memset(Bank[i].EchoFiname.data(), 0, Bank[i].EchoFiname.size());
+    strcpy(Bank[i].EchoFiname.data(), efx_Echotron->Filename);
 
 
     Bank[i].Input_Gain = Input_Gain;
@@ -2393,7 +2393,7 @@ RKR::Preset_to_Bank (int i)
     Bank[i].lv[47][19] = Infinity_Bypass;
 
 
-    memcpy(Bank[i].XUserMIDI,XUserMIDI,sizeof(XUserMIDI));
+    memcpy(Bank[i].XUserMIDI.data(),XUserMIDI.data(),sizeof(XUserMIDI));
 
 
 };
@@ -2414,12 +2414,12 @@ RKR::copy_IO()
     int i;
 
     for(i=0; i<62; i++) {
-        memset(Bank[i].cInput_Gain, 0, sizeof(Bank[i].cInput_Gain));
-        sprintf(Bank[i].cInput_Gain, "%f", Bank[i].Input_Gain);
-        memset(Bank[i].cMaster_Volume, 0,sizeof(Bank[i].cMaster_Volume));
-        sprintf(Bank[i].cMaster_Volume, "%f", Bank[i].Master_Volume);
-        memset(Bank[i].cBalance, 0, sizeof(Bank[i].cBalance));
-        sprintf(Bank[i].cBalance, "%f", Bank[i].Balance);
+        memset(Bank[i].cInput_Gain.data(), 0, Bank[i].cInput_Gain.size());
+        snprintf(Bank[i].cInput_Gain.data(), Bank[i].cInput_Gain.size(), "%f", Bank[i].Input_Gain);
+        memset(Bank[i].cMaster_Volume.data(), 0, Bank[i].cMaster_Volume.size());
+        snprintf(Bank[i].cMaster_Volume.data(), Bank[i].cMaster_Volume.size(), "%f", Bank[i].Master_Volume);
+        memset(Bank[i].cBalance.data(), 0, Bank[i].cBalance.size());
+        snprintf(Bank[i].cBalance.data(), Bank[i].cBalance.size(), "%f", Bank[i].Balance);
 
 
 
@@ -2436,13 +2436,13 @@ RKR::convert_IO()
     int i;
 
     for(i=0; i<62; i++) {
-        sscanf(Bank[i].cInput_Gain, "%f", &Bank[i].Input_Gain);
+        sscanf(Bank[i].cInput_Gain.data(), "%f", &Bank[i].Input_Gain);
         if(Bank[i].Input_Gain == 0.0) Bank[i].Input_Gain=0.5f;
 
-        sscanf(Bank[i].cMaster_Volume, "%f", &Bank[i].Master_Volume);
+        sscanf(Bank[i].cMaster_Volume.data(), "%f", &Bank[i].Master_Volume);
         if(Bank[i].Master_Volume == 0.0) Bank[i].Master_Volume=0.5f;
 
-        sscanf(Bank[i].cBalance, "%f", &Bank[i].Balance);
+        sscanf(Bank[i].cBalance.data(), "%f", &Bank[i].Balance);
         if(Bank[i].Balance == 0.0) Bank[i].Balance=1.0f;
 
 
@@ -2522,7 +2522,7 @@ RKR::saveskin (char *filename)
 
 
     memset (buf, 0, sizeof (buf));
-    sprintf (buf, "%s", BackgroundImage);
+    sprintf (buf, "%s", BackgroundImage.data());
     fputs (buf, fn);
     fputs ("\n",fn);
 
@@ -2558,7 +2558,7 @@ RKR::loadskin (char *filename)
     fgets (buf, sizeof buf, fn);
     sscanf (buf, "%d,%d,%d,%d\n", &sback_color,&sfore_color,&slabel_color,&sleds_color);
 
-    memset (BackgroundImage, 0, sizeof(BackgroundImage));
+    memset (BackgroundImage.data(), 0, BackgroundImage.size());
     memset (buf, 0, sizeof (buf));
     fgets (buf, sizeof buf, fn);
 
@@ -2586,7 +2586,7 @@ RKR::dump_preset_names (void)
         fprintf(stderr,
                 "RKR_BANK_NAME:%d:%s\n",
                 i,
-                Bank[i].Preset_Name);
+                Bank[i].Preset_Name.data());
     }
 
 }
