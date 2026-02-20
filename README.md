@@ -28,5 +28,5 @@ Running on Windows is in the experimental stage right now, building for [MSYS2](
 
 This is the partial list of dependencies for building on MSYS:
 
-`pacman -S --needed --noconfirm mingw-w64-x86_64-fltk mingw-w64-x86_64-dlfcn mingw-w64-x86_64-jack2 mingw-w64-x86_64-qjackctl mingw-w64-x86_64-xpm-nox mingw-w64-x86_64-rapidjson`
+`pacman -S --needed --noconfirm mingw-w64-x86_64-fltk mingw-w64-x86_64-dlfcn mingw-w64-x86_64-jack2 mingw-w64-x86_64-qjackctl mingw-w64-x86_64-xpm-nox mingw-w64-x86_64-nlohmann-json`
 

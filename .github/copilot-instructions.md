@@ -32,7 +32,7 @@ Required MSYS2 packages:
 ```bash
 pacman -S --needed --noconfirm automake autoconf mingw-w64-x86_64-fltk \
   mingw-w64-x86_64-dlfcn mingw-w64-x86_64-jack2 mingw-w64-x86_64-qjackctl \
-  mingw-w64-x86_64-xpm-nox mingw-w64-x86_64-rapidjson
+  mingw-w64-x86_64-xpm-nox mingw-w64-x86_64-nlohmann-json
 ```
 
 Use the MSYS2 MinGW 64-bit shell for all build and compilation steps.
@@ -111,7 +111,7 @@ Defined in `global.hpp`:
 ## Data Files
 
 Located in `data/`:
-- `.rkrb` files - Bank presets (RapidJSON format)
+- `.rkrb` files - Bank presets (binary format)
 - `.rvb` files - Reverb IR data
 - `.dly` files - Echo/delay IR data
 - `.wav` files - Sample files for convolution
@@ -121,7 +121,7 @@ Located in `data/`:
 ## Preset System
 
 - `FPreset` class handles internal preset loading
-- Banks stored as JSON files (RapidJSON library)
+- Banks stored as binary files (nlohmann/json library available for future migration)
 - Methods: `loadfile()`, `savefile()`, `loadbank()`, `savebank()` in `RKR` class
 - Legacy bank conversion: `ConvertOldFile()`, `ConvertReverbFile()`
 
