@@ -79,7 +79,7 @@ private:
 
     //Valorile interne
     float panning, fb, depth, lrcross, phase;
-    struct COMPLEXTYPE oldl[MAX_ALIENWAH_DELAY], oldr[MAX_ALIENWAH_DELAY];
+    std::array<COMPLEXTYPE, MAX_ALIENWAH_DELAY> oldl{}, oldr{};
     COMPLEXTYPE oldclfol, oldclfor;
     class FPreset *Fpre;
 

@@ -82,8 +82,8 @@ private:
 
 
     float lpanning, rpanning, hidamp, alpha_hidamp, convlength, oldl;
-    float *rbuf, *buf, *lxn;
-    float *templ, *tempr;
+    std::vector<float> rbuf, buf, lxn;
+    std::vector<float> templ, tempr;
 
     float level,fb, feedback;
     float levpanl,levpanr;
@@ -93,9 +93,9 @@ private:
 
     //Parametrii reali
 
-    class Resample *M_Resample;
-    class Resample *U_Resample;
-    class Resample *D_Resample;
+    std::unique_ptr<Resample> M_Resample;
+    std::unique_ptr<Resample> U_Resample;
+    std::unique_ptr<Resample> D_Resample;
 
     class FPreset *Fpre;
 

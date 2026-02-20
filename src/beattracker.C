@@ -4,12 +4,12 @@
 beattracker:: beattracker ()
 {
 
-    rmsfilter = new RBFilter (0, 15.0f, 0.15f, 1);
-    peaklpfilter = new RBFilter (0, 25.0f, 0.5f, 0);
-    peaklpfilter2 = new RBFilter (0, 25.0f, 0.5f, 0);
-    peakhpfilter = new RBFilter (1, 45.0f, 0.5f, 0);
+    rmsfilter = std::make_unique<RBFilter> (0, 15.0f, 0.15f, 1);
+    peaklpfilter = std::make_unique<RBFilter> (0, 25.0f, 0.5f, 0);
+    peaklpfilter2 = std::make_unique<RBFilter> (0, 25.0f, 0.5f, 0);
+    peakhpfilter = std::make_unique<RBFilter> (1, 45.0f, 0.5f, 0);
 
-    index = (int *) malloc (sizeof (int) * PERIOD);
+    index.resize(PERIOD);
 
 //Trigger Filter Settings
     peakpulse = peak = envrms = 0.0f;
@@ -30,10 +30,7 @@ beattracker:: beattracker ()
 
 };
 
-beattracker::~beattracker ()
-{
-
-};
+beattracker::~beattracker () = default;
 
 void
 beattracker::cleanup ()

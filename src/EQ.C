@@ -40,8 +40,8 @@ EQ::EQ (float * efxoutl_, float * efxoutr_)
         filter[i].Pgain = 64;
         filter[i].Pq = 64;
         filter[i].Pstages = 0;
-        filter[i].l = new AnalogFilter (6, 1000.0f, 1.0f, 0);
-        filter[i].r = new AnalogFilter (6, 1000.0f, 1.0f, 0);
+        filter[i].l = std::make_unique<AnalogFilter> (6, 1000.0f, 1.0f, 0);
+        filter[i].r = std::make_unique<AnalogFilter> (6, 1000.0f, 1.0f, 0);
     };
     //default values
     Ppreset = 0;
@@ -51,9 +51,7 @@ EQ::EQ (float * efxoutl_, float * efxoutr_)
     cleanup ();
 };
 
-EQ::~EQ ()
-{
-};
+EQ::~EQ () = default;
 
 /*
  * Cleanup the effect

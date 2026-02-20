@@ -60,7 +60,7 @@ private:
 
 
 
-    class HarmEnhancer *harm;
+    std::unique_ptr<HarmEnhancer> harm;
 
     class FPreset *Fpre;
 

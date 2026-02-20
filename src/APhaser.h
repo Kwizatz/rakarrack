@@ -71,7 +71,7 @@ private:
     //Internal Variables
     bool barber;			//Barber pole phasing flag
     float distortion, fb, width, offsetpct, fbl, fbr, depth;
-    float *lxn1, *lyn1,*rxn1, *ryn1, *offset;
+    std::vector<float> lxn1, lyn1, rxn1, ryn1, offset;
     float oldlgain, oldrgain, rdiff, ldiff, invperiod;
 
     float mis;

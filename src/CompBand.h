@@ -51,14 +51,14 @@ public:
 
     float *efxoutl;
     float *efxoutr;
-    float *lowl;
-    float *lowr;
-    float *midll;
-    float *midlr;
-    float *midhl;
-    float *midhr;
-    float *highl;
-    float *highr;
+    std::vector<float> lowl;
+    std::vector<float> lowr;
+    std::vector<float> midll;
+    std::vector<float> midlr;
+    std::vector<float> midhl;
+    std::vector<float> midhr;
+    std::vector<float> highl;
+    std::vector<float> highr;
 
 
 private:
@@ -91,11 +91,11 @@ private:
 
     //Parametrii reali
 
-    AnalogFilter *lpf1l, *lpf1r, *hpf1l, *hpf1r;
-    AnalogFilter *lpf2l, *lpf2r, *hpf2l, *hpf2r;
-    AnalogFilter *lpf3l, *lpf3r, *hpf3l, *hpf3r;
+    std::unique_ptr<AnalogFilter> lpf1l, lpf1r, hpf1l, hpf1r;
+    std::unique_ptr<AnalogFilter> lpf2l, lpf2r, hpf2l, hpf2r;
+    std::unique_ptr<AnalogFilter> lpf3l, lpf3r, hpf3l, hpf3r;
 
-    Compressor *CL,*CML,*CMH,*CH;
+    std::unique_ptr<Compressor> CL, CML, CMH, CH;
 
     class FPreset *Fpre;
 

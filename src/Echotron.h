@@ -121,16 +121,16 @@ private:
     float width, depth;
     float lpanning, rpanning, hidamp, alpha_hidamp, convlength;
 
-    delayline *lxn, *rxn;
+    std::unique_ptr<delayline> lxn, rxn;
 
     float level,fb, rfeedback, lfeedback,levpanl,levpanr, lrcross, ilrcross;
     float tempo_coeff;
 
-    class AnalogFilter *lpfl, *lpfr;	//filters
+    std::unique_ptr<AnalogFilter> lpfl, lpfr;	//filters
 
     struct {
         float sfreq, sq,sLP,sBP,sHP, sStg;
-        class RBFilter *l, *r;
+        std::unique_ptr<RBFilter> l, r;
 
     } filterbank[ECHOTRON_MAXFILTERS];
 

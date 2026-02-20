@@ -49,16 +49,14 @@ Echo::Echo (float * efxoutl_, float * efxoutr_)
     maxx_delay = SAMPLE_RATE * MAX_DELAY;
     fade = SAMPLE_RATE / 5;    //1/5 SR fade time available
 
-    ldelay = new delayline(2.0f, 1);
-    rdelay = new delayline(2.0f, 1);
+    ldelay = std::make_unique<delayline>(2.0f, 1);
+    rdelay = std::make_unique<delayline>(2.0f, 1);
 
     setpreset (Ppreset);
     cleanup ();
 };
 
-Echo::~Echo ()
-{
-};
+Echo::~Echo () = default;
 
 /*
  * Cleanup the effect

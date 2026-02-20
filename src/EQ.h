@@ -54,7 +54,7 @@ public:
         //parameters
         int Ptype, Pfreq, Pgain, Pq, Pstages;
         //internal values
-        AnalogFilter *l, *r;
+        std::unique_ptr<AnalogFilter> l, r;
     } filter[MAX_EQ_BANDS];
 
 };

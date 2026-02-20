@@ -33,16 +33,12 @@ DynamicFilter::DynamicFilter (float * efxoutl_, float * efxoutr_)
 
 
     Ppreset = 0;
-    filterl = NULL;
-    filterr = NULL;
-    filterpars = new FilterParams (0, 64, 64);
+    filterpars = std::make_unique<FilterParams> (0, 64, 64);
     setpreset (Ppreset);
     cleanup ();
 };
 
-DynamicFilter::~DynamicFilter ()
-{
-};
+DynamicFilter::~DynamicFilter () = default;
 
 
 /*
@@ -153,12 +149,8 @@ DynamicFilter::setampsns (int Pampsns)
 void
 DynamicFilter::reinitfilter ()
 {
-    if (filterl != NULL)
-        delete (filterl);
-    if (filterr != NULL)
-        delete (filterr);
-    filterl = new Filter (filterpars);
-    filterr = new Filter (filterpars);
+    filterl = std::make_unique<Filter> (filterpars.get());
+    filterr = std::make_unique<Filter> (filterpars.get());
 };
 
 void

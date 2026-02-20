@@ -56,7 +56,7 @@ public:
     void cleanup ();
     void detect (float * smpsl, float * smpsr);
     float get_tempo();  //returns tempo in float beats per minute
-    int *index;
+    std::vector<int> index;
 
 private:
 
@@ -68,7 +68,7 @@ private:
     int trigtimeout, trigtime, onset, atk;
     float targatk, lmod, rmod;
 
-    class RBFilter *rmsfilter, *peaklpfilter, *peakhpfilter, *peaklpfilter2;
+    std::unique_ptr<RBFilter> rmsfilter, peaklpfilter, peakhpfilter, peaklpfilter2;
 
     float oldbpm, oldmost;
     float avbpm[17], statsbin[17];

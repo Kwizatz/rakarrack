@@ -51,16 +51,16 @@ Echotron::Echotron (float * efxoutl_, float * efxoutr_)
 
     maxx_size = (SAMPLE_RATE * 6);   //6 Seconds delay time
 
-    lxn = new delayline(6.0f, ECHOTRON_F_SIZE);
-    rxn = new delayline(6.0f, ECHOTRON_F_SIZE);
+    lxn = std::make_unique<delayline>(6.0f, ECHOTRON_F_SIZE);
+    rxn = std::make_unique<delayline>(6.0f, ECHOTRON_F_SIZE);
 
     lxn->set_mix(0.0f);
     rxn->set_mix(0.0f);
 
     offset = 0;
 
-    lpfl =  new AnalogFilter (0, 800, 1, 0);;
-    lpfr =  new AnalogFilter (0, 800, 1, 0);;
+    lpfl = std::make_unique<AnalogFilter> (0, 800, 1, 0);;
+    lpfr = std::make_unique<AnalogFilter> (0, 800, 1, 0);;
 
     float center, qq;
     for (int i = 0; i < ECHOTRON_MAXFILTERS; i++) {
@@ -72,8 +72,8 @@ Echotron::Echotron (float * efxoutl_, float * efxoutr_)
         filterbank[i].sBP = -1.0f;
         filterbank[i].sHP = 0.5f;
         filterbank[i].sStg = 1.0f;
-        filterbank[i].l = new RBFilter (0, center, qq, 0);
-        filterbank[i].r = new RBFilter (0, center, qq, 0);
+        filterbank[i].l = std::make_unique<RBFilter> (0, center, qq, 0);
+        filterbank[i].r = std::make_unique<RBFilter> (0, center, qq, 0);
 
         filterbank[i].l->setmix (1,filterbank[i].sLP , filterbank[i].sBP,filterbank[i].sHP);
         filterbank[i].r->setmix (1,filterbank[i].sLP , filterbank[i].sBP,filterbank[i].sHP);
@@ -83,9 +83,7 @@ Echotron::Echotron (float * efxoutl_, float * efxoutr_)
     cleanup ();
 };
 
-Echotron::~Echotron ()
-{
-};
+Echotron::~Echotron () = default;
 
 /*
  * Cleanup the effect

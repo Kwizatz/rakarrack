@@ -32,24 +32,24 @@ Distorsion::Distorsion (float * efxoutl_, float * efxoutr_)
     efxoutl = efxoutl_;
     efxoutr = efxoutr_;
 
-    octoutl = (float *) malloc (sizeof (float) * PERIOD);
-    octoutr = (float *) malloc (sizeof (float) * PERIOD);
+    octoutl.resize(PERIOD);
+    octoutr.resize(PERIOD);
 
-    lpfl = new AnalogFilter (2, 22000, 1, 0);
-    lpfr = new AnalogFilter (2, 22000, 1, 0);
-    hpfl = new AnalogFilter (3, 20, 1, 0);
-    hpfr = new AnalogFilter (3, 20, 1, 0);
-    blockDCl = new AnalogFilter (2, 440.0f, 1, 0);
-    blockDCr = new AnalogFilter (2, 440.0f, 1, 0);
+    lpfl = std::make_unique<AnalogFilter> (2, 22000, 1, 0);
+    lpfr = std::make_unique<AnalogFilter> (2, 22000, 1, 0);
+    hpfl = std::make_unique<AnalogFilter> (3, 20, 1, 0);
+    hpfr = std::make_unique<AnalogFilter> (3, 20, 1, 0);
+    blockDCl = std::make_unique<AnalogFilter> (2, 440.0f, 1, 0);
+    blockDCr = std::make_unique<AnalogFilter> (2, 440.0f, 1, 0);
     blockDCl->setfreq (75.0f);
     blockDCr->setfreq (75.0f);
-    DCl = new AnalogFilter (3, 30, 1, 0);
-    DCr = new AnalogFilter (3, 30, 1, 0);
+    DCl = std::make_unique<AnalogFilter> (3, 30, 1, 0);
+    DCr = std::make_unique<AnalogFilter> (3, 30, 1, 0);
     DCl->setfreq (30.0f);
     DCr->setfreq (30.0f);
 
-    dwshapel = new Waveshaper();
-    dwshaper = new Waveshaper();
+    dwshapel = std::make_unique<Waveshaper>();
+    dwshaper = std::make_unique<Waveshaper>();
 
     //default values
     Ppreset = 0;
@@ -74,9 +74,7 @@ Distorsion::Distorsion (float * efxoutl_, float * efxoutr_)
     cleanup ();
 };
 
-Distorsion::~Distorsion ()
-{
-};
+Distorsion::~Distorsion () = default;
 
 /*
  * Cleanup the effect
@@ -174,8 +172,8 @@ Distorsion::out (float * smpsl, float * smpsr)
             octoutr[i] = rout *  toggler;
         }
 
-        blockDCr->filterout (octoutr);
-        blockDCl->filterout (octoutl);
+        blockDCr->filterout (octoutr.data());
+        blockDCl->filterout (octoutl.data());
     }
 
 

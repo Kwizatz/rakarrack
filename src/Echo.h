@@ -79,7 +79,7 @@ private:
     float delay, lrdelay;
     int kl, kr, rvkl, rvkr, rvfl, rvfr, maxx_delay, fade;
 
-    class delayline *ldelay, *rdelay;
+    std::unique_ptr<delayline> ldelay, rdelay;
     float ltime, rtime;
     float oldl, oldr;		//pt. lpf
     float panning, lrcross, fb, hidamp, reverse, ireverse;

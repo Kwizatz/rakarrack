@@ -71,12 +71,12 @@ CoilCrafter::CoilCrafter (float * efxoutl_, float * efxoutr_)
     rm[8]=1.0;
 
 
-    harm = new HarmEnhancer (rm, 2500.0f,4400.0f,1.0f);
+    harm = std::make_unique<HarmEnhancer> (rm, 2500.0f,4400.0f,1.0f);
 
-    RB1l =  new AnalogFilter(2,2000.0f,1.0f,0);
-    RB1r =  new AnalogFilter(2,2000.0f,1.0f,0);
-    RB2l =  new AnalogFilter(2,2000.0f,1.0f,0);
-    RB2r =  new AnalogFilter(2,2000.0f,1.0f,0);
+    RB1l = std::make_unique<AnalogFilter>(2,2000.0f,1.0f,0);
+    RB1r = std::make_unique<AnalogFilter>(2,2000.0f,1.0f,0);
+    RB2l = std::make_unique<AnalogFilter>(2,2000.0f,1.0f,0);
+    RB2r = std::make_unique<AnalogFilter>(2,2000.0f,1.0f,0);
 
 
     cleanup ();
@@ -84,9 +84,7 @@ CoilCrafter::CoilCrafter (float * efxoutl_, float * efxoutr_)
     setpreset (Ppreset);
 };
 
-CoilCrafter::~CoilCrafter ()
-{
-};
+CoilCrafter::~CoilCrafter () = default;
 
 /*
  * Cleanup the effect

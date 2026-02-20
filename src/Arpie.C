@@ -43,8 +43,6 @@ Arpie::Arpie (float * efxoutl_, float * efxoutr_)
     Pharms = 3;
     Psubdiv = 1;
 
-    ldelay = NULL;
-    rdelay = NULL;
     lrdelay = 0;
     harmonic = 1;
     Srate_Attack_Coeff = 1.0f / (fSAMPLE_RATE * ATTACK);
@@ -53,18 +51,16 @@ Arpie::Arpie (float * efxoutl_, float * efxoutr_)
     maxx_delay = SAMPLE_RATE * MAX_DELAY;
     fade = SAMPLE_RATE / 10;    //200ms fade time available
 
-    ldelay = new float[maxx_delay];
-    rdelay = new float[maxx_delay];
-    pattern = new int[MAXHARMS];
+    ldelay.resize(maxx_delay);
+    rdelay.resize(maxx_delay);
+    pattern.resize(MAXHARMS);
 
     setpreset (Ppreset);
     setpattern (0);
     cleanup ();
 };
 
-Arpie::~Arpie ()
-{
-};
+Arpie::~Arpie () = default;
 
 /*
  * Cleanup the effect
@@ -72,8 +68,8 @@ Arpie::~Arpie ()
 void
 Arpie::cleanup ()
 {
-    memset(ldelay, 0 ,sizeof(float)* maxx_delay);
-    memset(rdelay, 0 ,sizeof(float)* maxx_delay);
+    memset(ldelay.data(), 0 ,sizeof(float)* maxx_delay);
+    memset(rdelay.data(), 0 ,sizeof(float)* maxx_delay);
     oldl = 0.0;
     oldr = 0.0;
     rvkl = 0;

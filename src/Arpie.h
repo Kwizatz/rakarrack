@@ -75,10 +75,10 @@ private:
     int dl, dr, delay, lrdelay;
     int kl, kr, rvkl, rvkr, rvfl, rvfr, maxx_delay, fade, harmonic, envcnt, invattack;
     int subdiv{};
-    int *pattern;
+    std::vector<int> pattern;
 
     float panning, lrcross, fb, hidamp, reverse;
-    float *ldelay, *rdelay;
+    std::vector<float> ldelay, rdelay;
     float oldl, oldr;		//pt. lpf
     float  Srate_Attack_Coeff, envattack, envswell;
 

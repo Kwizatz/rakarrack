@@ -42,20 +42,16 @@ Dflange::Dflange (float * efxoutl_, float * efxoutr_)
     //default values
     Ppreset = 0;
 
-    ldelay = NULL;
-    rdelay = NULL;
-
-
     maxx_delay = (int) SAMPLE_RATE * 0.055f;
-    ldelay = new float[maxx_delay];
-    rdelay = new float[maxx_delay];
-    zldelay = new float[maxx_delay];
-    zrdelay = new float[maxx_delay];
+    ldelay.resize(maxx_delay);
+    rdelay.resize(maxx_delay);
+    zldelay.resize(maxx_delay);
+    zrdelay.resize(maxx_delay);
 
-    ldelayline0  = new delayline(0.055f, 2);
-    rdelayline0  = new delayline(0.055f, 2);
-    ldelayline1  = new delayline(0.055f, 2);
-    rdelayline1  = new delayline(0.055f, 2);
+    ldelayline0  = std::make_unique<delayline>(0.055f, 2);
+    rdelayline0  = std::make_unique<delayline>(0.055f, 2);
+    ldelayline1  = std::make_unique<delayline>(0.055f, 2);
+    rdelayline1  = std::make_unique<delayline>(0.055f, 2);
     ldelayline0 -> set_averaging(0.05f);
     rdelayline0 -> set_averaging(0.05f);
     ldelayline0->set_mix( 0.5f );
@@ -84,9 +80,7 @@ Dflange::Dflange (float * efxoutl_, float * efxoutr_)
     cleanup ();
 };
 
-Dflange::~Dflange ()
-{
-};
+Dflange::~Dflange () = default;
 
 /*
  * Cleanup the effect

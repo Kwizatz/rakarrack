@@ -72,8 +72,8 @@ private:
     float panning, depth, ampsns, ampsmooth;
     float ms1, ms2, ms3, ms4;	//mean squares
 
-    class Filter *filterl, *filterr;
-    class FilterParams *filterpars;
+    std::unique_ptr<Filter> filterl, filterr;
+    std::unique_ptr<FilterParams> filterpars;
     class FPreset *Fpre;
 
 };

@@ -70,9 +70,9 @@ private:
     float freq1,q1,freq2,q2;
     float att;
 
-    class HarmEnhancer *harm;
-    class AnalogFilter *RB1l, *RB1r;
-    class AnalogFilter *RB2l,*RB2r;
+    std::unique_ptr<HarmEnhancer> harm;
+    std::unique_ptr<AnalogFilter> RB1l, RB1r;
+    std::unique_ptr<AnalogFilter> RB2l, RB2r;
 
     class FPreset *Fpre;
 

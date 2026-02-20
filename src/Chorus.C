@@ -54,9 +54,7 @@ Chorus::Chorus (float * efxoutl_, float * efxoutr_)
     cleanup ();
 };
 
-Chorus::~Chorus ()
-{
-};
+Chorus::~Chorus () = default;
 
 /*
  * get the delay value in samples; xlfo is the current lfo value

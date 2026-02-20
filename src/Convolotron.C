@@ -47,26 +47,24 @@ Convolotron::Convolotron (float * efxoutl_, float * efxoutr_,int DS, int uq, int
     feedback = 0.0f;
     adjust(DS);
 
-    templ = (float *) malloc (sizeof (float) * PERIOD);
-    tempr = (float *) malloc (sizeof (float) * PERIOD);
+    templ.resize(PERIOD);
+    tempr.resize(PERIOD);
 
     maxx_size = (int) (nfSAMPLE_RATE * convlength);  //just to get the max memory allocated
-    buf = (float *) malloc (sizeof (float) * maxx_size);
-    rbuf = (float *) malloc (sizeof (float) * maxx_size);
-    lxn = (float *) malloc (sizeof (float) * maxx_size);
+    buf.resize(maxx_size);
+    rbuf.resize(maxx_size);
+    lxn.resize(maxx_size);
     maxx_size--;
     offset = 0;
-    M_Resample = new Resample(0);
-    U_Resample = new Resample(dq);//Downsample, uses sinc interpolation for bandlimiting to avoid aliasing
-    D_Resample = new Resample(uq);
+    M_Resample = std::make_unique<Resample>(0);
+    U_Resample = std::make_unique<Resample>(dq);//Downsample, uses sinc interpolation for bandlimiting to avoid aliasing
+    D_Resample = std::make_unique<Resample>(uq);
 
     setpreset (Ppreset);
     cleanup ();
 };
 
-Convolotron::~Convolotron ()
-{
-};
+Convolotron::~Convolotron () = default;
 
 /*
  * Cleanup the effect
@@ -166,9 +164,9 @@ Convolotron::out (float * smpsl, float * smpsr)
     float l,lyn;
 
     if(DS_state != 0) {
-        memcpy(templ, smpsl,sizeof(float)*PERIOD);
-        memcpy(tempr, smpsr,sizeof(float)*PERIOD);
-        U_Resample->out(templ,tempr,smpsl,smpsr,PERIOD,u_up);
+        memcpy(templ.data(), smpsl,sizeof(float)*PERIOD);
+        memcpy(tempr.data(), smpsr,sizeof(float)*PERIOD);
+        U_Resample->out(templ.data(),tempr.data(),smpsl,smpsr,PERIOD,u_up);
     }
 
 
@@ -198,11 +196,11 @@ Convolotron::out (float * smpsl, float * smpsr)
     };
 
     if(DS_state != 0) {
-        D_Resample->out(templ,tempr,efxoutl,efxoutr,nPERIOD,u_down);
+        D_Resample->out(templ.data(),tempr.data(),efxoutl,efxoutr,nPERIOD,u_down);
 
     } else {
-        memcpy(efxoutl, templ,sizeof(float)*PERIOD);
-        memcpy(efxoutr, tempr,sizeof(float)*PERIOD);
+        memcpy(efxoutl, templ.data(),sizeof(float)*PERIOD);
+        memcpy(efxoutr, tempr.data(),sizeof(float)*PERIOD);
     }
 
 
@@ -244,8 +242,8 @@ Convolotron::setfile(int value)
 
     offset = 0;
     maxx_read = maxx_size / 2;
-    memset(buf,0,sizeof(float) * maxx_size);
-    memset(rbuf,0,sizeof(float) * maxx_size);
+    memset(buf.data(),0,sizeof(float) * maxx_size);
+    memset(rbuf.data(),0,sizeof(float) * maxx_size);
     if(!Puser) {
         Filenum = value;
         memset(Filename,0, sizeof(Filename));
@@ -265,7 +263,7 @@ Convolotron::setfile(int value)
     if (sfinfo.frames > maxx_read) real_len = maxx_read;
     else real_len=sfinfo.frames;
     sf_seek (infile,0, SEEK_SET);
-    sf_readf_float(infile,buf,real_len);
+    sf_readf_float(infile,buf.data(),real_len);
     sf_close(infile);
 
 
@@ -273,11 +271,11 @@ Convolotron::setfile(int value)
 
     if (sfinfo.samplerate != (int)nSAMPLE_RATE) {
         sr_ratio = (double)nSAMPLE_RATE/((double) sfinfo.samplerate);
-        M_Resample->mono_out(buf,rbuf,real_len,sr_ratio,lrint((double)real_len*sr_ratio));
+        M_Resample->mono_out(buf.data(),rbuf.data(),real_len,sr_ratio,lrint((double)real_len*sr_ratio));
         real_len =lrintf((float)real_len*(float)sr_ratio);
     }
 
-    else memcpy(rbuf,buf,real_len*sizeof(float));
+    else memcpy(rbuf.data(),buf.data(),real_len*sizeof(float));
 
     process_rbuf();
 
@@ -290,7 +288,7 @@ Convolotron::process_rbuf()
 {
     int ii,j,N,N2;
     float tailfader, alpha, a0, a1, a2, Nm1p, Nm1pp, IRpowa, IRpowb, ngain, maxamp;
-    memset(buf,0, sizeof(float)*real_len);
+    memset(buf.data(),0, sizeof(float)*real_len);
 
     if (length > real_len) length = real_len;
     /*Blackman Window function
@@ -338,7 +336,7 @@ Convolotron::process_rbuf()
     for(j=0; j<length; j++) buf[j] *= ngain;
 
     if (Psafe) {
-        impulse.resample_impulse(length, buf);
+        impulse.resample_impulse(length, buf.data());
         length = 156;
         convlength = length/fSAMPLE_RATE;
     }

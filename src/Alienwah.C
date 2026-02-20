@@ -41,9 +41,7 @@ Alienwah::Alienwah (float * efxoutl_, float * efxoutr_)
 
 };
 
-Alienwah::~Alienwah ()
-{
-};
+Alienwah::~Alienwah () = default;
 
 
 /*

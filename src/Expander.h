@@ -89,7 +89,7 @@ private:
 
 
 
-    AnalogFilter *lpfl, *lpfr, *hpfl, *hpfr;
+    std::unique_ptr<AnalogFilter> lpfl, lpfr, hpfl, hpfr;
 
     class FPreset *Fpre;
 

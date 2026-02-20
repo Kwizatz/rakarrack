@@ -90,11 +90,11 @@ private:
     float l, r, ldl, rdl, zdr, zdl;
     float rflange0, rflange1, lflange0, lflange1, oldrflange0, oldrflange1, oldlflange0, oldlflange1;
     float period_const, base, ibase;
-    float *ldelay, *rdelay, *zldelay, *zrdelay;
+    std::vector<float> ldelay, rdelay, zldelay, zrdelay;
     float oldl, oldr;		//pt. lpf
     float rsA, rsB, lsA, lsB;	//Audio sample at given delay
 
-    delayline *ldelayline0, *rdelayline0, *ldelayline1, *rdelayline1;
+    std::unique_ptr<delayline> ldelayline0, rdelayline0, ldelayline1, rdelayline1;
     class FPreset *Fpre;
 
 
