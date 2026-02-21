@@ -394,14 +394,12 @@ savebank (const char *filename)
 void
 show_help ()
 {
-  fprintf (stderr, "Usage: rakaconvert -c Bankfile\n\n" );
-  fprintf (stderr,
-	   "  -h ,     --help \t\t\t display command-line help and exit\n");
-  fprintf (stderr,
-	   "  -c ,     --convert \t\t\t convert Bankfile\n");
-	   
-  fprintf (stderr, "\n");
-
+  fprintf (stderr, "Usage: rakconvert -c <bankfile>\n\n");
+  fprintf (stderr, "Convert old-format rakarrack bank files (pre-0.5.0) to the current format.\n");
+  fprintf (stderr, "Also imports the associated .ml MIDI-learn file if present.\n\n");
+  fprintf (stderr, "  -c, --convert <file>   old .rkrb bank file to convert\n");
+  fprintf (stderr, "  -h, --help             display this help and exit\n");
+  fprintf (stderr, "\nOutput: <name>01_050.rkrb and <name>02_050.rkrb\n\n");
 }
 
 int

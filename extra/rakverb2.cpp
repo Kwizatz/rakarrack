@@ -16,20 +16,14 @@
 void
 show_help ()
 {
-  fprintf (stderr, "Usage: rakverb2 -i [Input File] [-o] [Output File]\n\n" );
-  fprintf (stderr,
-	   "  -h ,     --help \t\t\t display command-line help and exit\n");
-  fprintf (stderr,
-	   "  -i ,     --input \t\t\t Input File\n");
-  fprintf (stderr,
-	   "  -o ,     --output \t\t\t Output File\n");
-  fprintf (stderr,
-	   "  -l ,     --length \t\t\t Reflections\n");
-  fprintf (stderr,
-	   "  -t ,     --time \t\t\t Time Difference\n");
-	   
-  fprintf (stderr, "\n");
-
+  fprintf (stderr, "Usage: rakverb2 -i <input.wav> [-o <output.rvb>] [-l <length>] [-t <time_diff>]\n\n");
+  fprintf (stderr, "Convert a reverb impulse response WAV file to rakarrack .rvb format.\n");
+  fprintf (stderr, "Improved version with controllable reflection count and time resolution.\n\n");
+  fprintf (stderr, "  -i, --input <file>     input WAV file (impulse response)\n");
+  fprintf (stderr, "  -o, --output <file>    output .rvb file (default: <input>.rvb)\n");
+  fprintf (stderr, "  -l, --length <n>       target number of reflections (default: 1500)\n");
+  fprintf (stderr, "  -t, --time <seconds>   minimum time between data points (default: 0.0)\n");
+  fprintf (stderr, "  -h, --help             display this help and exit\n\n");
 }
 
 

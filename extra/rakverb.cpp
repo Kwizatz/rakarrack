@@ -16,16 +16,11 @@
 void
 show_help ()
 {
-  fprintf (stderr, "Usage: rakverb -i [Input File] [-o] [Output File]\n\n" );
-  fprintf (stderr,
-	   "  -h ,     --help \t\t\t display command-line help and exit\n");
-  fprintf (stderr,
-	   "  -i ,     --input \t\t\t Input File\n");
-  fprintf (stderr,
-	   "  -o ,     --output \t\t\t Output File\n");
-	   
-  fprintf (stderr, "\n");
-
+  fprintf (stderr, "Usage: rakverb -i <input.wav> [-o <output.rvb>]\n\n");
+  fprintf (stderr, "Convert a reverb impulse response WAV file to rakarrack .rvb format.\n\n");
+  fprintf (stderr, "  -i, --input <file>     input WAV file (impulse response)\n");
+  fprintf (stderr, "  -o, --output <file>    output .rvb file (default: <input>.rvb)\n");
+  fprintf (stderr, "  -h, --help             display this help and exit\n\n");
 }
 
 

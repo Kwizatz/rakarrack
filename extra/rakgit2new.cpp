@@ -227,14 +227,11 @@ savebank (const char *filename)
 void
 show_help ()
 {
-  fprintf (stderr, "Usage: rakgit2new -c Bankfile\n\n" );
-  fprintf (stderr,
-	   "  -h ,     --help \t\t\t display command-line help and exit\n");
-  fprintf (stderr,
-	   "  -c ,     --convert \t\t\t convert Bankfile\n");
-	   
-  fprintf (stderr, "\n");
-
+  fprintf (stderr, "Usage: rakgit2new -c <bankfile>\n\n");
+  fprintf (stderr, "Convert git-era rakarrack bank files (50x20 params) to the current format (70x20).\n\n");
+  fprintf (stderr, "  -c, --convert <file>   git-era .rkrb bank file to convert\n");
+  fprintf (stderr, "  -h, --help             display this help and exit\n");
+  fprintf (stderr, "\nOutput: <name>_new.rkrb\n\n");
 }
 
 int
