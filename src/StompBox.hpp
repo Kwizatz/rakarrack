@@ -25,8 +25,9 @@
 #include "dsp_constants.hpp"
 #include "AnalogFilter.hpp"
 #include "Waveshaper.hpp"
+#include "Effect.hpp"
 
-class StompBox
+class StompBox : public Effect
 {
 public:
     StompBox (float * efxoutl_, float * efxoutr_);
@@ -38,10 +39,7 @@ public:
     void cleanup ();
 
 
-    int Ppreset{};
 
-    float *efxoutl{};
-    float *efxoutr{};
 
 private:
 

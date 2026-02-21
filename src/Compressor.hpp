@@ -30,8 +30,9 @@
 
 #include "dsp_constants.hpp"
 #include "FPreset.hpp"
+#include "Effect.hpp"
 
-class Compressor
+class Compressor : public Effect
 {
 
 public:
@@ -46,8 +47,6 @@ public:
     int getpar (int npar);
     void cleanup ();
 
-    float *efxoutl;
-    float *efxoutr;
 
 
 

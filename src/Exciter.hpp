@@ -24,9 +24,10 @@
 
 #include "dsp_constants.hpp"
 #include "HarmonicEnhancer.hpp"
+#include "Effect.hpp"
 
 
-class Exciter
+class Exciter : public Effect
 {
 public:
     Exciter (float * efxoutl_, float * efxoutr_);
@@ -37,11 +38,7 @@ public:
     int getpar (int npar);
     void cleanup ();
 
-    int Ppreset;
 
-    float *efxoutl;
-    float *efxoutr;
-    float outvolume;
 
 private:
 

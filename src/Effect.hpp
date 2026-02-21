@@ -33,11 +33,11 @@ public:
 
     virtual ~ Effect () {
     };
-    virtual void setpreset (unsigned char npreset) {
+    virtual void setpreset (int npreset) {
     };
-    virtual void changepar (int npar, unsigned char value) {
+    virtual void changepar (int npar, int value) {
     };
-    virtual unsigned char getpar (int npar) {
+    virtual int getpar (int npar) {
         return (0);
     };
     virtual void out (float * smpsl, float * smpsr) {
@@ -48,15 +48,14 @@ public:
         return (0);
     };				//this is only used for EQ (for user interface)
 
-    unsigned char Ppreset;
+    int Ppreset{};
 
-    float *efxoutl;
-    float *efxoutr;
+    float *efxoutl{};
+    float *efxoutr{};
 
-    float outvolume;		//this is the volume of effect and is public because need it in system effect. The out volume of such effects are always 1.0, so this setting tells me how is the volume to the Master Output only.
+    float outvolume{};
 
-
-    FilterParams *filterpars;
+    FilterParams *filterpars{};
 };
 
 #endif

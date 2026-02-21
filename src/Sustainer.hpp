@@ -24,8 +24,9 @@
 #define SUSTAINER_H
 
 #include "dsp_constants.hpp"
+#include "Effect.hpp"
 
-class Sustainer
+class Sustainer : public Effect
 {
 public:
     Sustainer (float * efxoutl_, float * efxoutr_);
@@ -37,10 +38,7 @@ public:
     int getpar (int npar);
     void setpreset (int npreset);
 
-    int Ppreset;
 
-    float *efxoutl;
-    float *efxoutr;
 
 private:
     //Parametrii

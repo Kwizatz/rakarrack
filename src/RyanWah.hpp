@@ -28,8 +28,9 @@
 #include "EffectLFO.hpp"
 #include "RBFilter.hpp"
 #include "AnalogFilter.hpp"
+#include "Effect.hpp"
 
-class RyanWah
+class RyanWah : public Effect
 {
 public:
     RyanWah (float * efxoutl_, float * efxoutr_);
@@ -42,12 +43,8 @@ public:
     void cleanup ();
 
 
-    int Ppreset;
     int Pmode;
-    float outvolume;
 
-    float *efxoutl;
-    float *efxoutr;
 
 
 private:

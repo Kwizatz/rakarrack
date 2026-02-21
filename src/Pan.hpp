@@ -26,8 +26,9 @@
 
 #include "dsp_constants.hpp"
 #include "EffectLFO.hpp"
+#include "Effect.hpp"
 
-class Pan
+class Pan : public Effect
 {
 
 public:
@@ -40,11 +41,7 @@ public:
     void cleanup ();
 
 
-    int Ppreset;
-    float outvolume;
 
-    float *efxoutl;
-    float *efxoutr;
 
 
 

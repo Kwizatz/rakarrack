@@ -23,8 +23,9 @@
 
 #include "dsp_constants.hpp"
 #include "AnalogFilter.hpp"
+#include "Effect.hpp"
 
-class ShelfBoost
+class ShelfBoost : public Effect
 {
 public:
     ShelfBoost (float * efxoutl_, float * efxoutr_);
@@ -36,12 +37,8 @@ public:
     void cleanup ();
 
 
-    int Ppreset;
 
-    float outvolume;
 
-    float *efxoutl;
-    float *efxoutr;
 
 private:
 

@@ -33,9 +33,10 @@
 #include "dsp_constants.hpp"
 #include "AnalogFilter.hpp"
 #include "Compressor.hpp"
+#include "Effect.hpp"
 
 
-class CompBand
+class CompBand : public Effect
 {
 public:
     CompBand (float * efxoutl_, float * efxoutr_);
@@ -46,12 +47,8 @@ public:
     int getpar (int npar);
     void cleanup ();
 
-    int Ppreset;
-    float outvolume;
     float level;
 
-    float *efxoutl;
-    float *efxoutr;
     std::vector<float> lowl;
     std::vector<float> lowr;
     std::vector<float> midll;

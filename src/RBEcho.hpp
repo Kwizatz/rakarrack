@@ -29,8 +29,9 @@
 
 #include "dsp_constants.hpp"
 #include "delayline.hpp"
+#include "Effect.hpp"
 
-class RBEcho
+class RBEcho : public Effect
 {
 public:
     RBEcho (float * efxoutl_, float * efxoutr_);
@@ -41,11 +42,7 @@ public:
     int getpar (int npar);
     void cleanup ();
 
-    int Ppreset;
-    float outvolume;
 
-    float *efxoutl;
-    float *efxoutr;
 
 
 private:

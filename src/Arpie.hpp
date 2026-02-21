@@ -26,8 +26,9 @@
 #define ARPIE_H
 
 #include "dsp_constants.hpp"
+#include "Effect.hpp"
 
-class Arpie
+class Arpie : public Effect
 {
 public:
     Arpie (float * efxoutl_, float * efxoutr_);
@@ -38,10 +39,6 @@ public:
     int getpar (int npar);
     void cleanup ();
 
-    int Ppreset;
-    float *efxoutl;
-    float *efxoutr;
-    float outvolume;
 
 private:
     //Parametrii

@@ -28,8 +28,9 @@
 
 #include "dsp_constants.hpp"
 #include "EffectLFO.hpp"
+#include "Effect.hpp"
 
-class Opticaltrem
+class Opticaltrem : public Effect
 {
 
 public:
@@ -44,8 +45,6 @@ public:
     int getpar (int npar);
     void cleanup ();
 
-    float *efxoutl;
-    float *efxoutr;
 
 
 private:

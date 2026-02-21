@@ -27,8 +27,9 @@
 #include "dsp_constants.hpp"
 #include "AnalogFilter.hpp"
 #include "HarmonicEnhancer.hpp"
+#include "Effect.hpp"
 
-class Valve
+class Valve : public Effect
 {
 public:
     Valve (float * efxoutl_, float * efxoutr_);
@@ -41,11 +42,7 @@ public:
     void cleanup ();
     void applyfilters (float * efxoutl, float * efxoutr);
 
-    int Ppreset;
-    float outvolume;
 
-    float *efxoutl;
-    float *efxoutr;
 
 private:
     void setvolume (int Pvolume);

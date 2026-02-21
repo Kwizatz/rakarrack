@@ -30,12 +30,13 @@
 #include "Filter.hpp"
 #include "AnalogFilter.hpp"
 #include "Waveshaper.hpp"
+#include "Effect.hpp"
 
 //Waveshaping(called by Distorsion effect and waveshape from OscilGen)
 // void waveshapesmps (int n, float * smps, int type,
 // 		    int drive);
 
-class NewDist
+class NewDist : public Effect
 {
 public:
     NewDist (float * efxoutl_, float * efxoutr_);
@@ -47,11 +48,7 @@ public:
     void cleanup ();
     void applyfilters (float * efxoutl, float * efxoutr);
 
-    int Ppreset;
-    float outvolume;
 
-    float *efxoutl;
-    float *efxoutr;
     float inpll[4096];
     float inplr[4096];
 

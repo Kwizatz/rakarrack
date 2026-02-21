@@ -25,9 +25,10 @@
 #define RING_H
 
 #include "dsp_constants.hpp"
+#include "Effect.hpp"
 
 
-class Ring
+class Ring : public Effect
 {
 public:
     Ring (float * efxoutl_, float * efxoutr_);
@@ -40,14 +41,10 @@ public:
     void cleanup ();
     void Create_Tables();
 
-    int Ppreset;
     int Pafreq;
     int Pfreq;
 
-    float outvolume;
 
-    float *efxoutl;
-    float *efxoutr;
 
 private:
 

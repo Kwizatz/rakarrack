@@ -33,8 +33,9 @@
 #include "dsp_constants.hpp"
 #include "EffectLFO.hpp"
 #include "delayline.hpp"
+#include "Effect.hpp"
 
-class Dflange
+class Dflange : public Effect
 {
 public:
     Dflange (float * efxoutl_, float * efxoutr_);
@@ -45,10 +46,7 @@ public:
     int getpar (int npar);
     void cleanup ();
 
-    int Ppreset;
 
-    float *efxoutl;
-    float *efxoutr;
 
 
 private:

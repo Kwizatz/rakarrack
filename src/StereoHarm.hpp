@@ -30,9 +30,10 @@
 #include "smbPitchShift_mayerfft.hpp"
 #include "Resample.hpp"
 #include "smbPitchShift.hpp"
+#include "Effect.hpp"
 
 
-class StereoHarm
+class StereoHarm : public Effect
 {
 
 public:
@@ -46,7 +47,6 @@ public:
     void adjust(int DS);
 
 
-    int Ppreset;
     int Pintervall;
     int Pintervalr;
 
@@ -65,13 +65,10 @@ public:
     float nfSAMPLE_RATE;
 
 
-    float *efxoutl;
-    float *efxoutr;
     std::vector<float> outil, outir;
     std::vector<float> outol, outor;
     std::vector<float> templ, tempr;
 
-    float outvolume;
 
 
 

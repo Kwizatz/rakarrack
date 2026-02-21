@@ -31,9 +31,10 @@
 #include "Resample.hpp"
 #include "AnalogFilter.hpp"
 #include "smbPitchShift.hpp"
+#include "Effect.hpp"
 
 
-class Harmonizer
+class Harmonizer : public Effect
 {
 
 public:
@@ -48,7 +49,6 @@ public:
     void adjust(int DS);
 
 
-    int Ppreset;
     int Pinterval;
     int PMIDI;
     int PSELECT;
@@ -65,13 +65,10 @@ public:
     float nfSAMPLE_RATE;
 
 
-    float *efxoutl;
-    float *efxoutr;
     std::vector<float> outi;
     std::vector<float> outo;
     std::vector<float> templ, tempr;
 
-    float outvolume;
 
 
 

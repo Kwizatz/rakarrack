@@ -29,8 +29,9 @@
 
 #include "dsp_constants.hpp"
 #include "delayline.hpp"
+#include "Effect.hpp"
 
-class Echo
+class Echo : public Effect
 {
 public:
     Echo (float * efxoutl_, float * efxoutr_);
@@ -41,12 +42,8 @@ public:
     int getpar (int npar);
     void cleanup ();
 
-    int Ppreset;
 
-    float *efxoutl;
-    float *efxoutr;
 
-    float outvolume;
 
     void Tempo2Delay(int delay);
 

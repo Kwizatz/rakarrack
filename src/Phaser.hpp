@@ -26,8 +26,9 @@
 #define PHASER_H
 #include "dsp_constants.hpp"
 #include "EffectLFO.hpp"
+#include "Effect.hpp"
 
-class Phaser
+class Phaser : public Effect
 {
 public:
     Phaser (float * efxoutl_, float * efxoutr_);
@@ -37,11 +38,7 @@ public:
     void changepar (int npar, int value);
     int getpar (int npar);
     void cleanup ();
-    int Ppreset;
-    float outvolume;
 
-    float *efxoutl;
-    float *efxoutr;
 
 
 

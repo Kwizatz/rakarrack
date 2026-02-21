@@ -27,6 +27,7 @@
 #define ALIENWAH_H
 #include "dsp_constants.hpp"
 #include "EffectLFO.hpp"
+#include "Effect.hpp"
 
 
 
@@ -34,7 +35,7 @@ struct COMPLEXTYPE {
     float a, b;
 };
 
-class Alienwah
+class Alienwah : public Effect
 {
 public:
     Alienwah (float * efxoutl_, float * efxoutr_);
@@ -46,12 +47,8 @@ public:
     int getpar (int npar);
     void cleanup ();
 
-    int Ppreset;
 
-    float *efxoutl;
-    float *efxoutr;
 
-    float outvolume;
 
 
 private:

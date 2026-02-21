@@ -28,8 +28,9 @@
 
 #include "dsp_constants.hpp"
 #include "EffectLFO.hpp"
+#include "Effect.hpp"
 
-class Vibe
+class Vibe : public Effect
 {
 
 public:
@@ -45,9 +46,6 @@ public:
     int getpar (int npar);
     void cleanup ();
 
-    float outvolume;
-    float *efxoutl;
-    float *efxoutr;
 
 private:
     int Pwidth;

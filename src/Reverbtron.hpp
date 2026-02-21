@@ -27,9 +27,10 @@
 #include "dsp_constants.hpp"
 #include "Resample.hpp"
 #include "AnalogFilter.hpp"
+#include "Effect.hpp"
 
 
-class Reverbtron
+class Reverbtron : public Effect
 {
 public:
     Reverbtron (float * efxoutl_, float * efxoutr_,int DS, int uq, int dq);
@@ -42,11 +43,7 @@ public:
     int setfile (int value);
     void adjust(int DS);
 
-    int Ppreset;
 
-    float *efxoutl;
-    float *efxoutr;
-    float outvolume;
 
     char Filename[128];
 

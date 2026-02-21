@@ -28,8 +28,9 @@
 #include "FilterParams.hpp"
 #include "EffectLFO.hpp"
 #include "Filter.hpp"
+#include "Effect.hpp"
 
-class DynamicFilter
+class DynamicFilter : public Effect
 {
 public:
     DynamicFilter (float * efxoutl_, float * efxoutr_);
@@ -42,10 +43,6 @@ public:
     void cleanup ();
 
 
-    int Ppreset;
-    float *efxoutl;
-    float *efxoutr;
-    float outvolume;
 
 
 

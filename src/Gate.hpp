@@ -32,8 +32,9 @@
 
 #include "dsp_constants.hpp"
 #include "AnalogFilter.hpp"
+#include "Effect.hpp"
 
-class Gate
+class Gate : public Effect
 {
 
 public:
@@ -62,8 +63,6 @@ public:
     int Phpf;
     int Phold;
 
-    float *efxoutl;
-    float *efxoutr;
 
 
 private:

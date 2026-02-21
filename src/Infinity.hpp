@@ -24,10 +24,11 @@
 #define INFINITY_H
 #include "dsp_constants.hpp"
 #include "RBFilter.hpp"
+#include "Effect.hpp"
 
 #define NUM_INF_BANDS 8
 
-class Infinity
+class Infinity : public Effect
 {
 public:
     Infinity (float * efxoutl_, float * efxoutr_);
@@ -39,11 +40,7 @@ public:
     int getpar (int npar);
     void cleanup ();
 
-    int Ppreset;
-    float outvolume;
 
-    float *efxoutl;
-    float *efxoutr;
 
 
 private:

@@ -29,12 +29,13 @@
 #include "AnalogFilter.hpp"
 #include "EffectLFO.hpp"
 #include "delayline.hpp"
+#include "Effect.hpp"
 
 #define  ECHOTRON_F_SIZE   128       //Allow up to 150 points in the file
 #define  ECHOTRON_MAXFILTERS  32      //filters available
 
 
-class Echotron
+class Echotron : public Effect
 {
 public:
     Echotron (float * efxoutl_, float * efxoutr_);
@@ -45,13 +46,9 @@ public:
     int getpar (int npar);
     void cleanup ();
     int setfile (int value);
-    int Ppreset;
 
     int Pchange;
 
-    float *efxoutl;
-    float *efxoutr;
-    float outvolume;
 
     char Filename[128];
 

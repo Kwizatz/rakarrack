@@ -28,8 +28,9 @@
 #include "dsp_constants.hpp"
 #include "Resample.hpp"
 #include "mayer_fft.hpp"
+#include "Effect.hpp"
 
-class Convolotron
+class Convolotron : public Effect
 {
 public:
     Convolotron (float * efxoutl_, float * efxoutr_,int DS, int uq, int dq);
@@ -43,11 +44,7 @@ public:
     void adjust(int DS);
     void loaddefault();
 
-    int Ppreset;
 
-    float *efxoutl;
-    float *efxoutr;
-    float outvolume;
 
     char Filename[128];
 

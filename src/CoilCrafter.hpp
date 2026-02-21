@@ -26,8 +26,9 @@
 #include "dsp_constants.hpp"
 #include "HarmonicEnhancer.hpp"
 #include "AnalogFilter.hpp"
+#include "Effect.hpp"
 
-class CoilCrafter
+class CoilCrafter : public Effect
 {
 public:
     CoilCrafter (float * efxoutl_, float * efxoutr_);
@@ -39,11 +40,7 @@ public:
     void cleanup ();
 
 
-    int Ppreset;
 
-    float *efxoutl;
-    float *efxoutr;
-    float outvolume;
 
 private:
 

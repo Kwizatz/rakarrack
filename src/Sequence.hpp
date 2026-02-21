@@ -30,8 +30,9 @@
 #include "smbPitchShift.hpp"
 #include "beattracker.hpp"
 #include "delayline.hpp"
+#include "Effect.hpp"
 
-class Sequence
+class Sequence : public Effect
 {
 public:
     Sequence (float * efxoutl_, float * efxoutr_, long int Quality, int DS, int uq, int dq);
@@ -45,12 +46,8 @@ public:
     void settempo(int value);
     void adjust(int DS);
 
-    int Ppreset;
 
-    float outvolume;
 
-    float *efxoutl;
-    float *efxoutr;
 
 private:
     //Parametrii

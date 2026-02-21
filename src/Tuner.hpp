@@ -16,9 +16,10 @@
 #include <math.h>
 #include <stdlib.h>
 #include <vector>
+#include "Effect.hpp"
 
 
-class Tuner
+class Tuner : public Effect
 {
 public:
     Tuner ();
@@ -33,8 +34,6 @@ public:
     signed short int *schmittPointer;
     const char **notes;
     float nfreq, afreq, freq;
-    float *efxoutl;
-    float *efxoutr;
 
 private:
 

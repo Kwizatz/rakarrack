@@ -28,25 +28,23 @@
 #include "dsp_constants.hpp"
 #include "AnalogFilter.hpp"
 #include "Waveshaper.hpp"
+#include "Effect.hpp"
 
-class Distorsion
+class Distorsion : public Effect
 {
 public:
     Distorsion (float * efxoutl_, float * efxoutr_);
     ~Distorsion ();
     void out (float * smpsl, float * smpr);
+    using Effect::setpreset;
     void setpreset (int dgui, int npreset);
     void changepar (int npar, int value);
     int getpar (int npar);
     void cleanup ();
     void applyfilters (float * efxoutl, float * efxoutr);
 
-    int Ppreset;
-    float *efxoutl;
-    float *efxoutr;
     std::vector<float> octoutl;
     std::vector<float> octoutr;
-    float outvolume;
 
 private:
     //Parametrii

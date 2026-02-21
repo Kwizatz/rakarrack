@@ -33,8 +33,9 @@
 
 #include "dsp_constants.hpp"
 #include "AnalogFilter.hpp"
+#include "Effect.hpp"
 
-class Expander
+class Expander : public Effect
 {
 
 public:
@@ -49,8 +50,6 @@ public:
     void cleanup ();
     int getpar (int npar);
 
-    float *efxoutl;
-    float *efxoutr;
 
 
 

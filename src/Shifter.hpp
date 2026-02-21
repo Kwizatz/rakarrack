@@ -28,6 +28,7 @@
 #include "smbPitchShift_mayerfft.hpp"
 #include "Resample.hpp"
 #include "smbPitchShift.hpp"
+#include "Effect.hpp"
 
 
 #define IDLE 0
@@ -37,7 +38,7 @@
 
 
 
-class Shifter
+class Shifter : public Effect
 {
 
 public:
@@ -51,12 +52,8 @@ public:
     void applyfilters (float * efxoutl);
     void adjust(int DS);
 
-    int Ppreset;
     long int hq;
-    float outvolume;
 
-    float *efxoutl;
-    float *efxoutr;
     std::vector<float> outi;
     std::vector<float> outo;
 

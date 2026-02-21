@@ -27,8 +27,9 @@
 #include "dsp_constants.hpp"
 #include "Resample.hpp"
 #include "AnalogFilter.hpp"
+#include "Effect.hpp"
 
-class Vocoder
+class Vocoder : public Effect
 {
 public:
     Vocoder (float * efxoutl_, float * efxoutr_, float *auxresampled_,int bands, int DS, int uq, int dq);
@@ -40,12 +41,8 @@ public:
     void cleanup ();
     void adjust(int DS);
 
-    int Ppreset;
-    float outvolume;
     float vulevel;
 
-    float *efxoutl;
-    float *efxoutr;
     float *auxresampled;
 
 private:

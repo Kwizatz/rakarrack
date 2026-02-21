@@ -28,9 +28,10 @@
 
 #include "dsp_constants.hpp"
 #include "AnalogFilter.hpp"
+#include "Effect.hpp"
 
 
-class Shuffle
+class Shuffle : public Effect
 {
 public:
     Shuffle (float * efxoutl_, float * efxoutr_);
@@ -41,11 +42,7 @@ public:
     int getpar (int npar);
     void cleanup ();
 
-    int Ppreset;
-    float outvolume;
 
-    float *efxoutl;
-    float *efxoutr;
     std::vector<float> inputl;
     std::vector<float> inputr;
 

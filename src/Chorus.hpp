@@ -28,24 +28,22 @@
 #include "dsp_constants.hpp"
 #include "EffectLFO.hpp"
 #include "delayline.hpp"
+#include "Effect.hpp"
 
-class Chorus
+class Chorus : public Effect
 {
 
 public:
     Chorus (float * efxoutl_, float * efxoutr_);
     ~Chorus ();
     void out (float * smpsl, float * smpsr);
+    using Effect::setpreset;
     void setpreset (int dgui, int npreset);
     void changepar (int npar, int value);
     int getpar (int npar);
     void cleanup ();
 
 
-    int Ppreset;
-    float *efxoutl;
-    float *efxoutr;
-    float outvolume;		//this is the volume of effect and is public because need it in system effect. The out volume of s
 
 
 

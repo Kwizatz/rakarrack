@@ -26,9 +26,10 @@
 #define MUSDELAY_H
 
 #include "dsp_constants.hpp"
+#include "Effect.hpp"
 
 
-class MusicDelay
+class MusicDelay : public Effect
 {
 public:
     MusicDelay (float * efxoutl_, float * efxoutr_);
@@ -39,11 +40,7 @@ public:
     int getpar (int npar);
     void cleanup ();
 
-    int Ppreset;
-    float outvolume;
 
-    float *efxoutl;
-    float *efxoutr;
 
 
 private:
