@@ -78,13 +78,13 @@ main (int argc, char *argv[])
 
 
     struct option opts[] = {
-        {"load", 1, NULL, 'l'},
-        {"bank", 1, NULL, 'b'},
-        {"preset",1,NULL, 'p'},
-        {"no-gui", 0, NULL, 'n'},
-        {"dump-preset-names", 0, NULL, 'x'},
-        {"help", 0, NULL, 'h'},
-        {"session",1,NULL,'u'},
+        {"load", 1, nullptr, 'l'},
+        {"bank", 1, nullptr, 'b'},
+        {"preset",1,nullptr, 'p'},
+        {"no-gui", 0, nullptr, 'n'},
+        {"dump-preset-names", 0, nullptr, 'x'},
+        {"help", 0, nullptr, 'h'},
+        {"session",1,nullptr,'u'},
         {0, 0, 0, 0}
     };
 
@@ -119,20 +119,20 @@ main (int argc, char *argv[])
             gui = 0;
             break;
         case 'l':
-            if (optarguments != NULL) {
+            if (optarguments != nullptr) {
                 commandline = 1;
                 needtoloadfile=1;
                 filetoload=strdup(optarguments);
                 break;
             }
         case 'b':
-            if (optarguments != NULL) {
+            if (optarguments != nullptr) {
                 needtoloadbank=1;
                 banktoload=strdup(optarguments);
                 break;
             }
         case 'p':
-            if(optarguments != NULL) {
+            if(optarguments != nullptr) {
                 preset=atoi(optarguments);
                 break;
             }
@@ -141,7 +141,7 @@ main (int argc, char *argv[])
             break;
 
         case 'u':
-            if(optarguments != NULL) {
+            if(optarguments != nullptr) {
                 commandline = 1;
                 needtoloadstate=1;
                 s_uuid=strdup(optarguments);
@@ -193,7 +193,7 @@ main (int argc, char *argv[])
 
     // Launch GUI
 
-    RKRGUI *rgui=NULL;
+    RKRGUI *rgui=nullptr;
 
     if (gui) rgui = new RKRGUI (argc, argv, &rkr);
 

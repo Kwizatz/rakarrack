@@ -37,8 +37,8 @@ FPreset::ReadPreset(int eff, int num)
     memset(tempfile,0,sizeof(tempfile));
     pdata.fill(0);
     sprintf (tempfile, "%s%s", getenv ("HOME"), "/.rkrintpreset");
-    if (( fn = fopen (tempfile, "r")) != NULL) {
-        while (fgets (buf, sizeof buf, fn) != NULL)
+    if (( fn = fopen (tempfile, "r")) != nullptr) {
+        while (fgets (buf, sizeof buf, fn) != nullptr)
 
         {
             sscanf(buf,"%d",&reff);

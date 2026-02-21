@@ -109,9 +109,9 @@ RKR::RKR ()
 
     sprintf (temp, "rakarrack");
 
-    jack.client = jack_client_open (temp, jack.options, &jack.status, NULL);
+    jack.client = jack_client_open (temp, jack.options, &jack.status, nullptr);
 
-    if (jack.client == NULL) {
+    if (jack.client == nullptr) {
         fprintf (stderr, "Cannot make a jack client, is jackd running?\n");
         nojack = 1;
         exitwithhelp = 1;

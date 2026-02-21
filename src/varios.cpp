@@ -127,12 +127,12 @@ RKR::Get_Bogomips()
     char *tmp;
     FILE *fp;
 
-    if ((fp = fopen ("/proc/cpuinfo", "r")) != NULL) {
+    if ((fp = fopen ("/proc/cpuinfo", "r")) != nullptr) {
         memset (temp, 0, sizeof (temp));
 
-        while (fgets (temp, sizeof temp, fp) != NULL) {
+        while (fgets (temp, sizeof temp, fp) != nullptr) {
 
-            if (strstr (temp, "bogomips") != NULL)
+            if (strstr (temp, "bogomips") != nullptr)
 
             {
                 tmp = strtok(temp,":");
@@ -172,7 +172,7 @@ RKR::TapTempo()
     int i;
     double AvTempo;
     double latency= 0.04;
-    gettimeofday(&timeA, NULL);
+    gettimeofday(&timeA, nullptr);
 
     double Aseconds =  ((double) timeA.tv_sec + (double)timeA.tv_usec * 0.000001);
     if(Tap_Selection==0) Aseconds += latency;
@@ -205,7 +205,7 @@ void
 RKR::TapTempo_Timeout(int state)
 {
 
-    gettimeofday(&timeA, NULL);
+    gettimeofday(&timeA, nullptr);
     double Aseconds = (double) timeA.tv_sec + (double) timeA.tv_usec* 0.000001;
     if (!state) {
         Tap_timeC = Aseconds;

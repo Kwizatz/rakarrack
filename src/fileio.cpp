@@ -1058,7 +1058,7 @@ RKR::loadfile (char *filename)
     float balance=1.0f;
     char buf[256];
 
-    if ((fn = fopen (filename, "r")) == NULL)
+    if ((fn = fopen (filename, "r")) == nullptr)
         return;
 
 
@@ -1081,7 +1081,7 @@ RKR::loadfile (char *filename)
     fclose (fn);
 
 
-    if ((fn = fopen (filename, "r")) == NULL) {
+    if ((fn = fopen (filename, "r")) == nullptr) {
         return;
     }
     //Version
@@ -1663,7 +1663,7 @@ RKR::loadnames()
 
 
 
-        if ((fn = fopen (temp, "rb")) != NULL) {
+        if ((fn = fopen (temp, "rb")) != nullptr) {
             New_Bank();
             while (!feof (fn)) {
                 fread (&presets.Bank, sizeof(presets.Bank), 1, fn);
@@ -1713,7 +1713,7 @@ RKR::loadbank (char *filename)
     }
 
 
-    if ((fn = fopen (filename, "rb")) != NULL) {
+    if ((fn = fopen (filename, "rb")) != nullptr) {
         New_Bank();
         while (!feof (fn)) {
             fread (&presets.Bank, sizeof(presets.Bank), 1, fn);
@@ -1735,7 +1735,7 @@ RKR::savebank (char *filename)
 
     FILE *fn;
 
-    if ((fn = fopen (filename, "wb")) != NULL) {
+    if ((fn = fopen (filename, "wb")) != nullptr) {
         copy_IO();
         if(BigEndian()) fix_endianess();
         fwrite (&presets.Bank, sizeof(presets.Bank), 1, fn);
@@ -2548,7 +2548,7 @@ RKR::loadskin (char *filename)
     char buf[256];
     FILE *fn;
 
-    if ((fn = fopen (filename, "r")) == NULL)
+    if ((fn = fopen (filename, "r")) == nullptr)
         return;
 
     memset (buf, 0, sizeof (buf));
@@ -2600,7 +2600,7 @@ RKR::CheckOldBank(char *filename)
     long Length;
     FILE *fs;
 
-    if ((fs = fopen (filename, "r")) != NULL) {
+    if ((fs = fopen (filename, "r")) != nullptr) {
         ftell(fs);
         fseek(fs, 0L, SEEK_END);
         Length = ftell(fs);
@@ -2646,7 +2646,7 @@ RKR::SaveIntPreset(int num,char *name)
     memset(tempfile,0,sizeof(tempfile));
     sprintf (tempfile, "%s%s", getenv ("HOME"), "/.rkrintpreset");
 
-    if (( fn = fopen (tempfile, "a")) != NULL) {
+    if (( fn = fopen (tempfile, "a")) != nullptr) {
         memset(buf,0,sizeof(buf));
         getbuf(buf,num);
         memset(sbuf,0,sizeof(sbuf));
@@ -2679,12 +2679,12 @@ RKR::DelIntPreset(int num, char *name)
 
 
     sprintf (tempfile, "%s%s", getenv ("HOME"), "/.rkrintpreset");
-    if (( fs = fopen (tempfile, "r")) == NULL) return;
+    if (( fs = fopen (tempfile, "r")) == nullptr) return;
 
     sprintf (tempfile2, "%s%s", getenv ("HOME"), "/.rkrtemp");
-    if (( fn = fopen (tempfile2, "w")) != NULL) {
+    if (( fn = fopen (tempfile2, "w")) != nullptr) {
         memset(buf,0,sizeof(buf));
-        while (fgets (buf, sizeof buf, fs) != NULL) {
+        while (fgets (buf, sizeof buf, fs) != nullptr) {
             memset(rbuf,0,sizeof(rbuf));
             sprintf(rbuf,"%s",buf);
             sscanf(buf,"%d",&eff);
@@ -2763,7 +2763,7 @@ RKR::loadmiditable (char *filename)
     char buf[256];
     FILE *fn;
 
-    if ((fn = fopen (filename, "r")) == NULL)
+    if ((fn = fopen (filename, "r")) == nullptr)
         return;
 
     for(i=0; i<128; i++) {

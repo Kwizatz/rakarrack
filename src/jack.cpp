@@ -50,7 +50,7 @@ JACKstart (RKR * rkr_, jack_client_t * jackclient_)
     JackOUT = rkr_;
     jackclient = jackclient_;
 
-    jack_set_sync_callback(jackclient, timebase, NULL);
+    jack_set_sync_callback(jackclient, timebase, nullptr);
     jack_set_process_callback (jackclient, jackprocess, 0);
 
     jack_on_shutdown (jackclient, jackshutdown, 0);

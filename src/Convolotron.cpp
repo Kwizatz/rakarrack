@@ -347,7 +347,7 @@ Convolotron::process_rbuf()
     //with something like gnuplot
     FILE * textfile;
     textfile = fopen("IR.txt", "w");
-    if (textfile!=NULL)
+    if (textfile!=nullptr)
     {
     for(j=0;j<length;j++) {
     fprintf (textfile, "%d\t%f\n",j,buf[j]);

@@ -229,12 +229,12 @@ Echotron::setfile(int value)
         sprintf(Filename.data(), "%s/%d.dly",DATA_DIR,Filenum+1);
     }
 
-    if ((fs = fopen (Filename.data(), "r")) == NULL) {
+    if ((fs = fopen (Filename.data(), "r")) == nullptr) {
         loaddefault();
         return(0);
     }
 
-    while (fgets(wbuf,sizeof wbuf,fs) != NULL) {
+    while (fgets(wbuf,sizeof wbuf,fs) != nullptr) {
         //fgets(wbuf,sizeof wbuf,fs);
         if(wbuf[0]!='#') break;
         memset(wbuf,0,sizeof(wbuf));
@@ -248,7 +248,7 @@ Echotron::setfile(int value)
 
 
 
-    while ((fgets(wbuf,sizeof wbuf,fs) != NULL) && (count<ECHOTRON_F_SIZE)) {
+    while ((fgets(wbuf,sizeof wbuf,fs) != nullptr) && (count<ECHOTRON_F_SIZE)) {
         if(wbuf[0]==10) break;  // Check Carriage Return
         if(wbuf[0]=='#') continue;
         sscanf(wbuf,"%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%d",&tPan, &tTime, &tLevel,

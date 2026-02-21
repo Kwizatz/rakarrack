@@ -85,9 +85,9 @@ RKR::midievents()
 
     int i;
     snd_seq_event_t *midievent;
-    midievent = NULL;
+    midievent = nullptr;
     snd_seq_event_input (midi_in, &midievent);
-    if (midievent == NULL)
+    if (midievent == nullptr)
         return;
     if (midievent->type == 42)
         return;
@@ -671,26 +671,26 @@ RKR::Conecta ()
         disconectaaconnect ();
 
 
-    if ((fp = fopen ("/proc/asound/seq/clients", "r")) != NULL) {
+    if ((fp = fopen ("/proc/asound/seq/clients", "r")) != nullptr) {
         memset (temp, 0, sizeof (temp));
 
-        while (fgets (temp, sizeof temp, fp) != NULL) {
+        while (fgets (temp, sizeof temp, fp) != nullptr) {
 
-            if (strstr (temp, "Client") != NULL)
+            if (strstr (temp, "Client") != nullptr)
 
             {
 
                 strcpy (temp1, temp);
                 strtok (temp1, " ");
-                nume = strtok (NULL, "\"");
+                nume = strtok (nullptr, "\"");
                 sscanf (nume, "%d", &client);
 
             }
 
-            if (strstr (temp, "Port") != NULL) {
+            if (strstr (temp, "Port") != nullptr) {
                 strcpy (temp2, temp);
                 strtok (temp2, " ");
-                nume = strtok (NULL, "  ");
+                nume = strtok (nullptr, "  ");
                 sscanf (nume, "%d", &puerto);
                 if (strstr (temp, "rakarrack IN") != 0) {
                     jack.Cyoin = client;

@@ -141,7 +141,7 @@ void
 SVFilter::singlefilterout (float * smp, fstage & x, parameters & par)
 {
     int i;
-    float *out = NULL;
+    float *out = nullptr;
     switch (type) {
     case 0:
         out = &x.low;
