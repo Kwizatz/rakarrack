@@ -49,9 +49,6 @@ public:
     void applyfilters (float * efxoutl, float * efxoutr);
 
 
-    float inpll[4096];
-    float inplr[4096];
-
 private:
 
     void setvolume (int Pvolume);

@@ -263,13 +263,13 @@ void RKR::putbuf(char *buf, int j)
 
     case 29:
         //Convolotron
-        memset(efx_Convol->Filename,0, sizeof(efx_Convol->Filename));
+        efx_Convol->Filename.fill(0);
         memset(cfilename,0, sizeof(cfilename));
         sscanf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%s\n",
                 &lv[30][0], &lv[30][1], &lv[30][2], &lv[30][3], &lv[30][4],
                 &lv[30][5], &lv[30][6], &lv[30][7], &lv[30][8], &lv[30][9],
                 &lv[30][10],&Convol_B,cfilename);
-        strcpy(efx_Convol->Filename,cfilename);
+        strcpy(efx_Convol->Filename.data(),cfilename);
         break;
 
     case 30:
@@ -348,7 +348,7 @@ void RKR::putbuf(char *buf, int j)
 
     case 40:
         //Reverbtron
-        memset(efx_Reverbtron->Filename,0, sizeof(efx_Reverbtron->Filename));
+        efx_Reverbtron->Filename.fill(0);
         memset(cfilename,0, sizeof(cfilename));
         sscanf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%s\n",
                 &lv[41][0], &lv[41][1], &lv[41][2], &lv[41][3], &lv[41][4],
@@ -356,12 +356,12 @@ void RKR::putbuf(char *buf, int j)
                 &lv[41][10],&lv[41][11],&lv[41][12], &lv[41][13], &lv[41][14],&lv[41][15],
                 &Reverbtron_B,
                 cfilename);
-        strcpy(efx_Reverbtron->Filename,cfilename);
+        strcpy(efx_Reverbtron->Filename.data(),cfilename);
         break;
 
     case 41:
         //Echotron
-        memset(efx_Echotron->Filename,0, sizeof(efx_Echotron->Filename));
+        efx_Echotron->Filename.fill(0);
         memset(cfilename,0, sizeof(cfilename));
         sscanf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%s\n",
                 &lv[42][0], &lv[42][1], &lv[42][2], &lv[42][3], &lv[42][4],
@@ -369,7 +369,7 @@ void RKR::putbuf(char *buf, int j)
                 &lv[42][10],&lv[42][11],&lv[42][12], &lv[42][13], &lv[42][14],&lv[42][15],
                 &Echotron_B,
                 cfilename);
-        strcpy(efx_Echotron->Filename,cfilename);
+        strcpy(efx_Echotron->Filename.data(),cfilename);
         break;
 
     case 42:
@@ -756,7 +756,7 @@ void RKR::getbuf(char *buf, int j)
                  efx_Convol->getpar (4), efx_Convol->getpar (5),
                  efx_Convol->getpar (6), efx_Convol->getpar (7),
                  efx_Convol->getpar (8), efx_Convol->getpar (9),
-                 efx_Convol->getpar (10), Convol_Bypass, efx_Convol->Filename);
+                 efx_Convol->getpar (10), Convol_Bypass, efx_Convol->Filename.data());
         break;
 
     case 30:
@@ -876,7 +876,7 @@ void RKR::getbuf(char *buf, int j)
                  efx_Reverbtron->getpar (10), efx_Reverbtron->getpar (11),
                  efx_Reverbtron->getpar (12), efx_Reverbtron->getpar (13),
                  efx_Reverbtron->getpar (14), efx_Reverbtron->getpar (15),
-                 Reverbtron_Bypass, efx_Reverbtron->Filename);
+                 Reverbtron_Bypass, efx_Reverbtron->Filename.data());
         break;
 
     case 41:
@@ -890,7 +890,7 @@ void RKR::getbuf(char *buf, int j)
                  efx_Echotron->getpar (10), efx_Echotron->getpar (11),
                  efx_Echotron->getpar (12), efx_Echotron->getpar (13),
                  efx_Echotron->getpar (14), efx_Echotron->getpar (15),
-                 Echotron_Bypass, efx_Echotron->Filename);
+                 Echotron_Bypass, efx_Echotron->Filename.data());
         break;
     case 42:
         //StereoHarm
@@ -1865,9 +1865,9 @@ RKR::New ()
     for (j=0; j<10; j++) active[j]=0;
 
     memset(presets.Preset_Name.data(), 0, presets.Preset_Name.size());
-    memset(efx_Convol->Filename,0,sizeof(efx_Convol->Filename));
-    memset(efx_Reverbtron->Filename,0,sizeof(efx_Reverbtron->Filename));
-    memset(efx_Echotron->Filename,0,sizeof(efx_Echotron->Filename));
+    efx_Convol->Filename.fill(0);
+    efx_Reverbtron->Filename.fill(0);
+    efx_Echotron->Filename.fill(0);
     memset (presets.Author.data(), 0, presets.Author.size());
     strcpy(presets.Author.data(),presets.UserRealName.data());
     Input_Gain = .5f;
@@ -2115,12 +2115,12 @@ RKR::Bank_to_Preset (int i)
     strcpy (presets.Preset_Name.data(), presets.Bank[i].Preset_Name.data());
     memset(presets.Author.data(), 0, presets.Author.size());
     strcpy (presets.Author.data(), presets.Bank[i].Author.data());
-    memset(efx_Convol->Filename, 0, sizeof (efx_Convol->Filename));
-    strcpy (efx_Convol->Filename,presets.Bank[i].ConvoFiname.data());
-    memset(efx_Reverbtron->Filename, 0, sizeof (efx_Reverbtron->Filename));
-    strcpy (efx_Reverbtron->Filename,presets.Bank[i].RevFiname.data());
-    memset(efx_Echotron->Filename, 0, sizeof (efx_Echotron->Filename));
-    strcpy (efx_Echotron->Filename,presets.Bank[i].EchoFiname.data());
+    efx_Convol->Filename.fill(0);
+    strcpy (efx_Convol->Filename.data(),presets.Bank[i].ConvoFiname.data());
+    efx_Reverbtron->Filename.fill(0);
+    strcpy (efx_Reverbtron->Filename.data(),presets.Bank[i].RevFiname.data());
+    efx_Echotron->Filename.fill(0);
+    strcpy (efx_Echotron->Filename.data(),presets.Bank[i].EchoFiname.data());
 
 
     for (j = 0; j <=NumEffects; j++) {
@@ -2214,11 +2214,11 @@ RKR::Preset_to_Bank (int i)
     memset(presets.Bank[i].Author.data(), 0, presets.Bank[i].Author.size());
     strcpy (presets.Bank[i].Author.data(), presets.Author.data());
     memset(presets.Bank[i].ConvoFiname.data(), 0, presets.Bank[i].ConvoFiname.size());
-    strcpy(presets.Bank[i].ConvoFiname.data(), efx_Convol->Filename);
+    strcpy(presets.Bank[i].ConvoFiname.data(), efx_Convol->Filename.data());
     memset(presets.Bank[i].RevFiname.data(), 0, presets.Bank[i].RevFiname.size());
-    strcpy(presets.Bank[i].RevFiname.data(), efx_Reverbtron->Filename);
+    strcpy(presets.Bank[i].RevFiname.data(), efx_Reverbtron->Filename.data());
     memset(presets.Bank[i].EchoFiname.data(), 0, presets.Bank[i].EchoFiname.size());
-    strcpy(presets.Bank[i].EchoFiname.data(), efx_Echotron->Filename);
+    strcpy(presets.Bank[i].EchoFiname.data(), efx_Echotron->Filename.data());
 
 
     presets.Bank[i].Input_Gain = Input_Gain;

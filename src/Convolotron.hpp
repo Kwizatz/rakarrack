@@ -46,7 +46,7 @@ public:
 
 
 
-    char Filename[128];
+    std::array<char, 128> Filename{};
 
 
 private:

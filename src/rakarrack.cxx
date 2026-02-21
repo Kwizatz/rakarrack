@@ -6420,7 +6420,7 @@ void RKRGUI::cb_B_wav_i(Fl_Button*, void*) {
 filename=fl_file_chooser("Load Wav File:","(*.wav)",NULL,0);
 if (filename==NULL) return;
 filename=fl_filename_setext(filename,".wav");
-strcpy(rkr->efx_Convol->Filename,filename);
+strcpy(rkr->efx_Convol->Filename.data(),filename);
 rkr->efx_Convol->setfile(100);
 }
 void RKRGUI::cb_B_wav(Fl_Button* o, void* v) {
@@ -8237,7 +8237,7 @@ void RKRGUI::cb_B_rvb_i(Fl_Button*, void*) {
 filename=fl_file_chooser("Load rvb File:","(*.rvb)",NULL,0);
 if (filename==NULL) return;
 filename=fl_filename_setext(filename,".rvb");
-strcpy(rkr->efx_Reverbtron->Filename,filename);
+strcpy(rkr->efx_Reverbtron->Filename.data(),filename);
 rkr->efx_Reverbtron->setfile(100);
 }
 void RKRGUI::cb_B_rvb(Fl_Button* o, void* v) {
@@ -8465,7 +8465,7 @@ void RKRGUI::cb_B_ech_i(Fl_Button*, void*) {
 filename=fl_file_chooser("Load dly File:","(*.dly)",NULL,0);
 if (filename==NULL) return;
 filename=fl_filename_setext(filename,".dly");
-strcpy(rkr->efx_Echotron->Filename,filename);
+strcpy(rkr->efx_Echotron->Filename.data(),filename);
 rkr->efx_Echotron->setfile(100);
 echotron_length->value(rkr->efx_Echotron->getpar(3));
 echotron_length->maximum(rkr->efx_Echotron->getpar(3));

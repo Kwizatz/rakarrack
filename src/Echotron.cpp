@@ -225,11 +225,11 @@ Echotron::setfile(int value)
 
     if(!Puser) {
         Filenum = value;
-        memset(Filename,0,sizeof(Filename));
-        sprintf(Filename, "%s/%d.dly",DATA_DIR,Filenum+1);
+        Filename.fill(0);
+        sprintf(Filename.data(), "%s/%d.dly",DATA_DIR,Filenum+1);
     }
 
-    if ((fs = fopen (Filename, "r")) == NULL) {
+    if ((fs = fopen (Filename.data(), "r")) == NULL) {
         loaddefault();
         return(0);
     }
