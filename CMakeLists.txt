@@ -71,6 +71,8 @@ configure_file(cmake/config.hpp.in src/config.hpp)
 add_subdirectory(src)
 add_subdirectory(extra)
 
+include(vscode)
+
 # --- Install rules ---
 
 # Data files
