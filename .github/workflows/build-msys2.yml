@@ -1,0 +1,46 @@
+name: Build on Windows (MSYS2)
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { sys: mingw64 }
+
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup MSYS2
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: ${{matrix.sys}}
+        update: true
+        install: >-
+          git
+          make
+        pacboy: >-
+          toolchain:p
+          cmake:p
+          fltk:p
+          dlfcn:p
+          jack2:p
+          xpm-nox:p
+          nlohmann-json:p
+          fftw:p
+          libsamplerate:p
+          libsndfile:p
+
+    - name: Configure
+      run: cmake -G "MSYS Makefiles" -B build -DCMAKE_BUILD_TYPE=Release -DENABLE_MIDI=OFF
+
+    - name: Build
+      run: cmake --build build
