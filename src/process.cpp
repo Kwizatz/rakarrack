@@ -85,7 +85,7 @@ RKR::RKR ()
     error_num = 0;
     eff_filter = 0;
     OnOffC = 0;
-    flpos = 0;
+    config.flpos = 0;
     Har_Down = 0;
     Rev_Down = 0;
     Con_Down = 0;
@@ -189,8 +189,8 @@ RKR::RKR ()
     rakarrack.get (PrefNom ("Harmonizer Quality"), HarQual, 4);
     rakarrack.get (PrefNom ("StereoHarm Quality"), SteQual, 4);
 
-    rakarrack.get (PrefNom ("Auto Connect Jack"), aconnect_JA, 1);
-    rakarrack.get (PrefNom ("Auto Connect Jack In"), aconnect_JIA, 1);
+    rakarrack.get (PrefNom ("Auto Connect Jack"), config.aconnect_JA, 1);
+    rakarrack.get (PrefNom ("Auto Connect Jack In"), config.aconnect_JIA, 1);
 
     rakarrack.get (PrefNom ("Auto Connect Num"), cuan_jack, 2);
     rakarrack.get (PrefNom ("Auto Connect In Num"), cuan_ijack, 1);
@@ -925,9 +925,9 @@ RKR::ConnectMIDI ()
 {
     // Get config settings and init settings
     // Get MIDI IN Setting
-    rakarrack.get (PrefNom ("Auto Connect MIDI IN"), aconnect_MI, 0);
+    rakarrack.get (PrefNom ("Auto Connect MIDI IN"), config.aconnect_MI, 0);
     rakarrack.get (PrefNom ("MIDI IN Device"), MID, "", 40);
-    if (aconnect_MI){ Conecta (); }
+    if (config.aconnect_MI){ Conecta (); }
 }
 #endif
 
@@ -1302,7 +1302,7 @@ RKR::Control_Volume (float *origl,float *origr)
     float tmp;
     float Temp_M_Volume = 0.0f;
 
-    if((flpos)&&(have_signal)) {
+    if((config.flpos)&&(have_signal)) {
         if(db6booster) {
             for(i=0; i<PERIOD; i++) {
                 efxoutl[i] *=.5f;
@@ -1356,7 +1356,7 @@ RKR::Control_Volume (float *origl,float *origr)
 
     }
 
-    if ((!flpos) && (have_signal)) {
+    if ((!config.flpos) && (have_signal)) {
         if(db6booster) {
             for(i=0; i<PERIOD; i++) {
                 efxoutl[i] *=.5f;

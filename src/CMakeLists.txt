@@ -97,6 +97,7 @@ set(RAKARRACK_HEADERS
 	AllEffects.hpp
 	Alienwah.hpp
 	AnalogFilter.hpp
+	AppConfig.hpp
 	APhaser.hpp
 	Arpie.hpp
 	beattracker.hpp

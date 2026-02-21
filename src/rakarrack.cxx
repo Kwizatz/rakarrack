@@ -833,7 +833,7 @@ void RKRGUI::cb_Load_Skin_i(Fl_Menu_*, void*) {
 filename=fl_file_chooser("Load Skin:","(*.rkrs)",NULL,0);
 if (filename==NULL) return;
 filename=fl_filename_setext(filename,".rkrs");
-int last = rkr->relfontsize;
+int last = rkr->config.relfontsize;
 rkr->loadskin(filename);
 Put_Skin(last);
 }
@@ -849,12 +849,12 @@ if (filename==NULL) return;
 filename=fl_filename_setext(filename,EXT);
 #undef EXT
 
-rkr->slabel_color = (int) label_color;
-rkr->sback_color = (int) back_color;
-rkr->sfore_color = (int) fore_color;
-rkr->sleds_color = (int) leds_color;
+rkr->config.slabel_color = (int) label_color;
+rkr->config.sback_color = (int) back_color;
+rkr->config.sfore_color = (int) fore_color;
+rkr->config.sleds_color = (int) leds_color;
 rkr->sh = (int) Principal->h();
-rkr->sschema = scheme_ch->value();
+rkr->config.sschema = scheme_ch->value();
 
 
 rkr->saveskin(filename);
@@ -946,7 +946,7 @@ void RKRGUI::cb_Ajustes(Fl_Menu_* o, void* v) {
 void RKRGUI::cb_ML_Menu_i(Fl_Menu_*, void*) {
   if(!MIDILearn->visible())
 {
-rkr->comemouse=0;
+rkr->config.comemouse=0;
 PrepareML();
 }
 else
@@ -1104,7 +1104,7 @@ rkr->cents_old=rkr->efx_Tuner->cents;
 
 
 
-if (Principal->w() != rkr->resolution) adjustfont();
+if (Principal->w() != rkr->config.resolution) adjustfont();
 
 
 if(stecla==1)
@@ -1471,9 +1471,9 @@ if (rkr->RControl)
       Disp_Control->redraw();
       GMM->color(fore_color);
       GMM->redraw();
-      if((rkr->comemouse) && (rkr->autoassign))
+      if((rkr->config.comemouse) && (rkr->autoassign))
        {
-        rkr->comemouse=0;
+        rkr->config.comemouse=0;
         Assign->do_callback();   
           
        }
@@ -10433,7 +10433,7 @@ Fl_Menu_Item RKRGUI::menu_scheme_ch[] = {
 };
 
 void RKRGUI::cb_Font_Bro_i(Fl_Browser* o, void*) {
-  rkr->font = (int)o->value()-1;
+  rkr->config.font = (int)o->value()-1;
 chfsize(0);
 }
 void RKRGUI::cb_Font_Bro(Fl_Browser* o, void* v) {
@@ -10441,7 +10441,7 @@ void RKRGUI::cb_Font_Bro(Fl_Browser* o, void* v) {
 }
 
 void RKRGUI::cb_FSless_i(Fl_Button*, void*) {
-  rkr->relfontsize--;
+  rkr->config.relfontsize--;
 chfsize(-1);
 }
 void RKRGUI::cb_FSless(Fl_Button* o, void* v) {
@@ -10449,7 +10449,7 @@ void RKRGUI::cb_FSless(Fl_Button* o, void* v) {
 }
 
 void RKRGUI::cb_FSplus_i(Fl_Button*, void*) {
-  rkr->relfontsize++;
+  rkr->config.relfontsize++;
 chfsize(1);
 }
 void RKRGUI::cb_FSplus(Fl_Button* o, void* v) {
@@ -10457,7 +10457,7 @@ void RKRGUI::cb_FSplus(Fl_Button* o, void* v) {
 }
 
 void RKRGUI::cb_FSReset_i(Fl_Button*, void*) {
-  rkr->relfontsize=0;
+  rkr->config.relfontsize=0;
 chfsize(0);
 }
 void RKRGUI::cb_FSReset(Fl_Button* o, void* v) {
@@ -10510,7 +10510,7 @@ void RKRGUI::cb_K_C(Fl_Button* o, void* v) {
 }
 
 void RKRGUI::cb_Enable_Back_i(Fl_Check_Button* o, void*) {
-  rkr->EnableBackgroundImage=(int) o->value();
+  rkr->config.EnableBackgroundImage=(int) o->value();
 PutBackground();
 }
 void RKRGUI::cb_Enable_Back(Fl_Check_Button* o, void* v) {
@@ -10523,7 +10523,7 @@ filename=fl_file_chooser("Browse:","(*.png)",NULL,0);
 if (filename==NULL) return;
 filename=fl_filename_setext(filename,".png");
 BackFiname->value(filename);
-strcpy(rkr->BackgroundImage.data(),filename);
+strcpy(rkr->config.BackgroundImage.data(),filename);
 PutBackground();
 }
 void RKRGUI::cb_BI_Browser(Fl_Button* o, void* v) {
@@ -10755,7 +10755,7 @@ Fl_Menu_Item RKRGUI::menu_Voc_Bands[] = {
 };
 
 void RKRGUI::cb_FLPosition_i(Fl_Check_Button* o, void*) {
-  rkr->flpos=(int)o->value();
+  rkr->config.flpos=(int)o->value();
 }
 void RKRGUI::cb_FLPosition(Fl_Check_Button* o, void* v) {
   ((RKRGUI*)(o->parent()->parent()->parent()->user_data()))->cb_FLPosition_i(o,v);
@@ -11035,9 +11035,9 @@ void RKRGUI::cb_Wave_Up_Qua(Fl_Choice* o, void* v) {
 }
 
 void RKRGUI::cb_D_A_Connect_i(Fl_Check_Button* o, void*) {
-  rkr->aconnect_MI=(int) o->value();
+  rkr->config.aconnect_MI=(int) o->value();
 
-if (rkr->aconnect_MI) BMidiIn->activate();
+if (rkr->config.aconnect_MI) BMidiIn->activate();
 else BMidiIn->deactivate();
 }
 void RKRGUI::cb_D_A_Connect(Fl_Check_Button* o, void* v) {
@@ -11104,8 +11104,8 @@ void RKRGUI::cb_MTable(Fl_Check_Button* o, void* v) {
 }
 
 void RKRGUI::cb_D_J_Connect_i(Fl_Check_Button* o, void*) {
-  rkr->aconnect_JA=(int) o->value();
-if (rkr->aconnect_JA) JackCo->activate();
+  rkr->config.aconnect_JA=(int) o->value();
+if (rkr->config.aconnect_JA) JackCo->activate();
 else JackCo->deactivate();
 }
 void RKRGUI::cb_D_J_Connect(Fl_Check_Button* o, void* v) {
@@ -11113,8 +11113,8 @@ void RKRGUI::cb_D_J_Connect(Fl_Check_Button* o, void* v) {
 }
 
 void RKRGUI::cb_D_IJ_Connect_i(Fl_Check_Button* o, void*) {
-  rkr->aconnect_JIA=(int) o->value();
-if (rkr->aconnect_JIA) JackIn->activate();
+  rkr->config.aconnect_JIA=(int) o->value();
+if (rkr->config.aconnect_JIA) JackIn->activate();
 else JackIn->deactivate();
 }
 void RKRGUI::cb_D_IJ_Connect(Fl_Check_Button* o, void* v) {
@@ -22531,7 +22531,7 @@ void RKRGUI::Background_Color_Change(Fl_Color bcolor) {
   back_color = bcolor;
   
   Label_Color_Change(label_color);
-  if(!rkr->EnableBackgroundImage) back->color_average(back_color,0.0);
+  if(!rkr->config.EnableBackgroundImage) back->color_average(back_color,0.0);
 }
 
 void RKRGUI::Label_Color_Change(Fl_Color bcolor) {
@@ -22664,18 +22664,18 @@ void RKRGUI::load_stat() {
   rakarrack.get(rkr->PrefNom("Principal X"),x,1);
   rakarrack.get(rkr->PrefNom("Principal Y"),y,1);
   rakarrack.get(rkr->PrefNom("Principal W"),w,800);
-  rkr->resolution=w;
+  rkr->config.resolution=w;
   rakarrack.get(rkr->PrefNom("Principal H"),h,600);
   
   char tmp[256];
   sprintf (tmp, "%s/bg.png", DATA_DIR);
   
-  rakarrack.get(rkr->PrefNom("Enable Background Image"),rkr->EnableBackgroundImage,1);
-  rakarrack.get(rkr->PrefNom("Background Image"),rkr->BackgroundImage.data(),tmp,256);
+  rakarrack.get(rkr->PrefNom("Enable Background Image"),rkr->config.EnableBackgroundImage,1);
+  rakarrack.get(rkr->PrefNom("Background Image"),rkr->config.BackgroundImage.data(),tmp,256);
   PutBackground();
-  rakarrack.get(rkr->PrefNom("FontSize"),rkr->relfontsize,0);
-  if( rkr->relfontsize!=0) chfsize(rkr->relfontsize);
-  rakarrack.get(rkr->PrefNom("Font"),rkr->font,0);
+  rakarrack.get(rkr->PrefNom("FontSize"),rkr->config.relfontsize,0);
+  if( rkr->config.relfontsize!=0) chfsize(rkr->config.relfontsize);
+  rakarrack.get(rkr->PrefNom("Font"),rkr->config.font,0);
   
   rakarrack.get(rkr->PrefNom("Background Color"),b, 774778368);
   rakarrack.get(rkr->PrefNom("Foreground Color"),f,1602392832);
@@ -22794,7 +22794,7 @@ void RKRGUI::load_stat() {
   
   rakarrack.get(rkr->PrefNom("MIDI IN Harmonizer"),rkr->HarCh,1);
   rkr->HarCh--;
-  rakarrack.get(rkr->PrefNom("Limiter Position"),rkr->flpos,0);
+  rakarrack.get(rkr->PrefNom("Limiter Position"),rkr->config.flpos,0);
   rakarrack.get(rkr->PrefNom("Limiter +6dB"),rkr->db6booster,0);
   rakarrack.get(rkr->PrefNom("Booster"),rkr->booster,1.0f);
   if (rkr->booster==1.0) BostBut->value(0); else BostBut->value(1);
@@ -22977,8 +22977,8 @@ void RKRGUI::save_stat(int whati) {
   rakarrack.set(rkr->PrefNom("Principal Y"),Principal->y());
   rakarrack.set(rkr->PrefNom("Principal W"),Principal->w());
   rakarrack.set(rkr->PrefNom("Principal H"),Principal->h());
-  rakarrack.set(rkr->PrefNom("FontSize"), rkr->relfontsize);
-  rakarrack.set(rkr->PrefNom("Font"), rkr->font);
+  rakarrack.set(rkr->PrefNom("FontSize"), rkr->config.relfontsize);
+  rakarrack.set(rkr->PrefNom("Font"), rkr->config.font);
   
   rakarrack.set(rkr->PrefNom("Background Color"), (int)back_color);
   rakarrack.set(rkr->PrefNom("Foreground Color"), (int)fore_color);
@@ -23103,7 +23103,7 @@ void RKRGUI::save_stat(int whati) {
   rakarrack.set(rkr->PrefNom("Filter DC Offset"),rkr->DC_Offset);
   
   rakarrack.set(rkr->PrefNom("Update Tap"),rkr->Tap_Updated);
-  rakarrack.set(rkr->PrefNom("Limiter Position"),rkr->flpos);
+  rakarrack.set(rkr->PrefNom("Limiter Position"),rkr->config.flpos);
   rakarrack.set(rkr->PrefNom("Limiter +6dB"),rkr->db6booster);
   
   rakarrack.set(rkr->PrefNom("Recognize Optimization"),rkr->RCOpti);
@@ -23151,15 +23151,15 @@ void RKRGUI::save_stat(int whati) {
   
   
   
-  rakarrack.set(rkr->PrefNom("FontSize"),rkr->relfontsize);
+  rakarrack.set(rkr->PrefNom("FontSize"),rkr->config.relfontsize);
   rakarrack.set(rkr->PrefNom("Bank Filename"),rkr->presets.BankFilename.data());
   rakarrack.set(rkr->PrefNom("User Directory"),rkr->presets.UDirFilename.data());
   
-  rakarrack.set(rkr->PrefNom("Enable Background Image"),rkr->EnableBackgroundImage);
-  rakarrack.set(rkr->PrefNom("Background Image"),rkr->BackgroundImage.data());
-  rakarrack.set(rkr->PrefNom("Auto Connect MIDI IN"),rkr->aconnect_MI);
-  rakarrack.set(rkr->PrefNom("Auto Connect Jack"),rkr->aconnect_JA);
-  rakarrack.set(rkr->PrefNom("Auto Connect Jack In"),rkr->aconnect_JIA);
+  rakarrack.set(rkr->PrefNom("Enable Background Image"),rkr->config.EnableBackgroundImage);
+  rakarrack.set(rkr->PrefNom("Background Image"),rkr->config.BackgroundImage.data());
+  rakarrack.set(rkr->PrefNom("Auto Connect MIDI IN"),rkr->config.aconnect_MI);
+  rakarrack.set(rkr->PrefNom("Auto Connect Jack"),rkr->config.aconnect_JA);
+  rakarrack.set(rkr->PrefNom("Auto Connect Jack In"),rkr->config.aconnect_JIA);
   
   
   rakarrack.set(rkr->PrefNom("MIDI Implementation"),rkr->MIDIway);
@@ -24613,17 +24613,17 @@ void RKRGUI::MiraConfig() {
   if (rkr->MIDIway) Mw1->setonly(); else Mw0->setonly();
   
   rkr->m_displayed = 0;
-  Enable_Back->value(rkr->EnableBackgroundImage);
+  Enable_Back->value(rkr->config.EnableBackgroundImage);
   Enable_DeacHide->value(rkr->deachide);
   
   BFiname->value(rkr->presets.BankFilename.data());
-  BackFiname->value(rkr->BackgroundImage.data());
+  BackFiname->value(rkr->config.BackgroundImage.data());
   Udir->value(rkr->presets.UDirFilename.data());
   Username->value(rkr->presets.UserRealName.data());
   Pre_Serve->value(rkr->actuvol);
   LM_Volume->value(rkr->Metro_Vol);
   Filter_DC->value(rkr->DC_Offset);
-  FLPosition->value(rkr->flpos);
+  FLPosition->value(rkr->config.flpos);
   DB6B->value(rkr->db6booster);
   Har_Downsample->value(rkr->Har_Down);
   Har_Down_Qua->value(rkr->Har_D_Q);
@@ -24690,9 +24690,9 @@ void RKRGUI::MiraConfig() {
   
   Upr_Amo->value(rkr->UpAmo);
   L_SIZE->value(rkr->looper_size);
-  D_A_Connect->value(rkr->aconnect_MI);
-  D_J_Connect->value(rkr->aconnect_JA);
-  D_IJ_Connect->value(rkr->aconnect_JIA);
+  D_A_Connect->value(rkr->config.aconnect_MI);
+  D_J_Connect->value(rkr->config.aconnect_JA);
+  D_IJ_Connect->value(rkr->config.aconnect_JIA);
   
   Midi_In_Counter->value(rkr->MidiCh+1);
   Har_In_Counter->value(rkr->HarCh+1);
@@ -24741,13 +24741,13 @@ void RKRGUI::MiraConfig() {
   
   
   
-  if (rkr->aconnect_MI) BMidiIn->activate();
+  if (rkr->config.aconnect_MI) BMidiIn->activate();
   else BMidiIn->deactivate();
   
-  if (rkr->aconnect_JA) JackCo->activate();
+  if (rkr->config.aconnect_JA) JackCo->activate();
   else JackCo->deactivate();
   
-  if (rkr->aconnect_JIA) JackIn->activate();
+  if (rkr->config.aconnect_JIA) JackIn->activate();
   else JackIn->deactivate();
   
   Fl_Menu_Item *p;  
@@ -24822,7 +24822,7 @@ void RKRGUI::MiraConfig() {
   
   }
   
-  Font_Bro->value(rkr->font+1);
+  Font_Bro->value(rkr->config.font+1);
 }
 
 void RKRGUI::BankWin_Label(char *filename) {
@@ -26712,8 +26712,8 @@ void RKRGUI::unlight_preset(int npreset) {
 
 void RKRGUI::PutBackground() {
   delete back;
-  back = new Fl_Tiled_Image(new Fl_PNG_Image(rkr->BackgroundImage.data()),1600,1200);
-  if(!rkr->EnableBackgroundImage)
+  back = new Fl_Tiled_Image(new Fl_PNG_Image(rkr->config.BackgroundImage.data()),1600,1200);
+  if(!rkr->config.EnableBackgroundImage)
   back->color_average(back_color,0.0);
   
   InOut->image(back);
@@ -26851,7 +26851,7 @@ void RKRGUI::chfsize(int value) {
             if (uh !=7) c->selection_color(back_color); 
             if ((uh==2)||(uh==7)||(uh==77) || (uh == 78)) c->selection_color(leds_color);
             c->color(fore_color);
-            c->labelfont(rkr->font);
+            c->labelfont(rkr->config.font);
          
             if(((uh >=12000) && (uh <=12100)) || (uh ==12))
              {
@@ -26903,10 +26903,10 @@ void RKRGUI::chfsize(int value) {
 void RKRGUI::adjustfont() {
   int change,value;
   
-  change = Principal->w() - rkr->resolution;
+  change = Principal->w() - rkr->config.resolution;
   value=change/100;
-  rkr->resolution=Principal->w();
-  rkr->relfontsize +=value;
+  rkr->config.resolution=Principal->w();
+  rkr->config.relfontsize +=value;
   chfsize(value);
 }
 
@@ -27022,17 +27022,17 @@ void RKRGUI::findpos(int num, int value, Fl_Widget *w) {
 }
 
 void RKRGUI::Put_Skin(int last) {
-  Principal->resize(Principal->x(),Principal->y(),rkr->resolution,rkr->sh);
+  Principal->resize(Principal->x(),Principal->y(),rkr->config.resolution,rkr->sh);
   
-  back_color=(Fl_Color)rkr->sback_color;
-  fore_color=(Fl_Color)rkr->sfore_color;
-  leds_color=(Fl_Color)rkr->sleds_color;
-  label_color=(Fl_Color)rkr->slabel_color;
+  back_color=(Fl_Color)rkr->config.sback_color;
+  fore_color=(Fl_Color)rkr->config.sfore_color;
+  leds_color=(Fl_Color)rkr->config.sleds_color;
+  label_color=(Fl_Color)rkr->config.slabel_color;
   
-  scheme_ch->value(rkr->sschema);
+  scheme_ch->value(rkr->config.sschema);
   scheme_ch->do_callback();
   PutBackground();
-  chfsize(rkr->relfontsize - last);
+  chfsize(rkr->config.relfontsize - last);
   Leds_Color_Change(leds_color);
   Buttons_Color_Change(fore_color);
   
@@ -27865,7 +27865,7 @@ int RKRGUI::prevnext(int e) {
 
 void RKRGUI::getMIDIControl(int num) {
   int i = 0;
-  rkr->comemouse=1;
+  rkr->config.comemouse=1;
   PrepareML();
   while (i<Epar->size())
   {
@@ -27894,14 +27894,14 @@ void RKRGUI::getMIDIControl(int num) {
 
 void RKRGUI::PrepareML() {
   FillML(0);
-  if(rkr->comemouse==0)
+  if(rkr->config.comemouse==0)
   {
    MIDILearn->show();
    put_icon(MIDILearn);
    return;
   } 
   
-  if(rkr->comemouse) 
+  if(rkr->config.comemouse) 
   {
    if(rkr->autoassign==0)
      {

@@ -954,7 +954,7 @@ Pexitprogram=1;} open
 filename=fl_file_chooser("Load Skin:","(*.rkrs)",NULL,0);
 if (filename==NULL) return;
 filename=fl_filename_setext(filename,".rkrs");
-int last = rkr->relfontsize;
+int last = rkr->config.relfontsize;
 rkr->loadskin(filename);
 Put_Skin(last);}
             xywh {0 0 36 21}
@@ -968,12 +968,12 @@ if (filename==NULL) return;
 filename=fl_filename_setext(filename,EXT);
 \#undef EXT
 
-rkr->slabel_color = (int) label_color;
-rkr->sback_color = (int) back_color;
-rkr->sfore_color = (int) fore_color;
-rkr->sleds_color = (int) leds_color;
+rkr->config.slabel_color = (int) label_color;
+rkr->config.sback_color = (int) back_color;
+rkr->config.sfore_color = (int) fore_color;
+rkr->config.sleds_color = (int) leds_color;
 rkr->sh = (int) Principal->h();
-rkr->sschema = scheme_ch->value();
+rkr->config.sschema = scheme_ch->value();
 
 
 rkr->saveskin(filename);}
@@ -1055,7 +1055,7 @@ Settings->hide();}
             label {MIDI Learn}
             callback {if(!MIDILearn->visible())
 {
-rkr->comemouse=0;
+rkr->config.comemouse=0;
 PrepareML();
 }
 else
@@ -1160,7 +1160,7 @@ rkr->cents_old=rkr->efx_Tuner->cents;
 
 
 
-if (Principal->w() != rkr->resolution) adjustfont();
+if (Principal->w() != rkr->config.resolution) adjustfont();
 
 
 if(stecla==1)
@@ -1527,9 +1527,9 @@ if (rkr->RControl)
       Disp_Control->redraw();
       GMM->color(fore_color);
       GMM->redraw();
-      if((rkr->comemouse) && (rkr->autoassign))
+      if((rkr->config.comemouse) && (rkr->autoassign))
        {
-        rkr->comemouse=0;
+        rkr->config.comemouse=0;
         Assign->do_callback();   
           
        }
@@ -11380,7 +11380,7 @@ break;
           }
           Fl_Browser Font_Bro {
             label Font
-            callback {rkr->font = (int)o->value()-1;
+            callback {rkr->config.font = (int)o->value()-1;
 chfsize(0);}
             xywh {20 100 400 225} type Select labelsize 11 labelcolor 7 align 1 when 1
           }
@@ -11391,21 +11391,21 @@ chfsize(0);}
           Fl_Button FSless {
             label {-}
             user_data 77
-            callback {rkr->relfontsize--;
+            callback {rkr->config.relfontsize--;
 chfsize(-1);}
             xywh {78 330 30 20}
           }
           Fl_Button FSplus {
             label {+}
             user_data 77
-            callback {rkr->relfontsize++;
+            callback {rkr->config.relfontsize++;
 chfsize(1);}
             xywh {113 330 30 20}
           }
           Fl_Button FSReset {
             label Reset
             user_data 77
-            callback {rkr->relfontsize=0;
+            callback {rkr->config.relfontsize=0;
 chfsize(0);}
             xywh {148 330 57 20}
           }
@@ -11456,7 +11456,7 @@ Background_Color_Change(back_color);}
           }
           Fl_Check_Button Enable_Back {
             label {Enable Background Image}
-            callback {rkr->EnableBackgroundImage=(int) o->value();
+            callback {rkr->config.EnableBackgroundImage=(int) o->value();
 PutBackground();}
             xywh {162 409 23 20} down_box DOWN_BOX labelsize 11 labelcolor 7 align 4
           }
@@ -11472,7 +11472,7 @@ filename=fl_file_chooser("Browse:","(*.png)",NULL,0);
 if (filename==NULL) return;
 filename=fl_filename_setext(filename,".png");
 BackFiname->value(filename);
-strcpy(rkr->BackgroundImage.data(),filename);
+strcpy(rkr->config.BackgroundImage.data(),filename);
 PutBackground();}
             xywh {410 455 65 20}
           }
@@ -11756,7 +11756,7 @@ Show_Next_Time();}
           }
           Fl_Check_Button FLPosition {
             label {Limiter before Output Volume}
-            callback {rkr->flpos=(int)o->value();}
+            callback {rkr->config.flpos=(int)o->value();}
             xywh {186 222 23 20} down_box DOWN_BOX labelsize 11 labelcolor 7 align 4
           }
           Fl_Check_Button DB6B {
@@ -12055,9 +12055,9 @@ Show_Next_Time();}
           }
           Fl_Check_Button D_A_Connect {
             label {Auto Connect MIDI In}
-            callback {rkr->aconnect_MI=(int) o->value();
+            callback {rkr->config.aconnect_MI=(int) o->value();
 
-if (rkr->aconnect_MI) BMidiIn->activate();
+if (rkr->config.aconnect_MI) BMidiIn->activate();
 else BMidiIn->deactivate();}
             xywh {135 38 105 20} down_box DOWN_BOX labelsize 11 labelcolor 7 align 4
           }
@@ -12129,8 +12129,8 @@ scroll->deactivate();}
           }
           Fl_Check_Button D_J_Connect {
             label {Auto Connect Out}
-            callback {rkr->aconnect_JA=(int) o->value();
-if (rkr->aconnect_JA) JackCo->activate();
+            callback {rkr->config.aconnect_JA=(int) o->value();
+if (rkr->config.aconnect_JA) JackCo->activate();
 else JackCo->deactivate();}
             xywh {114 40 25 20} down_box DOWN_BOX labelsize 11 labelcolor 7 align 4
           }
@@ -12140,8 +12140,8 @@ else JackCo->deactivate();}
           }
           Fl_Check_Button D_IJ_Connect {
             label {Auto Connect In}
-            callback {rkr->aconnect_JIA=(int) o->value();
-if (rkr->aconnect_JIA) JackIn->activate();
+            callback {rkr->config.aconnect_JIA=(int) o->value();
+if (rkr->config.aconnect_JIA) JackIn->activate();
 else JackIn->deactivate();}
             xywh {104 228 25 20} down_box DOWN_BOX labelsize 11 labelcolor 7 align 4
           }
@@ -12665,7 +12665,7 @@ MenuB->color(bcolor);
 back_color = bcolor;
 
 Label_Color_Change(label_color);
-if(!rkr->EnableBackgroundImage) back->color_average(back_color,0.0);} {}
+if(!rkr->config.EnableBackgroundImage) back->color_average(back_color,0.0);} {}
   }
   Function {Label_Color_Change(Fl_Color bcolor)} {open
   } {
@@ -12799,18 +12799,18 @@ Fl_Preferences rakarrack (Fl_Preferences::USER, WEBSITE, PACKAGE);
 rakarrack.get(rkr->PrefNom("Principal X"),x,1);
 rakarrack.get(rkr->PrefNom("Principal Y"),y,1);
 rakarrack.get(rkr->PrefNom("Principal W"),w,800);
-rkr->resolution=w;
+rkr->config.resolution=w;
 rakarrack.get(rkr->PrefNom("Principal H"),h,600);
 
 char tmp[256];
 sprintf (tmp, "%s/bg.png", DATA_DIR);
 
-rakarrack.get(rkr->PrefNom("Enable Background Image"),rkr->EnableBackgroundImage,1);
-rakarrack.get(rkr->PrefNom("Background Image"),rkr->BackgroundImage.data(),tmp,256);
+rakarrack.get(rkr->PrefNom("Enable Background Image"),rkr->config.EnableBackgroundImage,1);
+rakarrack.get(rkr->PrefNom("Background Image"),rkr->config.BackgroundImage.data(),tmp,256);
 PutBackground();
-rakarrack.get(rkr->PrefNom("FontSize"),rkr->relfontsize,0);
-if( rkr->relfontsize!=0) chfsize(rkr->relfontsize);
-rakarrack.get(rkr->PrefNom("Font"),rkr->font,0);
+rakarrack.get(rkr->PrefNom("FontSize"),rkr->config.relfontsize,0);
+if( rkr->config.relfontsize!=0) chfsize(rkr->config.relfontsize);
+rakarrack.get(rkr->PrefNom("Font"),rkr->config.font,0);
 
 rakarrack.get(rkr->PrefNom("Background Color"),b, 774778368);
 rakarrack.get(rkr->PrefNom("Foreground Color"),f,1602392832);
@@ -12929,7 +12929,7 @@ rkr->MidiCh--;
 
 rakarrack.get(rkr->PrefNom("MIDI IN Harmonizer"),rkr->HarCh,1);
 rkr->HarCh--;
-rakarrack.get(rkr->PrefNom("Limiter Position"),rkr->flpos,0);
+rakarrack.get(rkr->PrefNom("Limiter Position"),rkr->config.flpos,0);
 rakarrack.get(rkr->PrefNom("Limiter +6dB"),rkr->db6booster,0);
 rakarrack.get(rkr->PrefNom("Booster"),rkr->booster,1.0f);
 if (rkr->booster==1.0) BostBut->value(0); else BostBut->value(1);
@@ -13113,8 +13113,8 @@ rakarrack.set(rkr->PrefNom("Principal X"),Principal->x());
 rakarrack.set(rkr->PrefNom("Principal Y"),Principal->y());
 rakarrack.set(rkr->PrefNom("Principal W"),Principal->w());
 rakarrack.set(rkr->PrefNom("Principal H"),Principal->h());
-rakarrack.set(rkr->PrefNom("FontSize"), rkr->relfontsize);
-rakarrack.set(rkr->PrefNom("Font"), rkr->font);
+rakarrack.set(rkr->PrefNom("FontSize"), rkr->config.relfontsize);
+rakarrack.set(rkr->PrefNom("Font"), rkr->config.font);
 
 rakarrack.set(rkr->PrefNom("Background Color"), (int)back_color);
 rakarrack.set(rkr->PrefNom("Foreground Color"), (int)fore_color);
@@ -13239,7 +13239,7 @@ rakarrack.set(rkr->PrefNom("Metronome Volume"),rkr->Metro_Vol);
 rakarrack.set(rkr->PrefNom("Filter DC Offset"),rkr->DC_Offset);
 
 rakarrack.set(rkr->PrefNom("Update Tap"),rkr->Tap_Updated);
-rakarrack.set(rkr->PrefNom("Limiter Position"),rkr->flpos);
+rakarrack.set(rkr->PrefNom("Limiter Position"),rkr->config.flpos);
 rakarrack.set(rkr->PrefNom("Limiter +6dB"),rkr->db6booster);
 
 rakarrack.set(rkr->PrefNom("Recognize Optimization"),rkr->RCOpti);
@@ -13287,15 +13287,15 @@ rakarrack.set(rkr->PrefNom("Looper Size"),L_SIZE->value());
 
 
 
-rakarrack.set(rkr->PrefNom("FontSize"),rkr->relfontsize);
+rakarrack.set(rkr->PrefNom("FontSize"),rkr->config.relfontsize);
 rakarrack.set(rkr->PrefNom("Bank Filename"),rkr->presets.BankFilename.data());
 rakarrack.set(rkr->PrefNom("User Directory"),rkr->presets.UDirFilename.data());
 
-rakarrack.set(rkr->PrefNom("Enable Background Image"),rkr->EnableBackgroundImage);
-rakarrack.set(rkr->PrefNom("Background Image"),rkr->BackgroundImage.data());
-rakarrack.set(rkr->PrefNom("Auto Connect MIDI IN"),rkr->aconnect_MI);
-rakarrack.set(rkr->PrefNom("Auto Connect Jack"),rkr->aconnect_JA);
-rakarrack.set(rkr->PrefNom("Auto Connect Jack In"),rkr->aconnect_JIA);
+rakarrack.set(rkr->PrefNom("Enable Background Image"),rkr->config.EnableBackgroundImage);
+rakarrack.set(rkr->PrefNom("Background Image"),rkr->config.BackgroundImage.data());
+rakarrack.set(rkr->PrefNom("Auto Connect MIDI IN"),rkr->config.aconnect_MI);
+rakarrack.set(rkr->PrefNom("Auto Connect Jack"),rkr->config.aconnect_JA);
+rakarrack.set(rkr->PrefNom("Auto Connect Jack In"),rkr->config.aconnect_JIA);
 
 
 rakarrack.set(rkr->PrefNom("MIDI Implementation"),rkr->MIDIway);
@@ -14738,17 +14738,17 @@ i++;
 if (rkr->MIDIway) Mw1->setonly(); else Mw0->setonly();
 
 rkr->m_displayed = 0;
-Enable_Back->value(rkr->EnableBackgroundImage);
+Enable_Back->value(rkr->config.EnableBackgroundImage);
 Enable_DeacHide->value(rkr->deachide);
 
 BFiname->value(rkr->presets.BankFilename.data());
-BackFiname->value(rkr->BackgroundImage.data());
+BackFiname->value(rkr->config.BackgroundImage.data());
 Udir->value(rkr->presets.UDirFilename.data());
 Username->value(rkr->presets.UserRealName.data());
 Pre_Serve->value(rkr->actuvol);
 LM_Volume->value(rkr->Metro_Vol);
 Filter_DC->value(rkr->DC_Offset);
-FLPosition->value(rkr->flpos);
+FLPosition->value(rkr->config.flpos);
 DB6B->value(rkr->db6booster);
 Har_Downsample->value(rkr->Har_Down);
 Har_Down_Qua->value(rkr->Har_D_Q);
@@ -14815,9 +14815,9 @@ T_TIMEOUT->value(rkr->t_timeout);
 
 Upr_Amo->value(rkr->UpAmo);
 L_SIZE->value(rkr->looper_size);
-D_A_Connect->value(rkr->aconnect_MI);
-D_J_Connect->value(rkr->aconnect_JA);
-D_IJ_Connect->value(rkr->aconnect_JIA);
+D_A_Connect->value(rkr->config.aconnect_MI);
+D_J_Connect->value(rkr->config.aconnect_JA);
+D_IJ_Connect->value(rkr->config.aconnect_JIA);
 
 Midi_In_Counter->value(rkr->MidiCh+1);
 Har_In_Counter->value(rkr->HarCh+1);
@@ -14866,13 +14866,13 @@ switch(rkr->SteQual)
 
 
 
-if (rkr->aconnect_MI) BMidiIn->activate();
+if (rkr->config.aconnect_MI) BMidiIn->activate();
 else BMidiIn->deactivate();
 
-if (rkr->aconnect_JA) JackCo->activate();
+if (rkr->config.aconnect_JA) JackCo->activate();
 else JackCo->deactivate();
 
-if (rkr->aconnect_JIA) JackIn->activate();
+if (rkr->config.aconnect_JIA) JackIn->activate();
 else JackIn->deactivate();
 
 Fl_Menu_Item *p;  
@@ -14947,7 +14947,7 @@ for(int j=0; j<menu_Har_Downsample->size(); j++)
 
 }
 
-Font_Bro->value(rkr->font+1);} {}
+Font_Bro->value(rkr->config.font+1);} {}
   }
   Function {BankWin_Label(char *filename)} {} {
     code {char tmp[256];
@@ -16829,8 +16829,8 @@ for (int t=0; t<ob->children();t++)
   }
   Function {PutBackground()} {} {
     code {delete back;
-back = new Fl_Tiled_Image(new Fl_PNG_Image(rkr->BackgroundImage.data()),1600,1200);
-if(!rkr->EnableBackgroundImage)
+back = new Fl_Tiled_Image(new Fl_PNG_Image(rkr->config.BackgroundImage.data()),1600,1200);
+if(!rkr->config.EnableBackgroundImage)
 back->color_average(back_color,0.0);
 
 InOut->image(back);
@@ -16967,7 +16967,7 @@ for (int t=0; t<Principal->children();t++)
           if (uh !=7) c->selection_color(back_color); 
           if ((uh==2)||(uh==7)||(uh==77) || (uh == 78)) c->selection_color(leds_color);
           c->color(fore_color);
-          c->labelfont(rkr->font);
+          c->labelfont(rkr->config.font);
        
           if(((uh >=12000) && (uh <=12100)) || (uh ==12))
            {
@@ -17018,10 +17018,10 @@ Fl::redraw();} {}
   Function {adjustfont()} {} {
     code {int change,value;
 
-change = Principal->w() - rkr->resolution;
+change = Principal->w() - rkr->config.resolution;
 value=change/100;
-rkr->resolution=Principal->w();
-rkr->relfontsize +=value;
+rkr->config.resolution=Principal->w();
+rkr->config.relfontsize +=value;
 chfsize(value);} {}
   }
   Function {ChangeActives()} {} {
@@ -17134,17 +17134,17 @@ for(i=0; i<10; i++)
  }} {}
   }
   Function {Put_Skin(int last)} {} {
-    code {Principal->resize(Principal->x(),Principal->y(),rkr->resolution,rkr->sh);
+    code {Principal->resize(Principal->x(),Principal->y(),rkr->config.resolution,rkr->sh);
 
-back_color=(Fl_Color)rkr->sback_color;
-fore_color=(Fl_Color)rkr->sfore_color;
-leds_color=(Fl_Color)rkr->sleds_color;
-label_color=(Fl_Color)rkr->slabel_color;
+back_color=(Fl_Color)rkr->config.sback_color;
+fore_color=(Fl_Color)rkr->config.sfore_color;
+leds_color=(Fl_Color)rkr->config.sleds_color;
+label_color=(Fl_Color)rkr->config.slabel_color;
 
-scheme_ch->value(rkr->sschema);
+scheme_ch->value(rkr->config.sschema);
 scheme_ch->do_callback();
 PutBackground();
-chfsize(rkr->relfontsize - last);
+chfsize(rkr->config.relfontsize - last);
 Leds_Color_Change(leds_color);
 Buttons_Color_Change(fore_color);
 
@@ -17971,7 +17971,7 @@ return 0;} {}
   }
   Function {getMIDIControl(int num)} {} {
     code {int i = 0;
-rkr->comemouse=1;
+rkr->config.comemouse=1;
 PrepareML();
 while (i<Epar->size())
 {
@@ -17999,14 +17999,14 @@ GMM->do_callback();} {}
   }
   Function {PrepareML()} {} {
     code {FillML(0);
-if(rkr->comemouse==0)
+if(rkr->config.comemouse==0)
 {
  MIDILearn->show();
  put_icon(MIDILearn);
  return;
 } 
 
-if(rkr->comemouse) 
+if(rkr->config.comemouse) 
 {
  if(rkr->autoassign==0)
    {

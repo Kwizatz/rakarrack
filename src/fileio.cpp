@@ -2514,25 +2514,25 @@ RKR::saveskin (char *filename)
 
 
     memset (buf, 0, sizeof (buf));
-    sprintf (buf, "%d,%d\n", resolution,sh);
+    sprintf (buf, "%d,%d\n", config.resolution,sh);
     fputs (buf, fn);
 
     memset (buf, 0, sizeof (buf));
-    sprintf (buf, "%d,%d,%d,%d\n", sback_color,sfore_color,slabel_color,sleds_color);
+    sprintf (buf, "%d,%d,%d,%d\n", config.sback_color,config.sfore_color,config.slabel_color,config.sleds_color);
     fputs (buf, fn);
 
 
     memset (buf, 0, sizeof (buf));
-    sprintf (buf, "%s", BackgroundImage.data());
+    sprintf (buf, "%s", config.BackgroundImage.data());
     fputs (buf, fn);
     fputs ("\n",fn);
 
     memset(buf, 0, sizeof (buf));
-    sprintf (buf, "%d,%d\n", relfontsize,font);
+    sprintf (buf, "%d,%d\n", config.relfontsize,config.font);
     fputs (buf, fn);
 
     memset(buf, 0, sizeof (buf));
-    sprintf (buf, "%d\n", sschema);
+    sprintf (buf, "%d\n", config.sschema);
     fputs (buf, fn);
 
     fclose (fn);
@@ -2553,25 +2553,25 @@ RKR::loadskin (char *filename)
 
     memset (buf, 0, sizeof (buf));
     fgets (buf, sizeof buf, fn);
-    sscanf (buf, "%d,%d\n", &resolution, &sh);
+    sscanf (buf, "%d,%d\n", &config.resolution, &sh);
 
     memset (buf, 0, sizeof (buf));
     fgets (buf, sizeof buf, fn);
-    sscanf (buf, "%d,%d,%d,%d\n", &sback_color,&sfore_color,&slabel_color,&sleds_color);
+    sscanf (buf, "%d,%d,%d,%d\n", &config.sback_color,&config.sfore_color,&config.slabel_color,&config.sleds_color);
 
-    memset (BackgroundImage.data(), 0, BackgroundImage.size());
+    memset (config.BackgroundImage.data(), 0, config.BackgroundImage.size());
     memset (buf, 0, sizeof (buf));
     fgets (buf, sizeof buf, fn);
 
-    for(i=0; i<256; i++) if(buf[i]>20) BackgroundImage[i]=buf[i];
+    for(i=0; i<256; i++) if(buf[i]>20) config.BackgroundImage[i]=buf[i];
 
     memset (buf, 0, sizeof (buf));
     fgets (buf, sizeof buf, fn);
-    sscanf (buf, "%d,%d\n", &relfontsize,&font);
+    sscanf (buf, "%d,%d\n", &config.relfontsize,&config.font);
 
     memset (buf, 0, sizeof (buf));
     fgets (buf, sizeof buf, fn);
-    sscanf (buf, "%d\n", &sschema);
+    sscanf (buf, "%d\n", &config.sschema);
 
 
     fclose(fn);

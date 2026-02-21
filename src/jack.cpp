@@ -87,7 +87,7 @@ JACKstart (RKR * rkr_, jack_client_t * jackclient_)
         return (2);
     };
 
-    if ((JackOUT->aconnect_JA) && (!needtoloadstate)) {
+    if ((JackOUT->config.aconnect_JA) && (!needtoloadstate)) {
 
         for (int i = 0; i < JackOUT->cuan_jack; i += 2) {
             jack_connect (jackclient, jack_port_name (outport_left),
@@ -97,7 +97,7 @@ JACKstart (RKR * rkr_, jack_client_t * jackclient_)
         }
     }
 
-    if ((JackOUT->aconnect_JIA) && (!needtoloadstate)) {
+    if ((JackOUT->config.aconnect_JIA) && (!needtoloadstate)) {
 
         if(JackOUT->cuan_ijack == 1) {
             jack_connect (jackclient,JackOUT->jack_poi[0].name.data(),jack_port_name(inputport_left));

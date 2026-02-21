@@ -26,6 +26,7 @@
 
 #include "dsp_constants.hpp"
 #include "PresetBank.hpp"
+#include "AppConfig.hpp"
 
 #include <signal.h>
 #include <dirent.h>
@@ -383,10 +384,6 @@ public:
     int help_displayed;
     int modified;
     int autoassign;
-    int comemouse;
-    int aconnect_MI;
-    int aconnect_JA;
-    int aconnect_JIA;
 
     int cuan_jack;
     int cuan_ijack;
@@ -430,8 +427,6 @@ public:
     int Metro_Vol;
     int M_Metro_Sound;
     int deachide;
-    int font;
-    int flpos;
     int upsample;
     int UpQual;
     int DownQual;
@@ -447,14 +442,7 @@ public:
     int MIDIway;
     int NumParams;
     int NumEffects;
-    int relfontsize;
-    int resolution;
     int sh;
-    int sschema;
-    int slabel_color;
-    int sfore_color;
-    int sback_color;
-    int sleds_color;
 
     int have_signal;
     int OnCounter;
@@ -501,7 +489,6 @@ public:
     int M_Metro_Tempo;
     int M_Metro_Bar;
     int mtc_counter;
-    int EnableBackgroundImage;
     int ML_filter;
     std::array<int, 150> ML_clist{};
 
@@ -567,7 +554,6 @@ public:
 
 
     std::array<char, 128> MID{};
-    std::array<char, 256> BackgroundImage{};
 
 
 
@@ -587,6 +573,7 @@ public:
 
 
     PresetBank presets;
+    AppConfig config;
 
 
 #ifdef ENABLE_MIDI
