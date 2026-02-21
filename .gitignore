@@ -3,3 +3,6 @@
 *~
 build/
 src/config.h
+.vscode/
+msvc64/
+mingw64/

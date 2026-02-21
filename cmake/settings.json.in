@@ -1,0 +1,67 @@
+{
+    "files.eol": "\n",
+    "git.enabled": true,
+    "git.ignoreLimitWarning": true,
+    "terminal.integrated.shellIntegration.enabled": true,
+        "terminal.integrated.profiles.windows": {
+        "MinGW GCC Bash": {
+            "path": "@BASH_EXECUTABLE@",
+            "args": ["--login", "-i"],
+            "env":
+            {
+                "MSYSTEM": "MINGW64",
+                "CHERE_INVOKING":"1"
+            }
+        },
+        "MinGW GCC Zsh": {
+            "path": "@ZSH_EXECUTABLE@",
+            "args": ["--login", "-i"],
+            "env":
+            {
+                "MSYSTEM": "MINGW64",
+                "CHERE_INVOKING":"1"
+            }
+        },        
+        "MinGW Clang Bash": {
+            "path": "@BASH_EXECUTABLE@",
+            "args": ["--login", "-i"],
+            "env":
+            {
+                "MSYSTEM": "CLANG64",
+                "CHERE_INVOKING":"1"
+            }
+        },
+        "MinGW Clang Zsh": {
+            "path": "@ZSH_EXECUTABLE@",
+            "args": ["--login", "-i"],
+            "env":
+            {
+                "MSYSTEM": "CLANG64",
+                "CHERE_INVOKING":"1"
+            }
+        },
+        "MinGW UCRT64 Bash": {
+            "path": "@BASH_EXECUTABLE@",
+            "args": ["--login", "-i"],
+            "env":
+            {
+                "MSYSTEM": "UCRT64",
+                "CHERE_INVOKING":"1"
+            }
+        },
+        "MinGW UCRT64 Zsh": {
+            "path": "@ZSH_EXECUTABLE@",
+            "args": ["--login", "-i"],
+            "env":
+            {
+                "MSYSTEM": "UCRT64",
+                "CHERE_INVOKING":"1"
+            }
+        }
+    },
+    "files.associations": {
+        "*.json.in": "json",
+        "*.cmake": "cmake",
+        "*.cmake.in": "cmake"
+    }
+}
