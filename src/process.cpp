@@ -3,7 +3,7 @@
 
  process.C  -  mainloop functions
   Copyright (C) 2008-2010 Josep Andreu
-  Author: Josep Andreu
+  presets.Author: Josep Andreu
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of version 2 of the GNU General Public License
@@ -879,12 +879,12 @@ RKR::init_rkr ()
     char temp[128];
     memset (temp, 0, sizeof (temp));
     sprintf (temp, "%s/Default.rkrb", DATA_DIR);
-    rakarrack.get (PrefNom ("Bank Filename"), BankFilename.data(), temp, 127);
+    rakarrack.get (PrefNom ("Bank Filename"), presets.BankFilename.data(), temp, 127);
     loadnames();
 
     if (commandline == 0) {
-        loadbank (BankFilename.data());
-        a_bank=3;
+        loadbank (presets.BankFilename.data());
+        presets.a_bank=3;
 
     }
     RC->cleanup ();

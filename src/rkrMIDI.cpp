@@ -181,10 +181,10 @@ RKR::midievents()
                     preset = midievent->data.control.value;
 
                 if (midievent->data.control.value == 81)
-                    if (Selected_Preset >1) preset = Selected_Preset-1;
+                    if (presets.Selected_Preset >1) preset = presets.Selected_Preset-1;
 
                 if (midievent->data.control.value == 82)
-                    if (Selected_Preset<60) preset = Selected_Preset+1;
+                    if (presets.Selected_Preset<60) preset = presets.Selected_Preset+1;
             } else
                 preset = midievent->data.control.value;
 
@@ -818,8 +818,8 @@ RKR::jack_process_midievents (jack_midi_event_t *midievent)
                         && (cmdvalue < 61))
                     preset = cmdvalue;
 
-                if (cmdvalue==81) if (Selected_Preset>1) preset = Selected_Preset-1;
-                if (cmdvalue==82) if (Selected_Preset<60) preset = Selected_Preset+1;
+                if (cmdvalue==81) if (presets.Selected_Preset>1) preset = presets.Selected_Preset-1;
+                if (cmdvalue==82) if (presets.Selected_Preset<60) preset = presets.Selected_Preset+1;
             } else
                 preset = cmdvalue;
 

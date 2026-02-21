@@ -139,6 +139,7 @@ set(RAKARRACK_HEADERS
 	Opticaltrem.hpp
 	Pan.hpp
 	Phaser.hpp
+	PresetBank.hpp
 	RBEcho.hpp
 	RBFilter.hpp
 	RecChord.hpp

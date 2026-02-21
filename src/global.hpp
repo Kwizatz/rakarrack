@@ -25,6 +25,7 @@
 #define DXEMU_H
 
 #include "dsp_constants.hpp"
+#include "PresetBank.hpp"
 
 #include <signal.h>
 #include <dirent.h>
@@ -369,7 +370,6 @@ public:
     int Infinity_B;
 
     int Cabinet_Preset;
-    int Selected_Preset;
     std::array<std::array<int, 20>, 70> lv{};
     std::array<int, 16> saved_order{};
     std::array<int, 16> efx_order{};
@@ -486,8 +486,6 @@ public:
     int numpi, numpo, numpa, numpmi, numpmo;
     int numpc;
     int midi_table;
-    int a_bank;
-    int new_bank_loaded;
 
     int Aux_Gain;
     int Aux_Threshold;
@@ -566,16 +564,9 @@ public:
 
     std::array<char, 128> tmpprefname{};
 
-    std::array<char, 64> Preset_Name{};
-    std::array<char, 64> Author{};
-    std::array<char, 128> Bank_Saved{};
-    std::array<char, 128> UserRealName{};
-
 
 
     std::array<char, 128> MID{};
-    std::array<char, 128> BankFilename{};
-    std::array<char, 128> UDirFilename{};
     std::array<char, 256> BackgroundImage{};
 
 
@@ -595,36 +586,7 @@ public:
     } efx_params[500];
 
 
-    struct Preset_Bank_Struct {
-        std::array<char, 64> Preset_Name{};
-        std::array<char, 64> Author{};
-        std::array<char, 36> Classe{};
-        std::array<char, 4> Type{};
-        std::array<char, 128> ConvoFiname{};
-        std::array<char, 64> cInput_Gain{};
-        std::array<char, 64> cMaster_Volume{};
-        std::array<char, 64> cBalance{};
-        float Input_Gain;
-        float Master_Volume;
-        float Balance;
-        int Bypass;
-        std::array<char, 128> RevFiname{};
-        std::array<char, 128> EchoFiname{};
-        std::array<std::array<int, 20>, 70> lv{};
-        std::array<std::array<int, 20>, 128> XUserMIDI{};
-        std::array<int, 128> XMIDIrangeMin{};
-        std::array<int, 128> XMIDIrangeMax{};
-    } Bank[62];
-
-
-    struct MIDI_table {
-        int bank;
-        int preset;
-    } M_table[128];
-
-    struct Bank_Names {
-        std::array<char, 64> Preset_Name{};
-    } B_Names[4][62];
+    PresetBank presets;
 
 
 #ifdef ENABLE_MIDI
