@@ -431,13 +431,11 @@ void
 AnalogFilter::filterout (float * smp)
 {
     int i;
-    float *ismp = nullptr;	//used if it needs interpolation
+    std::vector<float> ismp;	//used if it needs interpolation
     if (needsinterpolation != 0) {
-        ismp = new float[PERIOD];
-        for (i = 0; i < PERIOD; i++)
-            ismp[i] = smp[i];
+        ismp.assign(smp, smp + PERIOD);
         for (i = 0; i < stages + 1; i++)
-            singlefilterout (ismp, oldx[i], oldy[i], oldc, oldd);
+            singlefilterout (ismp.data(), oldx[i], oldy[i], oldc, oldd);
     };
 
     for (i = 0; i < stages + 1; i++)
@@ -448,7 +446,6 @@ AnalogFilter::filterout (float * smp)
             float x = (float) i / fPERIOD;
             smp[i] = ismp[i] * (1.0f - x) + smp[i] * x;
         };
-        delete[] ismp;
         needsinterpolation = 0;
     };
 

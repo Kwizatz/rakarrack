@@ -171,14 +171,12 @@ void
 SVFilter::filterout (float * smp)
 {
     int i;
-    float *ismp = nullptr;
+    std::vector<float> ismp;
 
     if (needsinterpolation != 0) {
-        ismp = new float[PERIOD];
-        for (i = 0; i < PERIOD; i++)
-            ismp[i] = smp[i];
+        ismp.assign(smp, smp + PERIOD);
         for (i = 0; i < stages + 1; i++)
-            singlefilterout (ismp, st[i], ipar);
+            singlefilterout (ismp.data(), st[i], ipar);
     };
 
     for (i = 0; i < stages + 1; i++)
@@ -189,7 +187,6 @@ SVFilter::filterout (float * smp)
             float x = (float) i / fPERIOD;
             smp[i] = ismp[i] * (1.0f - x) + smp[i] * x;
         };
-        delete[] ismp;
         needsinterpolation = 0;
     };
 
