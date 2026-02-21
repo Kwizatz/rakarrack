@@ -98,6 +98,7 @@ set(RAKARRACK_HEADERS
 	Alienwah.hpp
 	AnalogFilter.hpp
 	AppConfig.hpp
+	EmbeddedResource.hpp
 	APhaser.hpp
 	Arpie.hpp
 	beattracker.hpp
@@ -174,11 +175,83 @@ add_custom_command(OUTPUT rakarrack.cxx rakarrack.h
 	WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 )
 
+# Embed data files as compiled-in resources via xxd
+include(embed_resource)
+
+set(RAKARRACK_DATA_DIR ${CMAKE_SOURCE_DIR}/data)
+
+# Define resources as: filename -> C++ identifier
+set(RESOURCE_LIST
+	1.wav   res_1_wav
+	2.wav   res_2_wav
+	3.wav   res_3_wav
+	4.wav   res_4_wav
+	5.wav   res_5_wav
+	6.wav   res_6_wav
+	7.wav   res_7_wav
+	8.wav   res_8_wav
+	9.wav   res_9_wav
+	1.rvb   res_1_rvb
+	2.rvb   res_2_rvb
+	3.rvb   res_3_rvb
+	4.rvb   res_4_rvb
+	5.rvb   res_5_rvb
+	6.rvb   res_6_rvb
+	7.rvb   res_7_rvb
+	8.rvb   res_8_rvb
+	9.rvb   res_9_rvb
+	10.rvb  res_10_rvb
+	1.dly   res_1_dly
+	2.dly   res_2_dly
+	3.dly   res_3_dly
+	4.dly   res_4_dly
+	5.dly   res_5_dly
+	6.dly   res_6_dly
+	7.dly   res_7_dly
+	8.dly   res_8_dly
+	9.dly   res_9_dly
+	10.dly  res_10_dly
+	11.dly  res_11_dly
+	Default.rkrb  res_Default_rkrb
+	Extra.rkrb    res_Extra_rkrb
+	Extra1.rkrb   res_Extra1_rkrb
+	bg.png        res_bg_png
+	bg1.png       res_bg1_png
+	bg2.png       res_bg2_png
+	bg3.png       res_bg3_png
+	bg4.png       res_bg4_png
+	bg5.png       res_bg5_png
+	bg6.png       res_bg6_png
+	bg_gray_furr.png  res_bg_gray_furr_png
+)
+
+set(RESOURCE_GENERATED_SOURCES "")
+set(RESOURCE_GENERATED_HEADERS "")
+list(LENGTH RESOURCE_LIST _len)
+math(EXPR _last "${_len} - 1")
+foreach(_i RANGE 0 ${_last} 2)
+	math(EXPR _j "${_i} + 1")
+	list(GET RESOURCE_LIST ${_i} _filename)
+	list(GET RESOURCE_LIST ${_j} _varname)
+	set(_cpp "${CMAKE_CURRENT_BINARY_DIR}/${_varname}.cpp")
+	set(_hpp "${CMAKE_CURRENT_BINARY_DIR}/${_varname}.hpp")
+	embed_resource(
+		INPUT "${RAKARRACK_DATA_DIR}/${_filename}"
+		CPP   "${_cpp}"
+		HPP   "${_hpp}"
+		NAME  "${_varname}"
+	)
+	list(APPEND RESOURCE_GENERATED_SOURCES "${_cpp}")
+	list(APPEND RESOURCE_GENERATED_HEADERS "${_hpp}")
+endforeach()
+
 add_executable(rakarrack
 	${RAKARRACK_SOURCES}
 	${RAKARRACK_HEADERS}
 	${RAKARRACK_MIDI_SOURCES}
 	${RAKARRACK_MIDI_HEADERS}
+	${RESOURCE_GENERATED_SOURCES}
+	${RESOURCE_GENERATED_HEADERS}
 )
 target_include_directories(rakarrack PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}

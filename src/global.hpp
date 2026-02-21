@@ -188,6 +188,7 @@ public:
     void loadskin (char *filename);
     void saveskin (char *filename);
     int loadbank (char *filename);
+    int loadbank_from_memory(const unsigned char* data, unsigned int len);
     void loadnames();
     int savebank (char *filename);
     void ConvertOldFile(char *filename);

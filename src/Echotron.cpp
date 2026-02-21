@@ -28,6 +28,7 @@
 
 #include "Echotron.hpp"
 #include "FPreset.hpp"
+#include "EmbeddedResource.hpp"
 
 Echotron::Echotron (float * efxoutl_, float * efxoutr_)
 {
@@ -219,42 +220,49 @@ Echotron::setfile(int value)
     float tQ=1.0f;
     int tiStages = 0;
 
-    FILE *fs;
+    FILE *fs = nullptr;
+    std::unique_ptr<MemStream> ms;
 
     char wbuf[128];
 
     if(!Puser) {
         Filenum = value;
-        Filename.fill(0);
-        sprintf(Filename.data(), "%s/%d.dly",DATA_DIR,Filenum+1);
+        if(Filenum >= 0 && Filenum < NUM_DLY_RESOURCES) {
+            ms = std::make_unique<MemStream>(dly_resources[Filenum].data,
+                                             *dly_resources[Filenum].len);
+        } else {
+            loaddefault();
+            return(0);
+        }
+    } else {
+        if ((fs = fopen (Filename.data(), "r")) == nullptr) {
+            loaddefault();
+            return(0);
+        }
     }
 
-    if ((fs = fopen (Filename.data(), "r")) == nullptr) {
-        loaddefault();
-        return(0);
-    }
+    auto readline = [&](char* buf, int bufsize) -> char* {
+        if (ms) return ms->gets(buf, bufsize);
+        return fgets(buf, bufsize, fs);
+    };
 
-    while (fgets(wbuf,sizeof wbuf,fs) != nullptr) {
-        //fgets(wbuf,sizeof wbuf,fs);
+    while (readline(wbuf,sizeof wbuf) != nullptr) {
         if(wbuf[0]!='#') break;
         memset(wbuf,0,sizeof(wbuf));
     }
 
     sscanf(wbuf,"%f\t%f\t%d",&subdiv_fmod,&subdiv_dmod,&f_qmode); //Second line has tempo subdivision
-//printf("subdivs:\t%f\t%f\n",subdiv_fmod,subdiv_dmod);
 
     int count = 0;
     memset(iStages,0,sizeof(iStages));
 
 
 
-    while ((fgets(wbuf,sizeof wbuf,fs) != nullptr) && (count<ECHOTRON_F_SIZE)) {
+    while ((readline(wbuf,sizeof wbuf) != nullptr) && (count<ECHOTRON_F_SIZE)) {
         if(wbuf[0]==10) break;  // Check Carriage Return
         if(wbuf[0]=='#') continue;
         sscanf(wbuf,"%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%d",&tPan, &tTime, &tLevel,
                &tLP,  &tBP,  &tHP,  &tFreq,  &tQ,  &tiStages);
-        //printf("params:\n%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%d\n",tPan, tTime, tLevel,
-        //tLP,  tBP,  tHP,  tFreq,  tQ,  tiStages);
         if((tPan<-1.0f) || (tPan>1.0f)) {
             error_num=5;
             break;
@@ -304,7 +312,7 @@ Echotron::setfile(int value)
         memset(wbuf,0,sizeof(wbuf));
         count++;
     }
-    fclose(fs);
+    if(fs) fclose(fs);
 
     if(!Pchange) Plength=count;
     cleanup();

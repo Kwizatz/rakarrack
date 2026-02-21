@@ -25,6 +25,7 @@
 #include <cstring>
 #include "global.hpp"
 #include "AllEffects.hpp"
+#include "EmbeddedResource.hpp"
 
 void RKR::putbuf(char *buf, int j)
 {
@@ -1637,21 +1638,25 @@ RKR::loadnames()
 
     for(k=0; k<4; k++) {
 
+        // First 3 banks are embedded resources; case 3 is user bank file
+        const unsigned char* bank_data = nullptr;
+        unsigned int bank_len = 0;
+
         switch(k) {
 
         case 0:
-            memset (temp, 0, sizeof (temp));
-            sprintf (temp, "%s/Default.rkrb", DATA_DIR);
+            bank_data = res_Default_rkrb;
+            bank_len = res_Default_rkrb_len;
             break;
 
         case 1:
-            memset (temp, 0, sizeof (temp));
-            sprintf (temp, "%s/Extra.rkrb", DATA_DIR);
+            bank_data = res_Extra_rkrb;
+            bank_len = res_Extra_rkrb_len;
             break;
 
         case 2:
-            memset (temp, 0, sizeof (temp));
-            sprintf (temp, "%s/Extra1.rkrb", DATA_DIR);
+            bank_data = res_Extra1_rkrb;
+            bank_len = res_Extra1_rkrb_len;
             break;
 
         case 3:
@@ -1661,15 +1666,21 @@ RKR::loadnames()
 
         }
 
-
-
-        if ((fn = fopen (temp, "rb")) != nullptr) {
+        if(k < 3) {
             New_Bank();
-            while (!feof (fn)) {
-                fread (&presets.Bank, sizeof(presets.Bank), 1, fn);
-                for(j=1; j<=60; j++) strcpy(presets.B_Names[k][j].Preset_Name.data(),presets.Bank[j].Preset_Name.data());
+            if(bank_len >= sizeof(presets.Bank)) {
+                memcpy(&presets.Bank, bank_data, sizeof(presets.Bank));
             }
-            fclose (fn);
+            for(j=1; j<=60; j++) strcpy(presets.B_Names[k][j].Preset_Name.data(),presets.Bank[j].Preset_Name.data());
+        } else {
+            if ((fn = fopen (temp, "rb")) != nullptr) {
+                New_Bank();
+                while (!feof (fn)) {
+                    fread (&presets.Bank, sizeof(presets.Bank), 1, fn);
+                    for(j=1; j<=60; j++) strcpy(presets.B_Names[k][j].Preset_Name.data(),presets.Bank[j].Preset_Name.data());
+                }
+                fclose (fn);
+            }
         }
 
     }
@@ -1727,6 +1738,19 @@ RKR::loadbank (char *filename)
     }
     return (0);
 };
+
+int
+RKR::loadbank_from_memory(const unsigned char* data, unsigned int len)
+{
+    if(len < sizeof(presets.Bank)) return 0;
+    New_Bank();
+    memcpy(&presets.Bank, data, sizeof(presets.Bank));
+    if(BigEndian()) fix_endianess();
+    convert_IO();
+    modified=0;
+    presets.new_bank_loaded=1;
+    return 1;
+}
 
 
 int

@@ -27,6 +27,41 @@
 #include <cmath>
 #include "Convolotron.hpp"
 #include "FPreset.hpp"
+#include "EmbeddedResource.hpp"
+
+// libsndfile virtual I/O callbacks for reading from in-memory data
+struct SfMemData {
+    const unsigned char* data;
+    sf_count_t size;
+    sf_count_t pos;
+};
+
+static sf_count_t sf_mem_get_filelen(void* user_data) {
+    return static_cast<SfMemData*>(user_data)->size;
+}
+static sf_count_t sf_mem_seek(sf_count_t offset, int whence, void* user_data) {
+    auto* m = static_cast<SfMemData*>(user_data);
+    switch (whence) {
+        case SEEK_SET: m->pos = offset; break;
+        case SEEK_CUR: m->pos += offset; break;
+        case SEEK_END: m->pos = m->size + offset; break;
+    }
+    if (m->pos < 0) m->pos = 0;
+    if (m->pos > m->size) m->pos = m->size;
+    return m->pos;
+}
+static sf_count_t sf_mem_read(void* ptr, sf_count_t count, void* user_data) {
+    auto* m = static_cast<SfMemData*>(user_data);
+    sf_count_t avail = m->size - m->pos;
+    if (count > avail) count = avail;
+    memcpy(ptr, m->data + m->pos, count);
+    m->pos += count;
+    return count;
+}
+static sf_count_t sf_mem_write(const void*, sf_count_t, void*) { return 0; }
+static sf_count_t sf_mem_tell(void* user_data) {
+    return static_cast<SfMemData*>(user_data)->pos;
+}
 
 Convolotron::Convolotron (float * efxoutl_, float * efxoutr_,int DS, int uq, int dq)
 {
@@ -246,15 +281,28 @@ Convolotron::setfile(int value)
     maxx_read = maxx_size / 2;
     memset(buf.data(),0,sizeof(float) * maxx_size);
     memset(rbuf.data(),0,sizeof(float) * maxx_size);
+
+    SfMemData memdata{};
+    SF_VIRTUAL_IO vio{sf_mem_get_filelen, sf_mem_seek, sf_mem_read, sf_mem_write, sf_mem_tell};
+
     if(!Puser) {
         Filenum = value;
-        Filename.fill(0);
-        sprintf(Filename.data(), "%s/%d.wav",DATA_DIR,Filenum+1);
+        if(Filenum >= 0 && Filenum < NUM_WAV_RESOURCES) {
+            memdata = {wav_resources[Filenum].data,
+                       static_cast<sf_count_t>(*wav_resources[Filenum].len), 0};
+            sfinfo.format = 0;
+            infile = sf_open_virtual(&vio, SFM_READ, &sfinfo, &memdata);
+        } else {
+            real_len = 1; length = 1; rbuf[0] = 1.0f;
+            process_rbuf();
+            return(0);
+        }
+    } else {
+        sfinfo.format = 0;
+        infile = sf_open(Filename.data(), SFM_READ, &sfinfo);
     }
 
-
-    sfinfo.format = 0;
-    if(!(infile = sf_open(Filename.data(), SFM_READ, &sfinfo))) {
+    if(!infile) {
         real_len = 1;
         length = 1;
         rbuf[0] = 1.0f;

@@ -38,6 +38,9 @@ decl {\#include <FL/x.H>} {public local
 decl {\#include <FL/Fl_PNG_Image.H>} {public local
 } 
 
+decl {\#include "EmbeddedResource.hpp"} {public local
+} 
+
 decl {\#include <FL/Fl_Shared_Image.H>} {public local
 } 
 
@@ -10610,14 +10613,11 @@ rkr->M_Metronome->set_tempo(rkr->M_Metro_Tempo);}
           label 1
           user_data 77
           callback {is_modified();
-char temp[128];           
-  memset (temp, 0, sizeof (temp));
-  sprintf (temp, "%s/Default.rkrb", DATA_DIR);
-int ok=rkr->loadbank(temp);
+int ok=rkr->loadbank_from_memory(res_Default_rkrb, res_Default_rkrb_len);
 if(ok) 
 {
 rkr->presets.a_bank=0;
-BankWin_Label(temp);
+BankWin_Label("Default");
 Put_Loaded_Bank();
 unlight_preset(rkr->presets.Selected_Preset);
 }}
@@ -10627,14 +10627,11 @@ unlight_preset(rkr->presets.Selected_Preset);
           label 2
           user_data 77
           callback {is_modified();
-char temp[128];           
-  memset (temp, 0, sizeof (temp));
-  sprintf (temp, "%s/Extra.rkrb", DATA_DIR);
- int ok=rkr->loadbank(temp);
+int ok=rkr->loadbank_from_memory(res_Extra_rkrb, res_Extra_rkrb_len);
 if(ok) 
 {
 rkr->presets.a_bank=1;
-BankWin_Label(temp);
+BankWin_Label("Extra");
 Put_Loaded_Bank();
 unlight_preset(rkr->presets.Selected_Preset);
 }}
@@ -10644,14 +10641,11 @@ unlight_preset(rkr->presets.Selected_Preset);
           label 3
           user_data 77
           callback {is_modified();
-char temp[128];           
-  memset (temp, 0, sizeof (temp));
-  sprintf (temp, "%s/Extra1.rkrb", DATA_DIR);
- int ok=rkr->loadbank(temp);
+int ok=rkr->loadbank_from_memory(res_Extra1_rkrb, res_Extra1_rkrb_len);
 if(ok) 
 {
 rkr->presets.a_bank=2;
-BankWin_Label(temp);
+BankWin_Label("Extra1");
 Put_Loaded_Bank();
 unlight_preset(rkr->presets.Selected_Preset);
 }}
@@ -14949,7 +14943,7 @@ for(int j=0; j<menu_Har_Downsample->size(); j++)
 
 Font_Bro->value(rkr->config.font+1);} {}
   }
-  Function {BankWin_Label(char *filename)} {} {
+  Function {BankWin_Label(const char *filename)} {} {
     code {char tmp[256];
 
 
@@ -16829,7 +16823,13 @@ for (int t=0; t<ob->children();t++)
   }
   Function {PutBackground()} {} {
     code {delete back;
-back = new Fl_Tiled_Image(new Fl_PNG_Image(rkr->config.BackgroundImage.data()),1600,1200);
+auto* epng = find_embedded_png(rkr->config.BackgroundImage.data());
+Fl_PNG_Image* bgimg;
+if (epng)
+    bgimg = new Fl_PNG_Image("embedded", epng->data, *epng->len);
+else
+    bgimg = new Fl_PNG_Image(rkr->config.BackgroundImage.data());
+back = new Fl_Tiled_Image(bgimg,1600,1200);
 if(!rkr->config.EnableBackgroundImage)
 back->color_average(back_color,0.0);
 

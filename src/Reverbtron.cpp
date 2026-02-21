@@ -27,6 +27,7 @@
 #include <cmath>
 #include "Reverbtron.hpp"
 #include "FPreset.hpp"
+#include "EmbeddedResource.hpp"
 
 Reverbtron::Reverbtron (float * efxoutl_, float * efxoutr_,int DS, int uq, int dq)
 {
@@ -248,18 +249,30 @@ Reverbtron::setfile(int value)
     float quality = 0.0f;
     char wbuf[128];
 
-    FILE *fs;
+    FILE *fs = nullptr;
+    std::unique_ptr<MemStream> ms;
 
     if(!Puser) {
         Filenum = value;
-        Filename.fill(0);
-        sprintf(Filename.data(), "%s/%d.rvb",DATA_DIR,Filenum+1);
+        if(Filenum >= 0 && Filenum < NUM_RVB_RESOURCES) {
+            ms = std::make_unique<MemStream>(rvb_resources[Filenum].data,
+                                             *rvb_resources[Filenum].len);
+        } else {
+            loaddefault();
+            return(0);
+        }
+    } else {
+        if ((fs = fopen (Filename.data(), "r")) == nullptr) {
+            loaddefault();
+            return(0);
+        }
     }
 
-    if ((fs = fopen (Filename.data(), "r")) == nullptr) {
-        loaddefault();
-        return(0);
-    }
+    auto readline = [&](char* buf, int bufsize) -> char* {
+        if (ms) return ms->gets(buf, bufsize);
+        return fgets(buf, bufsize, fs);
+    };
+
     cleanup();
     std::fill(tdata.begin(), tdata.end(), 0.0f);
     std::fill(ftime.begin(), ftime.end(), 0.0f);
@@ -267,26 +280,26 @@ Reverbtron::setfile(int value)
 
 //Name
     memset(wbuf,0, sizeof(wbuf));
-    fgets(wbuf,sizeof wbuf,fs);
+    readline(wbuf,sizeof wbuf);
 
 // Subsample Compresion Skip
     memset(wbuf,0, sizeof(wbuf));
-    fgets(wbuf,sizeof wbuf,fs);
+    readline(wbuf,sizeof wbuf);
     sscanf(wbuf,"%f,%f\n",&compresion,&quality);
 
 //Length
     memset(wbuf,0,sizeof(wbuf));
-    fgets(wbuf,sizeof wbuf,fs);
+    readline(wbuf,sizeof wbuf);
     sscanf(wbuf, "%d\n", &data_length);
     if(data_length>2000) data_length = 2000;
 //Time Data
     for(i=0; i<data_length; i++) {
         memset(wbuf,0, sizeof(wbuf));
-        fgets(wbuf,sizeof wbuf,fs);
+        readline(wbuf,sizeof wbuf);
         sscanf(wbuf,"%f,%f\n",&ftime[i],&tdata[i]);
     }
 
-    fclose(fs);
+    if(fs) fclose(fs);
 
     maxtime = 0.0f;
     maxdata = 0.0f;
