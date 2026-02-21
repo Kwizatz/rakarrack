@@ -180,7 +180,7 @@ main (int argc, char *argv[])
     }
 
 
-    JACKstart (&rkr, rkr.jackclient);
+    JACKstart (&rkr, rkr.jack.client);
 #ifdef ENABLE_MIDI
     rkr.InitMIDI ();
     rkr.ConnectMIDI ();
@@ -231,7 +231,7 @@ main (int argc, char *argv[])
         {
 
             rkr.jdis=1;
-            rkr.Message (1,rkr.jackcliname.data(),
+            rkr.Message (1,rkr.jack.name.data(),
                          "Jack Shut Down, try to save your work");
         }
 

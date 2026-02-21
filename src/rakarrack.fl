@@ -1005,7 +1005,7 @@ rkr->savemiditable(filename);}
             callback {
 char *filename;
 char name[128];
-sprintf(name,"%s %s",rkr->jackcliname.data(), VERSION);
+sprintf(name,"%s %s",rkr->jack.name.data(), VERSION);
 
 filename=fl_file_chooser("Convert Reverb IR File:","(*.wav)",NULL,0);
 if (filename==NULL) return;
@@ -1284,14 +1284,14 @@ rkr->cpufp=0;
 
 
 
-if(rkr->numpc)
+if(rkr->jack.num_pc_ports)
 {
-  if (rkr->numpi) P_IN_ST->show(); else P_IN_ST->hide();
-  if (rkr->numpo) P_OUT_ST->show(); else P_OUT_ST->hide();
-  if (rkr->numpa) P_AUX_ST->show(); else P_AUX_ST->hide();
-  if (rkr->numpmi) P_MIN_ST->show(); else P_MIN_ST->hide();
-  if (rkr->numpmo) P_MOUT_ST->show(); else P_MOUT_ST->hide();
-  rkr->numpc = 0;
+  if (rkr->jack.num_input_ports) P_IN_ST->show(); else P_IN_ST->hide();
+  if (rkr->jack.num_output_ports) P_OUT_ST->show(); else P_OUT_ST->hide();
+  if (rkr->jack.num_aux_ports) P_AUX_ST->show(); else P_AUX_ST->hide();
+  if (rkr->jack.num_midi_in_ports) P_MIN_ST->show(); else P_MIN_ST->hide();
+  if (rkr->jack.num_midi_out_ports) P_MOUT_ST->show(); else P_MOUT_ST->hide();
+  rkr->jack.num_pc_ports = 0;
 }    
 
 if(error_num>0) rkr->Error_Handle(error_num);
@@ -11070,7 +11070,7 @@ if(rkr->CheckOldBank(filename)==0)
             callback {
 char *filename;
 char name[128];
-sprintf(name,"%s %s",rkr->jackcliname.data(), VERSION);
+sprintf(name,"%s %s",rkr->jack.name.data(), VERSION);
 
 filename=fl_file_chooser("Convert Old Bank File:","(*.rkrb)",NULL,0);
 if (filename==NULL) return;
@@ -12629,18 +12629,18 @@ Sco->init(rkr->anall.data(), rkr->analr.data(), PERIOD);
 Analy->init(rkr->anall.data(), rkr->analr.data(), PERIOD, SAMPLE_RATE);
 
 memset(tmp,0, sizeof(tmp));
-sprintf(tmp,"%s   v%s",rkr->jackcliname.data(),VERSION); 
+sprintf(tmp,"%s   v%s",rkr->jack.name.data(),VERSION); 
 Principal->copy_label(tmp);
 BankWin_Label(rkr->presets.BankFilename.data());
 memset(tmp,0, sizeof(tmp));
-sprintf(tmp,"%s   v%s - Effects Order",rkr->jackcliname.data(),VERSION);
+sprintf(tmp,"%s   v%s - Effects Order",rkr->jack.name.data(),VERSION);
 Order->copy_label(tmp);
 memset(tmp,0, sizeof(tmp));
-sprintf(tmp,"%s   v%s - Settings",rkr->jackcliname.data(),VERSION);
+sprintf(tmp,"%s   v%s - Settings",rkr->jack.name.data(),VERSION);
 Settings->copy_label(tmp);
-sprintf(tmp,"%s   v%s - MIDI Learn",rkr->jackcliname.data(),VERSION);
+sprintf(tmp,"%s   v%s - MIDI Learn",rkr->jack.name.data(),VERSION);
 MIDILearn->copy_label(tmp);
-sprintf(tmp,"%s   v%s - ACI",rkr->jackcliname.data(),VERSION);
+sprintf(tmp,"%s   v%s - ACI",rkr->jack.name.data(),VERSION);
 Trigger->copy_label(tmp);
 
 
@@ -13709,7 +13709,7 @@ Fl_Widget *w = ob->child(num-1);
 if (strlen(rkr->presets.Bank[num].Preset_Name.data()) >0)
 { 
   Fl_Widget *m = fl_message_icon();
-  m->parent()->copy_label(rkr->jackcliname.data());
+  m->parent()->copy_label(rkr->jack.name.data());
   ok=fl_choice("Overwrite \\"%s\\"?","No","Yes", NULL, w->label());
   if (!ok)
   { 
@@ -14648,7 +14648,7 @@ if ((fp = fopen ("/proc/asound/seq/clients", "r")) != NULL)
  const char **ports;
   
   
-   if ((ports = jack_get_ports (rkr->jackclient, NULL, JACK_DEFAULT_AUDIO_TYPE, 
+   if ((ports = jack_get_ports (rkr->jack.client, NULL, JACK_DEFAULT_AUDIO_TYPE, 
                                JackPortIsInput)) == NULL) {
                 fprintf(stderr, "Cannot find any Input port\\n");
     
@@ -14676,7 +14676,7 @@ JackIn->clear();
  
  const char **iports;  
   
-   if ((iports = jack_get_ports (rkr->jackclient, NULL, JACK_DEFAULT_AUDIO_TYPE, 
+   if ((iports = jack_get_ports (rkr->jack.client, NULL, JACK_DEFAULT_AUDIO_TYPE, 
                                JackPortIsOutput)) == NULL) {
                 fprintf(stderr, "Cannot find any Output port\\n");
     
@@ -14714,8 +14714,8 @@ i=1;
 while (JackCo->text(i) != NULL)
 {
 
-for (k=0; k < rkr->cuan_jack; k++)
-if (strcmp(JackCo->text(i),rkr->jack_po[k].name.data())==0 ) JackCo->select(i,1);
+for (k=0; k < rkr->jack.cuan_jack; k++)
+if (strcmp(JackCo->text(i),rkr->jack.output_ports[k].name.data())==0 ) JackCo->select(i,1);
 
 i++; 
 }
@@ -14726,8 +14726,8 @@ i=1;
 while (JackIn->text(i) != NULL)
 {
 
-for (k=0; k < rkr->cuan_ijack; k++)
-if (strcmp(JackIn->text(i),rkr->jack_poi[k].name.data())==0 ) JackIn->select(i,1);
+for (k=0; k < rkr->jack.cuan_ijack; k++)
+if (strcmp(JackIn->text(i),rkr->jack.input_ports[k].name.data())==0 ) JackIn->select(i,1);
 
 i++; 
 }
@@ -14954,7 +14954,7 @@ Font_Bro->value(rkr->config.font+1);} {}
 
 
 memset(tmp,0, sizeof(tmp));
-sprintf(tmp,"%s   v%s - Bank Manager - %s",rkr->jackcliname.data(),VERSION,fl_filename_name(filename));
+sprintf(tmp,"%s   v%s - Bank Manager - %s",rkr->jack.name.data(),VERSION,fl_filename_name(filename));
 BankWindow->copy_label(tmp);} {}
   }
   Function {is_modified()} {open
@@ -14966,7 +14966,7 @@ if (rkr->modified)
 {
 
  Fl_Widget *w = fl_message_icon();
- w->parent()->copy_label(rkr->jackcliname.data());
+ w->parent()->copy_label(rkr->jack.name.data());
  
 
  ok=fl_choice("Bank was modified, but not saved", "Discard","Save",NULL);
@@ -17158,7 +17158,7 @@ char tmp[256];
 memset(tmp,0, sizeof(tmp));
 
 
-sprintf(tmp,"%s   v%s - MIDI Learn - Preset : %s",rkr->jackcliname.data(),VERSION,rkr->presets.Bank[rkr->presets.Selected_Preset].Preset_Name.data());
+sprintf(tmp,"%s   v%s - MIDI Learn - Preset : %s",rkr->jack.name.data(),VERSION,rkr->presets.Bank[rkr->presets.Selected_Preset].Preset_Name.data());
 MIDILearn->copy_label(tmp);
 
 memset(rkr->ML_clist.data(),0,sizeof(rkr->ML_clist));
@@ -17486,7 +17486,7 @@ Order_Bro->select(1);} {}
   Function {Show_Next_Time()} {} {
     code {if(rkr->mess_dis) return;
 Fl_Widget *w = fl_message_icon();
-w->parent()->copy_label(rkr->jackcliname.data());         
+w->parent()->copy_label(rkr->jack.name.data());         
 fl_message("This setting will be changed the next time you run rakarrack");} {}
   }
   Function {update_looper()} {} {

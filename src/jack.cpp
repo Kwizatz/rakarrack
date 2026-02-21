@@ -89,25 +89,25 @@ JACKstart (RKR * rkr_, jack_client_t * jackclient_)
 
     if ((JackOUT->config.aconnect_JA) && (!needtoloadstate)) {
 
-        for (int i = 0; i < JackOUT->cuan_jack; i += 2) {
+        for (int i = 0; i < JackOUT->jack.cuan_jack; i += 2) {
             jack_connect (jackclient, jack_port_name (outport_left),
-                          JackOUT->jack_po[i].name.data());
+                          JackOUT->jack.output_ports[i].name.data());
             jack_connect (jackclient, jack_port_name (outport_right),
-                          JackOUT->jack_po[i + 1].name.data());
+                          JackOUT->jack.output_ports[i + 1].name.data());
         }
     }
 
     if ((JackOUT->config.aconnect_JIA) && (!needtoloadstate)) {
 
-        if(JackOUT->cuan_ijack == 1) {
-            jack_connect (jackclient,JackOUT->jack_poi[0].name.data(),jack_port_name(inputport_left));
-            jack_connect (jackclient,JackOUT->jack_poi[0].name.data(), jack_port_name(inputport_right));
+        if(JackOUT->jack.cuan_ijack == 1) {
+            jack_connect (jackclient,JackOUT->jack.input_ports[0].name.data(),jack_port_name(inputport_left));
+            jack_connect (jackclient,JackOUT->jack.input_ports[0].name.data(), jack_port_name(inputport_right));
         }
 
         else {
-            for (int i = 0; i < JackOUT->cuan_ijack; i += 2) {
-                jack_connect (jackclient,JackOUT->jack_poi[i].name.data(), jack_port_name (inputport_left));
-                jack_connect (jackclient,JackOUT->jack_poi[i + 1].name.data(),jack_port_name (inputport_right));
+            for (int i = 0; i < JackOUT->jack.cuan_ijack; i += 2) {
+                jack_connect (jackclient,JackOUT->jack.input_ports[i].name.data(), jack_port_name (inputport_left));
+                jack_connect (jackclient,JackOUT->jack.input_ports[i + 1].name.data(),jack_port_name (inputport_right));
             }
         }
 
@@ -171,31 +171,31 @@ jackprocess (jack_nframes_t nframes, void *arg)
 
 
     int jnumpi = jack_port_connected(inputport_left) + jack_port_connected(inputport_right );
-    if(jnumpi != JackOUT->numpi) {
-        JackOUT->numpi=jnumpi;
-        JackOUT->numpc = 1;
+    if(jnumpi != JackOUT->jack.num_input_ports) {
+        JackOUT->jack.num_input_ports=jnumpi;
+        JackOUT->jack.num_pc_ports = 1;
     }
     int jnumpo = jack_port_connected(outport_left) + jack_port_connected(outport_right );
-    if(jnumpo != JackOUT->numpo) {
-        JackOUT->numpo = jnumpo;
-        JackOUT->numpc = 1;
+    if(jnumpo != JackOUT->jack.num_output_ports) {
+        JackOUT->jack.num_output_ports = jnumpo;
+        JackOUT->jack.num_pc_ports = 1;
     }
     int jnumpa = jack_port_connected(inputport_aux);
-    if(jnumpa != JackOUT->numpa) {
-        JackOUT->numpa = jnumpa;
-        JackOUT->numpc = 1;
+    if(jnumpa != JackOUT->jack.num_aux_ports) {
+        JackOUT->jack.num_aux_ports = jnumpa;
+        JackOUT->jack.num_pc_ports = 1;
     }
 
     int jnumpmi = jack_port_connected(jack_midi_in);
-    if(jnumpmi != JackOUT->numpmi) {
-        JackOUT->numpmi = jnumpmi;
-        JackOUT->numpc = 1;
+    if(jnumpmi != JackOUT->jack.num_midi_in_ports) {
+        JackOUT->jack.num_midi_in_ports = jnumpmi;
+        JackOUT->jack.num_pc_ports = 1;
     }
 
     int jnumpmo = jack_port_connected(jack_midi_out);
-    if(jnumpmo != JackOUT->numpmo) {
-        JackOUT->numpmo = jnumpmo;
-        JackOUT->numpc = 1;
+    if(jnumpmo != JackOUT->jack.num_midi_out_ports) {
+        JackOUT->jack.num_midi_out_ports = jnumpmo;
+        JackOUT->jack.num_pc_ports = 1;
     }
 
 

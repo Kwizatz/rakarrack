@@ -39,7 +39,7 @@ RKR::InitMIDI ()
     int err = snd_seq_open (&midi_in, "default", SND_SEQ_OPEN_INPUT, 0);
     if (err < 0)
         printf ("Cannot activate ALSA seq client\n");
-    snd_seq_set_client_name (midi_in, jackcliname.data());
+    snd_seq_set_client_name (midi_in, jack.name.data());
     snd_config_update_free_global ();
 
 
@@ -48,7 +48,7 @@ RKR::InitMIDI ()
 
     // Create Alsa Seq Client
 
-    snprintf (portname, sizeof(portname), "%s IN",jackcliname.data());
+    snprintf (portname, sizeof(portname), "%s IN",jack.name.data());
     snd_seq_create_simple_port (midi_in, portname,
                                 SND_SEQ_PORT_CAP_WRITE |
                                 SND_SEQ_PORT_CAP_SUBS_WRITE,
@@ -667,7 +667,7 @@ RKR::Conecta ()
     char temp2[128];
     char *nume;
 
-    if (IsCoIn)
+    if (jack.IsCoIn)
         disconectaaconnect ();
 
 
@@ -693,12 +693,12 @@ RKR::Conecta ()
                 nume = strtok (NULL, "  ");
                 sscanf (nume, "%d", &puerto);
                 if (strstr (temp, "rakarrack IN") != 0) {
-                    Cyoin = client;
-                    Pyoin = puerto;
+                    jack.Cyoin = client;
+                    jack.Pyoin = puerto;
                 }
                 if (strstr (temp, MID.data()) != 0) {
-                    Ccin = client;
-                    Pcin = puerto;
+                    jack.Ccin = client;
+                    jack.Pcin = puerto;
                 }
 
             }
@@ -717,9 +717,9 @@ RKR::conectaaconnect ()
 {
     char tempi[128];
     memset (tempi, 0, sizeof (tempi));
-    sprintf (tempi, "aconnect %d:%d  %d:%d", Ccin, Pcin, Cyoin, Pyoin);
+    sprintf (tempi, "aconnect %d:%d  %d:%d", jack.Ccin, jack.Pcin, jack.Cyoin, jack.Pyoin);
     system (tempi);
-    IsCoIn = 1;
+    jack.IsCoIn = 1;
 };
 
 
@@ -728,9 +728,9 @@ RKR::disconectaaconnect ()
 {
     char tempi[128];
     memset (tempi, 0, sizeof (tempi));
-    sprintf (tempi, "aconnect -d %d:%d  %d:%d", Ccin, Pcin, Cyoin, Pyoin);
+    sprintf (tempi, "aconnect -d %d:%d  %d:%d", jack.Ccin, jack.Pcin, jack.Cyoin, jack.Pyoin);
     system (tempi);
-    IsCoIn = 0;
+    jack.IsCoIn = 0;
 };
 
 

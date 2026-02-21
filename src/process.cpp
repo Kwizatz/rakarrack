@@ -92,12 +92,12 @@ RKR::RKR ()
     Shi_Down = 0;
     Seq_Down = 0;
     cpufp = 0;
-    numpc = 0;
-    numpi = 0;
-    numpo = 0;
-    numpa = 0;
-    numpmi = 0;
-    numpmo = 0;
+    jack.num_pc_ports = 0;
+    jack.num_input_ports = 0;
+    jack.num_output_ports = 0;
+    jack.num_aux_ports = 0;
+    jack.num_midi_in_ports = 0;
+    jack.num_midi_out_ports = 0;
     mess_dis = 0;
     mtc_counter = 0;
     nojack = 0;
@@ -109,9 +109,9 @@ RKR::RKR ()
 
     sprintf (temp, "rakarrack");
 
-    jackclient = jack_client_open (temp, options, &status, NULL);
+    jack.client = jack_client_open (temp, jack.options, &jack.status, NULL);
 
-    if (jackclient == NULL) {
+    if (jack.client == NULL) {
         fprintf (stderr, "Cannot make a jack client, is jackd running?\n");
         nojack = 1;
         exitwithhelp = 1;
@@ -119,13 +119,13 @@ RKR::RKR ()
 
     }
 
-    strcpy (jackcliname.data(), jack_get_client_name (jackclient));
+    strcpy (jack.name.data(), jack_get_client_name (jack.client));
 
 
 
 
-    J_SAMPLE_RATE = jack_get_sample_rate (jackclient);
-    J_PERIOD = jack_get_buffer_size (jackclient);
+    jack.sample_rate = jack_get_sample_rate (jack.client);
+    jack.period = jack_get_buffer_size (jack.client);
 
     rakarrack.get(PrefNom("Disable Warnings"),mess_dis,0);
     rakarrack.get (PrefNom ("Filter DC Offset"), DC_Offset, 0);
@@ -192,8 +192,8 @@ RKR::RKR ()
     rakarrack.get (PrefNom ("Auto Connect Jack"), config.aconnect_JA, 1);
     rakarrack.get (PrefNom ("Auto Connect Jack In"), config.aconnect_JIA, 1);
 
-    rakarrack.get (PrefNom ("Auto Connect Num"), cuan_jack, 2);
-    rakarrack.get (PrefNom ("Auto Connect In Num"), cuan_ijack, 1);
+    rakarrack.get (PrefNom ("Auto Connect Num"), jack.cuan_jack, 2);
+    rakarrack.get (PrefNom ("Auto Connect In Num"), jack.cuan_ijack, 1);
 
     int i;
     memset (temp, 0, sizeof (temp));
@@ -202,14 +202,14 @@ RKR::RKR ()
     static const char *jack_names[] =
     { "system:playback_1", "system:playback_2" };
 
-    for (i = 0; i < cuan_jack; i++) {
+    for (i = 0; i < jack.cuan_jack; i++) {
         memset (temp, 0, sizeof (temp));
         sprintf (temp, "Jack Port %d", i + 1);
         if (i < 2)
             strcpy (j_names, jack_names[i]);
         else
             strcpy (j_names, "");
-        rakarrack.get (PrefNom (temp), jack_po[i].name.data(), j_names, 128);
+        rakarrack.get (PrefNom (temp), jack.output_ports[i].name.data(), j_names, 128);
 
     }
 
@@ -218,14 +218,14 @@ RKR::RKR ()
     static const char *jack_inames[] =
     { "system:capture_1", "system:capture_2" };
 
-    for (i = 0; i < cuan_ijack; i++) {
+    for (i = 0; i < jack.cuan_ijack; i++) {
         memset (temp, 0, sizeof (temp));
         sprintf (temp, "Jack Port In %d", i + 1);
         if (i < 1)
             strcpy (j_names, jack_inames[i]);
         else
             strcpy (j_names, "");
-        rakarrack.get (PrefNom (temp), jack_poi[i].name.data(), j_names, 128);
+        rakarrack.get (PrefNom (temp), jack.input_ports[i].name.data(), j_names, 128);
     }
 
 
@@ -310,7 +310,7 @@ RKR::RKR ()
     beat = std::make_unique<beattracker>();
     efx_Tuner = std::make_unique<Tuner>();
 #ifdef ENABLE_MIDI    
-    efx_MIDIConverter = std::make_unique<MIDIConverter>(jackcliname.data());
+    efx_MIDIConverter = std::make_unique<MIDIConverter>(jack.name.data());
 #endif
     RecNote = std::make_unique<Recognize>(efxoutl.data(), efxoutr.data(), rtrig);
     RC = std::make_unique<RecChord>();
@@ -898,21 +898,21 @@ RKR::Adjust_Upsample()
 {
 
     if(upsample) {
-        SAMPLE_RATE = J_SAMPLE_RATE*(UpAmo+2);
-        PERIOD = J_PERIOD*(UpAmo+2);
+        SAMPLE_RATE = jack.sample_rate*(UpAmo+2);
+        PERIOD = jack.period*(UpAmo+2);
         u_up = (double)UpAmo+2.0;
         u_down = 1.0 / u_up;
 
 
     } else {
-        SAMPLE_RATE = J_SAMPLE_RATE;
-        PERIOD = J_PERIOD;
+        SAMPLE_RATE = jack.sample_rate;
+        PERIOD = jack.period;
     }
 
     fSAMPLE_RATE = (float) SAMPLE_RATE;
     cSAMPLE_RATE = 1.0f / (float)SAMPLE_RATE;
     fPERIOD= float(PERIOD);
-    t_periods = J_SAMPLE_RATE / 12 / J_PERIOD;
+    t_periods = jack.sample_rate / 12 / jack.period;
 
 }
 
@@ -1238,9 +1238,9 @@ RKR::Control_Gain (float *origl, float *origr)
 
 
     if(upsample) {
-        U_Resample->out(origl,origr,efxoutl.data(),efxoutr.data(),J_PERIOD,u_up);
-        if((checkforaux()) || (ACI_Bypass)) A_Resample->mono_out(auxdata.data(),auxresampled.data(),J_PERIOD,u_up,PERIOD);
-    } else if((checkforaux()) || (ACI_Bypass)) memcpy(auxresampled.data(),auxdata.data(),sizeof(float)*J_PERIOD);
+        U_Resample->out(origl,origr,efxoutl.data(),efxoutr.data(),jack.period,u_up);
+        if((checkforaux()) || (ACI_Bypass)) A_Resample->mono_out(auxdata.data(),auxresampled.data(),jack.period,u_up,PERIOD);
+    } else if((checkforaux()) || (ACI_Bypass)) memcpy(auxresampled.data(),auxdata.data(),sizeof(float)*jack.period);
 
     if(DC_Offset) {
         DC_Offsetl->filterout(efxoutl.data());

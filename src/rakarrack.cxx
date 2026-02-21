@@ -891,7 +891,7 @@ void RKRGUI::cb_Save_MTable(Fl_Menu_* o, void* v) {
 void RKRGUI::cb_ConvertReverb_i(Fl_Menu_*, void*) {
   char *filename;
 char name[128];
-sprintf(name,"%s %s",rkr->jackcliname.data(), VERSION);
+sprintf(name,"%s %s",rkr->jack.name.data(), VERSION);
 
 filename=fl_file_chooser("Convert Reverb IR File:","(*.wav)",NULL,0);
 if (filename==NULL) return;
@@ -1228,14 +1228,14 @@ rkr->cpufp=0;
 
 
 
-if(rkr->numpc)
+if(rkr->jack.num_pc_ports)
 {
-  if (rkr->numpi) P_IN_ST->show(); else P_IN_ST->hide();
-  if (rkr->numpo) P_OUT_ST->show(); else P_OUT_ST->hide();
-  if (rkr->numpa) P_AUX_ST->show(); else P_AUX_ST->hide();
-  if (rkr->numpmi) P_MIN_ST->show(); else P_MIN_ST->hide();
-  if (rkr->numpmo) P_MOUT_ST->show(); else P_MOUT_ST->hide();
-  rkr->numpc = 0;
+  if (rkr->jack.num_input_ports) P_IN_ST->show(); else P_IN_ST->hide();
+  if (rkr->jack.num_output_ports) P_OUT_ST->show(); else P_OUT_ST->hide();
+  if (rkr->jack.num_aux_ports) P_AUX_ST->show(); else P_AUX_ST->hide();
+  if (rkr->jack.num_midi_in_ports) P_MIN_ST->show(); else P_MIN_ST->hide();
+  if (rkr->jack.num_midi_out_ports) P_MOUT_ST->show(); else P_MOUT_ST->hide();
+  rkr->jack.num_pc_ports = 0;
 }    
 
 if(error_num>0) rkr->Error_Handle(error_num);
@@ -10101,7 +10101,7 @@ void RKRGUI::cb_Save_Bank(Fl_Menu_* o, void* v) {
 void RKRGUI::cb_Convert_Old_Bank_i(Fl_Menu_*, void*) {
   char *filename;
 char name[128];
-sprintf(name,"%s %s",rkr->jackcliname.data(), VERSION);
+sprintf(name,"%s %s",rkr->jack.name.data(), VERSION);
 
 filename=fl_file_chooser("Convert Old Bank File:","(*.rkrb)",NULL,0);
 if (filename==NULL) return;
@@ -22494,18 +22494,18 @@ RKRGUI::RKRGUI(int argc, char**argv,RKR *rkr_) {
   Analy->init(rkr->anall.data(), rkr->analr.data(), PERIOD, SAMPLE_RATE);
   
   memset(tmp,0, sizeof(tmp));
-  sprintf(tmp,"%s   v%s",rkr->jackcliname.data(),VERSION); 
+  sprintf(tmp,"%s   v%s",rkr->jack.name.data(),VERSION); 
   Principal->copy_label(tmp);
   BankWin_Label(rkr->presets.BankFilename.data());
   memset(tmp,0, sizeof(tmp));
-  sprintf(tmp,"%s   v%s - Effects Order",rkr->jackcliname.data(),VERSION);
+  sprintf(tmp,"%s   v%s - Effects Order",rkr->jack.name.data(),VERSION);
   Order->copy_label(tmp);
   memset(tmp,0, sizeof(tmp));
-  sprintf(tmp,"%s   v%s - Settings",rkr->jackcliname.data(),VERSION);
+  sprintf(tmp,"%s   v%s - Settings",rkr->jack.name.data(),VERSION);
   Settings->copy_label(tmp);
-  sprintf(tmp,"%s   v%s - MIDI Learn",rkr->jackcliname.data(),VERSION);
+  sprintf(tmp,"%s   v%s - MIDI Learn",rkr->jack.name.data(),VERSION);
   MIDILearn->copy_label(tmp);
-  sprintf(tmp,"%s   v%s - ACI",rkr->jackcliname.data(),VERSION);
+  sprintf(tmp,"%s   v%s - ACI",rkr->jack.name.data(),VERSION);
   Trigger->copy_label(tmp);
   
   
@@ -23577,7 +23577,7 @@ inline void RKRGUI::preset_click_i(Fl_Button* o, void*) {
   if (strlen(rkr->presets.Bank[num].Preset_Name.data()) >0)
   { 
     Fl_Widget *m = fl_message_icon();
-    m->parent()->copy_label(rkr->jackcliname.data());
+    m->parent()->copy_label(rkr->jack.name.data());
     ok=fl_choice("Overwrite \"%s\"?","No","Yes", NULL, w->label());
    if (!ok)
    { 
@@ -24522,7 +24522,7 @@ void RKRGUI::MiraClientes() {
    const char **ports;
     
     
-     if ((ports = jack_get_ports (rkr->jackclient, NULL, JACK_DEFAULT_AUDIO_TYPE, 
+     if ((ports = jack_get_ports (rkr->jack.client, NULL, JACK_DEFAULT_AUDIO_TYPE, 
                                  JackPortIsInput)) == NULL) {
                   fprintf(stderr, "Cannot find any Input port\n");
       
@@ -24550,7 +24550,7 @@ void RKRGUI::MiraClientes() {
    
    const char **iports;  
     
-     if ((iports = jack_get_ports (rkr->jackclient, NULL, JACK_DEFAULT_AUDIO_TYPE, 
+     if ((iports = jack_get_ports (rkr->jack.client, NULL, JACK_DEFAULT_AUDIO_TYPE, 
                                  JackPortIsOutput)) == NULL) {
                   fprintf(stderr, "Cannot find any Output port\n");
       
@@ -24589,8 +24589,8 @@ void RKRGUI::MiraConfig() {
   while (JackCo->text(i) != NULL)
   {
   
-  for (k=0; k < rkr->cuan_jack; k++)
-  if (strcmp(JackCo->text(i),rkr->jack_po[k].name.data())==0 ) JackCo->select(i,1);
+  for (k=0; k < rkr->jack.cuan_jack; k++)
+  if (strcmp(JackCo->text(i),rkr->jack.output_ports[k].name.data())==0 ) JackCo->select(i,1);
   
   i++; 
   }
@@ -24601,8 +24601,8 @@ void RKRGUI::MiraConfig() {
   while (JackIn->text(i) != NULL)
   {
   
-  for (k=0; k < rkr->cuan_ijack; k++)
-  if (strcmp(JackIn->text(i),rkr->jack_poi[k].name.data())==0 ) JackIn->select(i,1);
+  for (k=0; k < rkr->jack.cuan_ijack; k++)
+  if (strcmp(JackIn->text(i),rkr->jack.input_ports[k].name.data())==0 ) JackIn->select(i,1);
   
   i++; 
   }
@@ -24830,7 +24830,7 @@ void RKRGUI::BankWin_Label(char *filename) {
   
   
   memset(tmp,0, sizeof(tmp));
-  sprintf(tmp,"%s   v%s - Bank Manager - %s",rkr->jackcliname.data(),VERSION,fl_filename_name(filename));
+  sprintf(tmp,"%s   v%s - Bank Manager - %s",rkr->jack.name.data(),VERSION,fl_filename_name(filename));
   BankWindow->copy_label(tmp);
 }
 
@@ -24842,7 +24842,7 @@ void RKRGUI::is_modified() {
   {
   
    Fl_Widget *w = fl_message_icon();
-   w->parent()->copy_label(rkr->jackcliname.data());
+   w->parent()->copy_label(rkr->jack.name.data());
    
   
    ok=fl_choice("Bank was modified, but not saved", "Discard","Save",NULL);
@@ -27047,7 +27047,7 @@ void RKRGUI::FillML(int type) {
   memset(tmp,0, sizeof(tmp));
   
   
-  sprintf(tmp,"%s   v%s - MIDI Learn - Preset : %s",rkr->jackcliname.data(),VERSION,rkr->presets.Bank[rkr->presets.Selected_Preset].Preset_Name.data());
+  sprintf(tmp,"%s   v%s - MIDI Learn - Preset : %s",rkr->jack.name.data(),VERSION,rkr->presets.Bank[rkr->presets.Selected_Preset].Preset_Name.data());
   MIDILearn->copy_label(tmp);
   
   memset(rkr->ML_clist.data(),0,sizeof(rkr->ML_clist));
@@ -27378,7 +27378,7 @@ void RKRGUI::Prepare_Order() {
 void RKRGUI::Show_Next_Time() {
   if(rkr->mess_dis) return;
   Fl_Widget *w = fl_message_icon();
-  w->parent()->copy_label(rkr->jackcliname.data());         
+  w->parent()->copy_label(rkr->jack.name.data());         
   fl_message("This setting will be changed the next time you run rakarrack");
 }
 

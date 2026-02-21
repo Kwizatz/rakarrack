@@ -1686,7 +1686,7 @@ RKR::loadbank (char *filename)
 
 
     memset(meslabel,0, sizeof(meslabel));
-    snprintf(meslabel, sizeof(meslabel), "%s %s",jackcliname.data(),VERSION);
+    snprintf(meslabel, sizeof(meslabel), "%s %s",jack.name.data(),VERSION);
 
 
     err_message = CheckOldBank(filename);

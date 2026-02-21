@@ -118,6 +118,41 @@ extern Pixmap mask;
 extern XWMHints *hints;
 #endif
 
+// Groups JACK connection state and port info.
+struct JackClient {
+    jack_client_t *client{};
+    jack_options_t options{};
+    jack_status_t status{};
+    std::array<char, 64> name{};
+
+    // Port counts
+    int num_output_ports{};
+    int num_input_ports{};
+    int num_aux_ports{};
+    int num_midi_in_ports{};
+    int num_midi_out_ports{};
+    int num_pc_ports{};
+
+    // Connection state
+    int cuan_jack{};
+    int cuan_ijack{};
+    int IsCoIn{};
+    int Cyoin{};
+    int Pyoin{};
+    int Ccin{};
+    int Pcin{};
+
+    // Runtime audio params
+    int sample_rate{};
+    int period{};
+
+    struct Port {
+        std::array<char, 128> name{};
+    };
+    Port output_ports[16]{};
+    Port input_ports[16]{};
+};
+
 class RKR
 {
 
@@ -259,10 +294,7 @@ public:
     std::unique_ptr<Vibe> efx_Vibe;
     std::unique_ptr<Infinity> efx_Infinity;
 
-    jack_client_t *jackclient;
-    jack_options_t options;
-    jack_status_t status;
-    std::array<char, 64> jackcliname{};
+    JackClient jack;
 
     int db6booster;
     int jdis;
@@ -385,14 +417,6 @@ public:
     int modified;
     int autoassign;
 
-    int cuan_jack;
-    int cuan_ijack;
-    int IsCoIn;
-    int Cyoin;
-    int Pyoin;
-    int Ccin;
-    int Pcin;
-
     // bank of flags telling GUI which midi controlled items to update
     std::array<int, 500> Mcontrol{};
     // flag telling GUI that Mcontrol has at least one set flag
@@ -431,8 +455,6 @@ public:
     int UpQual;
     int DownQual;
     int UpAmo;
-    int J_SAMPLE_RATE;
-    int J_PERIOD;
     int m_displayed;
     int Mvalue;
     std::array<int, 32> Mnumeff{};
@@ -471,8 +493,6 @@ public:
 
     int cpufp;
     int mess_dis;
-    int numpi, numpo, numpa, numpmi, numpmo;
-    int numpc;
     int midi_table;
 
     int Aux_Gain;
@@ -580,10 +600,6 @@ public:
     // Alsa MIDI
     snd_seq_t *midi_in, *midi_out;
 #endif
-
-    struct JackPorts {
-        std::array<char, 128> name{};
-    } jack_po[16],jack_poi[16];
 
 
 

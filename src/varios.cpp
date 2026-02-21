@@ -54,7 +54,7 @@ RKR::Error_Handle(int num)
     char meslabel[256];
     char error_msg[256];
     memset(meslabel,0, sizeof(meslabel));
-    snprintf(meslabel, sizeof(meslabel), "%s %s",jackcliname.data(),VERSION);
+    snprintf(meslabel, sizeof(meslabel), "%s %s",jack.name.data(),VERSION);
 
     error_num = 0;
     memset(error_msg,0,sizeof(error_msg));
@@ -112,7 +112,7 @@ RKR::PrefNom (const char *dato)
 {
 
     memset (tmpprefname.data(), 0, tmpprefname.size());
-    snprintf (tmpprefname.data(), tmpprefname.size(), "%s %s", jackcliname.data(), dato);
+    snprintf (tmpprefname.data(), tmpprefname.size(), "%s %s", jack.name.data(), dato);
     return (tmpprefname.data());
 
 }
