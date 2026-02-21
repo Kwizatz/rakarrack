@@ -96,8 +96,6 @@ private:
 
     float  Srate_Attack_Coeff, track1gain, track2gain, fade1, fade2, pregain1, pregain2;
     float mvol;
-
-    class FPreset *Fpre;
     class metronome ticker;
 
 };

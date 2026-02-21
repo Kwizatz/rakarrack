@@ -109,9 +109,6 @@ private:
 
 
     std::unique_ptr<AnalogFilter> lpfl, lpfr;	//filters
-
-    class FPreset *Fpre;
-
 };
 
 

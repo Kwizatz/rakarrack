@@ -101,8 +101,6 @@ private:
     std::unique_ptr<Resample> D_Resample;
 
     std::unique_ptr<PitchShifter> PS;
-
-    class FPreset *Fpre;
     std::unique_ptr<beattracker> beats;
     std::unique_ptr<delayline> ldelay, rdelay;
 

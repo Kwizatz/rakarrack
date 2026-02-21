@@ -85,10 +85,6 @@ private:
     EffectLFO lfo;		//lfo-ul RyanWah
     std::unique_ptr<RBFilter> filterl, filterr;
     std::unique_ptr<AnalogFilter> sidechain_filter;
-
-    class FPreset *Fpre;
-
-
 };
 
 #endif

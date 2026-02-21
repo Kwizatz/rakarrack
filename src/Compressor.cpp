@@ -232,7 +232,7 @@ Compressor::Compressor_Change_Preset (int dgui, int npreset)
     };
 
     if((dgui)&&(npreset>2)) {
-        Fpre->ReadPreset(1,npreset-2);
+        FPreset::ReadPreset(1,npreset-2);
         for (int n = 1; n < PRESET_SIZE; n++)
             Compressor_Change (n , pdata[n-1]);
 

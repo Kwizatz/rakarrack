@@ -89,9 +89,6 @@ private:
 
     std::unique_ptr<Filter> filterl, filterr;
     std::unique_ptr<FilterParams> filterpars;
-
-    class FPreset *Fpre;
-
 };
 
 

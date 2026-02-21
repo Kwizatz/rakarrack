@@ -250,7 +250,6 @@ RKR::RKR ()
 
 
 
-    Fpre = std::make_unique<FPreset>();
     DC_Offsetl = std::make_unique<AnalogFilter>(1, 20, 1, 0);
     DC_Offsetr = std::make_unique<AnalogFilter>(1, 20, 1, 0);
     M_Metronome = std::make_unique<metronome>();
@@ -1073,7 +1072,7 @@ RKR::EQ1_setpreset (int npreset)
     };
 
     if (npreset >= NUM_PRESETS) {
-        Fpre->ReadPreset(0,npreset-NUM_PRESETS+1);
+        FPreset::ReadPreset(0,npreset-NUM_PRESETS+1);
         for (int n = 0; n < 10; n++)
             efx_EQ1->changepar (n * 5 + 12, pdata[n]);
         efx_EQ1->changepar (0, pdata[10]);
@@ -1109,7 +1108,7 @@ RKR::EQ2_setpreset (int npreset)
 
     if (npreset >= NUM_PRESETS) {
 
-        Fpre->ReadPreset(9,npreset-NUM_PRESETS+1);
+        FPreset::ReadPreset(9,npreset-NUM_PRESETS+1);
         for (int n = 0; n < 3; n++) {
             efx_EQ2->changepar (n * 5 + 11, pdata[n * 3]);
             efx_EQ2->changepar (n * 5 + 12, pdata[n * 3 + 1]);

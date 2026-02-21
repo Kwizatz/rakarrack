@@ -180,7 +180,7 @@ Expander::Expander_Change_Preset (int npreset)
     };
 
     if(npreset>NUM_PRESETS-1) {
-        Fpre->ReadPreset(25,npreset-NUM_PRESETS+1);
+        FPreset::ReadPreset(25,npreset-NUM_PRESETS+1);
         for (int n = 0; n < PRESET_SIZE; n++)
             Expander_Change (n+1, pdata[n]);
     } else {

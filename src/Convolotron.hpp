@@ -93,9 +93,6 @@ private:
     std::unique_ptr<Resample> M_Resample;
     std::unique_ptr<Resample> U_Resample;
     std::unique_ptr<Resample> D_Resample;
-
-    class FPreset *Fpre;
-
     fft_filter impulse;
 
 

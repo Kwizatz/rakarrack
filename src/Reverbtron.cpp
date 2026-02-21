@@ -548,7 +548,7 @@ Reverbtron::setpreset (int npreset)
     };
 
     if(npreset>NUM_PRESETS-1) {
-        Fpre->ReadPreset(40,npreset-NUM_PRESETS+1);
+        FPreset::ReadPreset(40,npreset-NUM_PRESETS+1);
         for (int n = 0; n < PRESET_SIZE; n++)
             changepar (n, pdata[n]);
     } else {

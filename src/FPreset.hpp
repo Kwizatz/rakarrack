@@ -27,9 +27,7 @@ class FPreset
 {
 public:
 
-    FPreset();
-    ~FPreset() = default;
-    void ReadPreset(int eff, int num);
+    static void ReadPreset(int eff, int num);
 };
 
 

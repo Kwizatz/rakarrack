@@ -94,9 +94,6 @@ private:
     std::unique_ptr<AnalogFilter> lpf3l, lpf3r, hpf3l, hpf3r;
 
     std::unique_ptr<Compressor> CL, CML, CMH, CH;
-
-    class FPreset *Fpre;
-
 };
 
 #endif

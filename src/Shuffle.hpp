@@ -79,9 +79,6 @@ private:
     float volL,volML,volMH,volH;
     std::unique_ptr<AnalogFilter> lr, hr;
     std::unique_ptr<AnalogFilter> mlr, mhr;
-
-    class FPreset *Fpre;
-
 };
 
 

@@ -286,11 +286,11 @@ Distorsion::setpreset (int dgui, int npreset)
 
 
     if((dgui==0) && (npreset>5)) {
-        Fpre->ReadPreset(2,npreset-5);
+        FPreset::ReadPreset(2,npreset-5);
         for (int n = 0; n < PRESET_SIZE; n++)
             changepar (n, pdata[n]);
     } else if((dgui==1) && (npreset>1)) {
-        Fpre->ReadPreset(3,npreset-1);
+        FPreset::ReadPreset(3,npreset-1);
         for (int n = 0; n < PRESET_SIZE; n++)
             changepar (n, pdata[n]);
     } else {

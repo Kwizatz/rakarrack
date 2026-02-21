@@ -61,9 +61,6 @@ private:
     std::unique_ptr<AnalogFilter> rinput, rpre1, rpre2, rpost, rtonehg, rtonemd, rtonelw;
     std::unique_ptr<AnalogFilter> ranti, lanti;
     std::unique_ptr<Waveshaper> lwshape, rwshape, lwshape2, rwshape2;
-
-    class FPreset *Fpre{};
-
 };
 
 

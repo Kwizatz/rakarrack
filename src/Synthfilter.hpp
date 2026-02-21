@@ -86,9 +86,6 @@ private:
     float Rmax;	// Resistor parallel to FET
     float C, Clp, Chp;	        // Capacitor
     EffectLFO lfo;	         //Filter modulator
-
-    class FPreset *Fpre;
-
 };
 
 #endif

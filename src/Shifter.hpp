@@ -98,8 +98,6 @@ private:
 
 
     std::unique_ptr<PitchShifter> PS;
-
-    class FPreset *Fpre;
 };
 
 #endif

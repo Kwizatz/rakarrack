@@ -64,8 +64,6 @@ private:
     float ll, lr;
 
     EffectLFO lfo;
-    class FPreset *Fpre;
-
 };
 
 #endif

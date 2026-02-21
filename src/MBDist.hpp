@@ -90,9 +90,6 @@ private:
 
     std::unique_ptr<Waveshaper> mbwshape1l, mbwshape2l, mbwshape3l;
     std::unique_ptr<Waveshaper> mbwshape1r, mbwshape2r, mbwshape3r;
-
-    class FPreset *Fpre;
-
 };
 
 

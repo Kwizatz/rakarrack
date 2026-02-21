@@ -94,9 +94,6 @@ private:
     std::unique_ptr<Resample> U_Resample;
     std::unique_ptr<Resample> D_Resample;
     std::unique_ptr<Resample> A_Resample;
-
-    class FPreset *Fpre;
-
 };
 
 

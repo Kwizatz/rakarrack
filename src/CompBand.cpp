@@ -283,7 +283,7 @@ CompBand::setpreset (int npreset)
     };
 
     if(npreset>NUM_PRESETS-1) {
-        Fpre->ReadPreset(43,npreset-NUM_PRESETS+1);
+        FPreset::ReadPreset(43,npreset-NUM_PRESETS+1);
         for (int n = 0; n < PRESET_SIZE; n++)
             changepar (n, pdata[n]);
     } else {

@@ -131,9 +131,6 @@ private:
         std::unique_ptr<RBFilter> l, r;
 
     } filterbank[ECHOTRON_MAXFILTERS];
-
-    class FPreset *Fpre;
-
 };
 
 

@@ -79,8 +79,6 @@ private:
     std::vector<float> delayr;
     float getdelay (float xlfo);
     float dllo, mdel;
-
-    class FPreset *Fpre;
     class delayline ldelay{0.08f, 2};
     class delayline rdelay{0.08f, 2};
 

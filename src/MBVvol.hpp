@@ -84,9 +84,6 @@ private:
     std::unique_ptr<AnalogFilter> lpf3l, lpf3r, hpf3l, hpf3r;
 
     EffectLFO lfo1,lfo2;
-
-    class FPreset *Fpre;
-
 };
 
 

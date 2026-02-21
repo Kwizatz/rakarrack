@@ -70,9 +70,6 @@ private:
     std::unique_ptr<HarmEnhancer> harm;
     std::unique_ptr<AnalogFilter> RB1l, RB1r;
     std::unique_ptr<AnalogFilter> RB2l, RB2r;
-
-    class FPreset *Fpre;
-
 };
 
 

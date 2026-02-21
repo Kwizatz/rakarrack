@@ -58,9 +58,6 @@ private:
 
 
     std::unique_ptr<HarmEnhancer> harm;
-
-    class FPreset *Fpre;
-
 };
 
 

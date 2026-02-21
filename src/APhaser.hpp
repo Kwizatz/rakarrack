@@ -78,10 +78,6 @@ private:
     float Rconst;      // Handle parallel resistor relationship
     float C;	        // Capacitor
     float CFs;		// A constant derived from capacitor and resistor relationships
-
-
-    class FPreset *Fpre;
-
 };
 
 #endif

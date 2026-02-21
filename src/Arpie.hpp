@@ -78,8 +78,6 @@ private:
     std::vector<float> ldelay, rdelay;
     float oldl, oldr;		//pt. lpf
     float  Srate_Attack_Coeff, envattack, envswell;
-
-    class FPreset *Fpre;
 };
 
 

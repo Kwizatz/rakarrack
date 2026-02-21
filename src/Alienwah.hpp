@@ -78,8 +78,6 @@ private:
     float panning, fb, depth, lrcross, phase;
     std::array<COMPLEXTYPE, MAX_ALIENWAH_DELAY> oldl{}, oldr{};
     COMPLEXTYPE oldclfol, oldclfor;
-    class FPreset *Fpre;
-
 };
 
 #endif

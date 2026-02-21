@@ -98,10 +98,6 @@ private:
     int tflag;
 
     std::unique_ptr<RBFilter> filterl[NUM_INF_BANDS], filterr[NUM_INF_BANDS];
-
-    class FPreset *Fpre;
-
-
 };
 
 #endif

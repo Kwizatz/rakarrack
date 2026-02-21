@@ -79,7 +79,6 @@ private:
     float  Srate_Attack_Coeff;
 
     std::unique_ptr<delayline> ldelay, rdelay;
-    class FPreset *Fpre;
 };
 
 

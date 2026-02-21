@@ -275,12 +275,12 @@ Chorus::setpreset (int dgui, int npreset)
 
 
     if((dgui==0) && (npreset>4)) {
-        Fpre->ReadPreset(5,npreset-4);
+        FPreset::ReadPreset(5,npreset-4);
         for (int n = 0; n < PRESET_SIZE; n++)
             changepar (n, pdata[n]);
 
     } else if((dgui==1) && (npreset>9)) {
-        Fpre->ReadPreset(7,npreset-9);
+        FPreset::ReadPreset(7,npreset-9);
         for (int n = 0; n < PRESET_SIZE; n++)
             changepar (n, pdata[n]);
     } else {

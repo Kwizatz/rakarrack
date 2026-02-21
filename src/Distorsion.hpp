@@ -72,8 +72,6 @@ private:
     float panning, lrcross, octave_memoryl, togglel, octave_memoryr,toggler,octmix;
     std::unique_ptr<AnalogFilter> lpfl, lpfr, hpfl, hpfr, blockDCl, blockDCr, DCl, DCr;
     std::unique_ptr<Waveshaper> dwshapel, dwshaper;
-    class FPreset *Fpre;
-
 };
 
 

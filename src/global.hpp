@@ -43,7 +43,6 @@
 #endif
 
 // Forward declarations for types used via std::unique_ptr in RKR class.
-class FPreset;
 class Reverb;
 class Chorus;
 class Echo;
@@ -230,7 +229,6 @@ public:
     void Error_Handle(int num);
     void update_freqs(float val);
 
-    std::unique_ptr<FPreset> Fpre;
     std::unique_ptr<Reverb> efx_Rev;
     std::unique_ptr<Chorus> efx_Chorus;
     std::unique_ptr<Chorus> efx_Flanger;

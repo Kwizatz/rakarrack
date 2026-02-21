@@ -93,9 +93,6 @@ private:
     float rsA, rsB, lsA, lsB;	//Audio sample at given delay
 
     std::unique_ptr<delayline> ldelayline0, rdelayline0, ldelayline1, rdelayline1;
-    class FPreset *Fpre;
-
-
 };
 
 

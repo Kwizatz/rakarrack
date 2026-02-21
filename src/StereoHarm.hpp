@@ -101,8 +101,6 @@ private:
     std::unique_ptr<Resample> D_Resample;
 
     std::unique_ptr<PitchShifter> PSl, PSr;
-
-    class FPreset *Fpre;
 };
 
 #endif

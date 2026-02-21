@@ -128,8 +128,6 @@ private:
     std::vector<float> idelay;
 
     std::unique_ptr<AnalogFilter> lpf, hpf;	//filters
-    class FPreset *Fpre;
-
 };
 
 

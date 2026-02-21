@@ -80,8 +80,6 @@ private:
 
     std::unique_ptr<AnalogFilter> lpfl, lpfr, hpfl, hpfr;
     std::unique_ptr<HarmEnhancer> harm;
-    class FPreset *Fpre;
-
 };
 
 

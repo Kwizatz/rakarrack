@@ -205,7 +205,7 @@ Shuffle::setpreset (int npreset)
         {0, 17, 0, 7, 5, 600, 1200, 2000, 13865, -45, 1}
     };
     if(npreset>NUM_PRESETS-1) {
-        Fpre->ReadPreset(26,npreset-NUM_PRESETS+1);
+        FPreset::ReadPreset(26,npreset-NUM_PRESETS+1);
         for (int n = 0; n < PRESET_SIZE; n++)
             changepar (n, pdata[n]);
     } else {

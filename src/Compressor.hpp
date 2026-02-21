@@ -29,7 +29,6 @@
 #define COMPRESSOR_H
 
 #include "dsp_constants.hpp"
-#include "FPreset.hpp"
 #include "Effect.hpp"
 
 class Compressor : public Effect
@@ -101,9 +100,6 @@ private:
     float coeff_kk;
     float lpeak;
     float rpeak;
-
-    class FPreset *Fpre;
-
 };
 
 #endif
