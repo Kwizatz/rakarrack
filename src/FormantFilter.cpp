@@ -22,8 +22,8 @@
 
 */
 
-#include <math.h>
-#include <stdio.h>
+#include <cmath>
+#include <cstdio>
 #include "FormantFilter.hpp"
 
 FormantFilter::FormantFilter (FilterParams * pars)

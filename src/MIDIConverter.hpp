@@ -13,8 +13,8 @@
 #ifndef MIDICONVERTER_H_
 #define MIDICONVERTER_H_
 
-#include <math.h>
-#include <stdlib.h>
+#include <cmath>
+#include <cstdlib>
 #include <jack/midiport.h>
 #include <alsa/asoundlib.h>
 

@@ -22,8 +22,8 @@
 
 */
 
-#include <math.h>
-#include <stdio.h>
+#include <cmath>
+#include <cstdio>
 #include "SVFilter.hpp"
 
 SVFilter::SVFilter (unsigned char Ftype, float Ffreq, float Fq,

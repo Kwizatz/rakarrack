@@ -20,9 +20,9 @@
 
 */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cmath>
 #include "CoilCrafter.hpp"
 #include "FPreset.hpp"
 

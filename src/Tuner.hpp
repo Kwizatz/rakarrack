@@ -13,8 +13,8 @@
 #ifndef TUNER_H_
 #define TUNER_H_
 
-#include <math.h>
-#include <stdlib.h>
+#include <cmath>
+#include <cstdlib>
 #include <vector>
 #include "Effect.hpp"
 

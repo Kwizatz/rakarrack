@@ -22,10 +22,10 @@
 
 */
 
-#include <stdio.h>
+#include <cstdio>
 
-#include <math.h>
-#include <stdlib.h>
+#include <cmath>
+#include <cstdlib>
 #include "Reverb.hpp"
 #include "FPreset.hpp"
 

@@ -21,10 +21,10 @@
 
 */
 
-#include <stdio.h>
-#include <string.h>
-#include <math.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstring>
+#include <cmath>
+#include <cstdlib>
 #include <fcntl.h>
 #include <sys/types.h>
 #include <unistd.h>

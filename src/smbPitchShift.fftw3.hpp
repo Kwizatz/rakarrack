@@ -40,9 +40,9 @@
 #ifndef PITCH_H
 #define PITCH_H
 
-#include <string.h>
-#include <math.h>
-#include <stdio.h>
+#include <cstring>
+#include <cmath>
+#include <cstdio>
 #include <fftw3.h>
 #include <array>
 

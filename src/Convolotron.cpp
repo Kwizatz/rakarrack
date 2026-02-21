@@ -21,10 +21,10 @@
 
 */
 
-#include <stdio.h>
+#include <cstdio>
 #include <cstring>
-#include <stdlib.h>
-#include <math.h>
+#include <cstdlib>
+#include <cmath>
 #include "Convolotron.hpp"
 #include "FPreset.hpp"
 

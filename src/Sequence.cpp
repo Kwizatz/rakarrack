@@ -20,10 +20,10 @@
 
 */
 
-#include <stdio.h>
+#include <cstdio>
 #include <cstring>
-#include <stdlib.h>
-#include <math.h>
+#include <cstdlib>
+#include <cmath>
 #include "Sequence.hpp"
 #include "FPreset.hpp"
 #include <time.h>

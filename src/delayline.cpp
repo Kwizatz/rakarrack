@@ -16,7 +16,7 @@
 */
 #include "delayline.hpp"
 #include "math.h"
-#include <stdlib.h>
+#include <cstdlib>
 #include "f_sin.hpp"
 
 delayline::delayline(float maxdelay, int maxtaps_)

@@ -22,11 +22,11 @@
 
 */
 
-#include <math.h>
+#include <cmath>
 #include "RyanWah.hpp"
 #include "FPreset.hpp"
 #include "AnalogFilter.hpp"
-#include <stdio.h>
+#include <cstdio>
 
 RyanWah::RyanWah (float * efxoutl_, float * efxoutr_)
 {

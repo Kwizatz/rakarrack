@@ -53,15 +53,15 @@ http://crca.ucsd.edu/~msp/software.html */
 */
 
 /* Use below only as needed /
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 */
 
-#include <math.h>
+#include <cmath>
 #include "mayer_fft.hpp"
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstring>
+#include <cstdlib>
 #include <vector>
 
 

@@ -23,9 +23,9 @@
 */
 
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <cstring>
-#include <math.h>
+#include <cmath>
 #include "Waveshaper.hpp"
 #include "f_sin.hpp"
 

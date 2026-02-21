@@ -22,10 +22,10 @@
 
 */
 
-#include <math.h>
+#include <cmath>
 #include "Alienwah.hpp"
 #include "FPreset.hpp"
-#include <stdio.h>
+#include <cstdio>
 
 Alienwah::Alienwah (float * efxoutl_, float * efxoutr_)
 {

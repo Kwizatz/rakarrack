@@ -23,9 +23,9 @@
 
 */
 
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
 #include "FilterParams.hpp"
 
 FilterParams::FilterParams (unsigned char Ptype_, unsigned char Pfreq_,

@@ -23,7 +23,7 @@
 
 */
 
-#include <math.h>
+#include <cmath>
 #include "Vibe.hpp"
 #include "FPreset.hpp"
 

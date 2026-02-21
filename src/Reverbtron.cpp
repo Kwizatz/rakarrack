@@ -21,10 +21,10 @@
 
 */
 
-#include <stdio.h>
+#include <cstdio>
 #include <cstring>
-#include <stdlib.h>
-#include <math.h>
+#include <cstdlib>
+#include <cmath>
 #include "Reverbtron.hpp"
 #include "FPreset.hpp"
 

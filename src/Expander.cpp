@@ -24,7 +24,7 @@
 
 */
 
-#include <math.h>
+#include <cmath>
 #include "Expander.hpp"
 #include "FPreset.hpp"
 

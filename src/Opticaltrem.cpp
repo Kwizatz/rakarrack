@@ -23,7 +23,7 @@
 
 */
 
-#include <math.h>
+#include <cmath>
 #include "Opticaltrem.hpp"
 #include "FPreset.hpp"
 

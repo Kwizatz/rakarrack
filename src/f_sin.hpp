@@ -10,7 +10,7 @@ The author makes no guarantee of its suitability for any purpose.
 #ifndef FSIN_H
 #define FSIN_H
 
-#include <math.h>
+#include <cmath>
 #include "dsp_constants.hpp"
 
 //globals

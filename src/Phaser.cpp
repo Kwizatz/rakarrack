@@ -22,10 +22,10 @@
 
 */
 
-#include <math.h>
+#include <cmath>
 #include "Phaser.hpp"
 #include "FPreset.hpp"
-#include <stdio.h>
+#include <cstdio>
 #define PHASER_LFO_SHAPE 2
 
 Phaser::Phaser (float * efxoutl_, float * efxoutr_)

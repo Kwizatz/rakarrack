@@ -13,7 +13,7 @@
 #ifndef RECOGNIZE_H_
 #define RECOGNIZE_H_
 
-#include <math.h>
+#include <cmath>
 #include "dsp_constants.hpp"
 #include "AnalogFilter.hpp"
 #include "Sustainer.hpp"

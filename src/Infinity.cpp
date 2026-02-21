@@ -22,10 +22,10 @@
 
 */
 
-#include <math.h>
+#include <cmath>
 #include "Infinity.hpp"
 #include "FPreset.hpp"
-#include <stdio.h>
+#include <cstdio>
 
 Infinity::Infinity (float * efxoutl_, float * efxoutr_)
 {

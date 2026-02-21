@@ -26,7 +26,7 @@
 
 */
 
-#include <math.h>
+#include <cmath>
 #include "Gate.hpp"
 #include "FPreset.hpp"
 

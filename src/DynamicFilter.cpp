@@ -22,10 +22,10 @@
 
 */
 
-#include <math.h>
+#include <cmath>
 #include "DynamicFilter.hpp"
 #include "FPreset.hpp"
-#include <stdio.h>
+#include <cstdio>
 
 DynamicFilter::DynamicFilter (float * efxoutl_, float * efxoutr_)
 {

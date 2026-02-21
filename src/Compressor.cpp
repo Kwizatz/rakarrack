@@ -32,7 +32,7 @@
 
 */
 
-#include <math.h>
+#include <cmath>
 #include "Compressor.hpp"
 #include "FPreset.hpp"
 #define  MIN_GAIN  0.00001f        // -100dB  This will help prevent evaluation of denormal numbers

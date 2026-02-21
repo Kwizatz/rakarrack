@@ -33,10 +33,10 @@
 
 */
 
-#include <math.h>
+#include <cmath>
 #include "Synthfilter.hpp"
 #include "FPreset.hpp"
-#include <stdio.h>
+#include <cstdio>
 
 #define ONE_  0.99999f        // To prevent LFO ever reaching 1.0 for filter stability purposes
 #define ZERO_ 0.00001f        // Same idea as above.

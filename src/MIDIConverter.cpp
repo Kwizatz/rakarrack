@@ -9,9 +9,9 @@
  */
 #include "MIDIConverter.hpp"
 #include <cstring>
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cmath>
 #include "dsp_constants.hpp"
 
 
