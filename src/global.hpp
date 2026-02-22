@@ -37,10 +37,6 @@
 #ifdef ENABLE_MIDI
 #include <alsa/asoundlib.h>
 #endif
-#include <FL/Fl_Preferences.H>
-#ifndef _WIN32
-#include <X11/xpm.h>
-#endif
 
 // Forward declarations for types used via std::unique_ptr in RKR class.
 class Reverb;
@@ -111,11 +107,11 @@ extern char *s_uuid;
 extern char *statefile;
 extern char *filetoload;
 extern char *banktoload;
-#ifndef _WIN32
-extern Pixmap p;
-extern Pixmap mask;
-extern XWMHints *hints;
-#endif
+
+// Message callback — set by the GUI layer for dialog display.
+// If null, RKR::Message() only logs to stderr.
+using MessageCallback = int (*)(int prio, const char* label, const char* msg);
+extern MessageCallback gui_message_handler;
 
 // Groups JACK connection state and port info.
 struct JackClient {

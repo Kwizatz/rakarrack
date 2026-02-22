@@ -28,14 +28,12 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <FL/Fl_Preferences.H>
+#include "Preferences.hpp"
 #include "global.hpp"
 #include "AllEffects.hpp"
+#include "EmbeddedResource.hpp"
 #ifdef ENABLE_MIDI
 #include "MIDIConverter.hpp"
-#endif
-#ifndef _WIN32
-#include <X11/xpm.h>
 #endif
 
 int Pexitprogram, preset;
@@ -69,11 +67,8 @@ char *s_uuid;
 char *statefile;
 char *filetoload;
 char *banktoload;
-Fl_Preferences rakarrack (Fl_Preferences::USER, WEBSITE, PACKAGE);
-#ifndef _WIN32
-Pixmap p, mask;
-XWMHints *hints;
-#endif
+Preferences rakarrack (Preferences::USER, WEBSITE, PACKAGE);
+MessageCallback gui_message_handler = nullptr;
 
 RKR::RKR ()
 {
@@ -882,7 +877,22 @@ RKR::init_rkr ()
     loadnames();
 
     if (commandline == 0) {
-        loadbank (presets.BankFilename.data());
+        // Check if the bank filename refers to a built-in embedded bank.
+        // When running without installation, the filesystem path won't exist,
+        // so we load directly from the compiled-in resource data.
+        const char* bfn = presets.BankFilename.data();
+        const char* base = strrchr(bfn, '/');
+        base = base ? base + 1 : bfn;
+
+        if (strcmp(base, "Default.rkrb") == 0) {
+            loadbank_from_memory(res_Default_rkrb, res_Default_rkrb_len);
+        } else if (strcmp(base, "Extra.rkrb") == 0) {
+            loadbank_from_memory(res_Extra_rkrb, res_Extra_rkrb_len);
+        } else if (strcmp(base, "Extra1.rkrb") == 0) {
+            loadbank_from_memory(res_Extra1_rkrb, res_Extra1_rkrb_len);
+        } else {
+            loadbank(presets.BankFilename.data());
+        }
         presets.a_bank=3;
 
     }

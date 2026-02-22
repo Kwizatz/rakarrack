@@ -56,6 +56,21 @@ decl {\#include <FL/Fl_File_Chooser.H>} {public global
 decl {\#include <FL/Fl_Color_Chooser.H>} {public global
 } 
 
+decl {\#include "XIcon.hpp"} {public local
+}
+
+decl {\#include "Preferences.hpp"} {public local
+}
+
+decl {\#include <FL/Fl_Pixmap.H>} {public local
+}
+
+decl {\#include <FL/fl_ask.H>} {public local
+}
+
+decl {\#include "icono_rakarrack_32x32.xpm"} {private local
+}
+
 decl {
 \#ifndef WIN32
 \#include "icono_rakarrack_128x128.xpm"
@@ -12324,6 +12339,8 @@ DisAssigns();}
         callback {int i, j,k;
 int the_one;
 
+if (Epar->value() < 1) return;
+
 if (rkr->ML_filter==0)
  the_one = rkr->efx_params[(int)Epar->value()-1].Ato;
  else
@@ -12358,6 +12375,8 @@ DisAssigns();}
         user_data 77
         callback {int i;
 
+if (Epar->value() < 1) return;
+
 int the_one;
 
 if (rkr->ML_filter==0)
@@ -12386,6 +12405,9 @@ DisAssigns();}
         label {Assign to All}
         user_data 77
         callback {int i,j;
+
+if (Epar->value() < 1) return;
+
 int the_one;
 
 if (rkr->ML_filter==0)
@@ -12584,13 +12606,30 @@ About_Version->copy_label(tmp);} {}
     code {Fl::args(argc,argv);
 \#ifndef WIN32
     fl_open_display();
-    XpmCreatePixmapFromData(fl_display, DefaultRootWindow(fl_display),(char **)icono_rakarrack_128x128,&p ,&mask, NULL);
+    if(fl_display)
+        XpmCreatePixmapFromData(fl_display, DefaultRootWindow(fl_display),(char **)icono_rakarrack_128x128,&p ,&mask, NULL);
 \#endif
 
 Fl::visual(FL_DOUBLE|FL_RGB);
 fl_register_images();
 Fl::set_fonts(0);
 rkr=rkr_;
+
+// Install FLTK message dialog handler so engine Message() calls show GUI dialogs.
+gui_message_handler = [](int /*prio*/, const char* label, const char* msg) -> int {
+    Fl_Widget *w = fl_message_icon();
+    if (w != nullptr) {
+        static Fl_Pixmap icon_img(icono_rakarrack_32x32_xpm);
+        w->color(FL_WHITE);
+        w->label("");
+        w->image(&icon_img);
+        w->align(FL_ALIGN_TOP | FL_ALIGN_INSIDE);
+        if (w->parent() != nullptr)
+            w->parent()->copy_label(label);
+    }
+    fl_message("%s", msg);
+    return 0;
+};
 
 mBankNameList = NULL;
 mBankNameListTail = NULL;
@@ -12647,6 +12686,23 @@ ReadIntPresets();
 if(rkr->deachide) HideUE->label("Show");else HideUE->label("Hide");
 HideUE->redraw();
 
+// Process the initial show event so the double-buffer is created,
+// then force full damage on the window and all visible children
+// so everything gets repainted into the offscreen buffer.
+Fl::wait(0);
+for(int ch=0; ch<Principal->children(); ch++) {
+  Fl_Widget *cw = Principal->child(ch);
+  if(cw->visible()) {
+    cw->damage(FL_DAMAGE_ALL);
+    Fl_Group *gr = cw->as_group();
+    if(gr) {
+      for(int gc=0; gc<gr->children(); gc++)
+        gr->child(gc)->damage(FL_DAMAGE_ALL);
+    }
+  }
+}
+Principal->damage(FL_DAMAGE_ALL);
+Fl::flush();
 
 void * v=MT;
 Fl::add_timeout(.04,tick,v);
@@ -12774,13 +12830,15 @@ chfsize(0);} {}
   Function {put_icon(Fl_Window* window)} {} {
     code {
 \#ifndef WIN32
-    if (hints == NULL)
-    hints = XGetWMHints(fl_display, fl_xid(window));
+    if(fl_display) {
+        if (hints == NULL)
+            hints = XGetWMHints(fl_display, fl_xid(window));
 
-    hints->icon_pixmap=p;
-    hints->icon_mask=mask; 
-    hints->flags = IconPixmapHint | IconMaskHint;
-    XSetWMHints(fl_display, fl_xid(window), hints);
+        hints->icon_pixmap=p;
+        hints->icon_mask=mask; 
+        hints->flags = IconPixmapHint | IconMaskHint;
+        XSetWMHints(fl_display, fl_xid(window), hints);
+    }
 \#endif
     } {}
   }
@@ -12788,7 +12846,7 @@ chfsize(0);} {}
   } {
     code {int x,y,w,h,k,b,f,l,a;
 
-Fl_Preferences rakarrack (Fl_Preferences::USER, WEBSITE, PACKAGE);
+Preferences rakarrack (Preferences::USER, WEBSITE, PACKAGE);
 
 rakarrack.get(rkr->PrefNom("Principal X"),x,1);
 rakarrack.get(rkr->PrefNom("Principal Y"),y,1);
@@ -13099,7 +13157,7 @@ rkr->presets.M_table[i].preset=f-3000;
     code {int i,k;
 char temp1[128];
 
-Fl_Preferences rakarrack (Fl_Preferences::USER, WEBSITE, PACKAGE);
+Preferences rakarrack (Preferences::USER, WEBSITE, PACKAGE);
 
 if (whati==0)
 {
@@ -13888,7 +13946,6 @@ y[9]=E10->y();
    
  // Show   
     
-    
 for (i=0; i<10; i++)
 {
 
@@ -14539,7 +14596,7 @@ switch (rkr->efx_order[i])
 char temp[128];
 
 
-Fl_Preferences rakarrack (Fl_Preferences::USER, WEBSITE, PACKAGE);
+Preferences rakarrack (Preferences::USER, WEBSITE, PACKAGE);
 
 if (rkr->help_displayed==0)
 {
@@ -14572,7 +14629,7 @@ sprintf(temp,"%s/html/help.html",HELPDIR);
 char temp[128];
 
 
-Fl_Preferences rakarrack (Fl_Preferences::USER, WEBSITE, PACKAGE);
+Preferences rakarrack (Preferences::USER, WEBSITE, PACKAGE);
 
 
 
@@ -17217,6 +17274,8 @@ DisAssigns();} {}
   Function {DisAssigns()} {} {
     code {int i,j,k;
 char tmp[8];
+
+if (Epar->value() < 1) return;
 
 int the_one;
 

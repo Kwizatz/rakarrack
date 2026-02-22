@@ -64,6 +64,7 @@ set(RAKARRACK_SOURCES
 	Opticaltrem.cpp
 	Pan.cpp
 	Phaser.cpp
+	Preferences.cpp
 	process.cpp
 	RBEcho.cpp
 	RBFilter.cpp
@@ -91,6 +92,7 @@ set(RAKARRACK_SOURCES
 	Vocoder.cpp
 	Waveshaper.cpp
 	main.cpp
+	XIcon.cpp
 	rakarrack.cxx
 )
 set(RAKARRACK_HEADERS
@@ -142,6 +144,7 @@ set(RAKARRACK_HEADERS
 	Pan.hpp
 	Phaser.hpp
 	PresetBank.hpp
+	Preferences.hpp
 	RBEcho.hpp
 	RBFilter.hpp
 	RecChord.hpp
@@ -166,6 +169,7 @@ set(RAKARRACK_HEADERS
 	Vibe.hpp
 	Vocoder.hpp
 	Waveshaper.hpp
+	XIcon.hpp
 	rakarrack.h
 )
 

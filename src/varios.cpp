@@ -21,11 +21,7 @@
 
 */
 
-#include <FL/Fl_Pixmap.H>
-#include <FL/Fl_Group.H>
-#include <FL/fl_ask.H>
-#include <FL/Fl_Widget.H>
-#include "icono_rakarrack_32x32.xpm"
+#include <iostream>
 #include "global.hpp"
 #include "AllEffects.hpp"
 
@@ -34,15 +30,12 @@ RKR::Message (int prio, const char *labelwin, const char *message_text)
 {
     if((mess_dis) && (prio==0)) return(0);
 
-    Fl_Widget *w = fl_message_icon ();
+    std::cerr << "[Message] " << labelwin << ": " << message_text << std::endl;
 
-    Fl_Image *a = new Fl_Pixmap (icono_rakarrack_32x32_xpm);
-    w->color (FL_WHITE);
-    w->label ("");
-    w->image (a);
-    w->align (FL_ALIGN_TOP | FL_ALIGN_INSIDE);
-    w->parent ()->copy_label (labelwin);
-    fl_message ("%s",message_text);
+    // Delegate to GUI message handler if one is installed.
+    if (gui_message_handler) {
+        return gui_message_handler(prio, labelwin, message_text);
+    }
     return (0);
 
 };
@@ -136,7 +129,9 @@ RKR::Get_Bogomips()
 
             {
                 tmp = strtok(temp,":");
-                sscanf (tmp, "%f", &bogomips);
+                tmp = strtok(nullptr,":");
+                if (tmp != nullptr)
+                    sscanf (tmp, "%f", &bogomips);
                 break;
             }
 
