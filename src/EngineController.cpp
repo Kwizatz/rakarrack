@@ -244,6 +244,42 @@ bool EngineController::isBypassed() const
     return m_engine.Bypass != 0;
 }
 
+void EngineController::setBalance(int value)
+{
+    m_engine.Fraction_Bypass = static_cast<float>(value) / 127.0f;
+}
+
+int EngineController::getBalance() const
+{
+    return static_cast<int>(m_engine.Fraction_Bypass * 127.0f);
+}
+
+void EngineController::tapTempo()
+{
+    m_engine.TapTempo();
+}
+
+std::string EngineController::getEffectTypeName(int effectType) const
+{
+    static constexpr const char* names[] = {
+        "EQ",          "Compressor", "Distortion",  "Overdrive",
+        "Echo",        "Chorus",     "Phaser",       "Flanger",
+        "Reverb",      "EQ",         "WahWah",       "AlienWah",
+        "Cabinet",     "Pan",        "Harmonizer",   "MusDelay",
+        "Gate",        "NewDist",    "Ana.Phaser",   "Valve",
+        "Dual Flange", "Ring",       "Exciter",      "MBDist",
+        "Arpie",       "Expander",   "Shuffle",      "Synthfilter",
+        "MBVvol",      "Convolotron","Looper",       "RyanWah",
+        "RBEcho",      "CoilCrafter","ShelfBoost",   "Vocoder",
+        "Sustainer",   "Sequence",   "Shifter",      "StompBox",
+        "Reverbtron",  "Echotron",   "StereoHarm",   "CompBand",
+        "Opticaltrem", "Vibe",       "Infinity"
+    };
+    if (effectType >= 0 && effectType < static_cast<int>(std::size(names)))
+        return names[effectType];
+    return "Unknown";
+}
+
 // ─── Real-Time Telemetry (GUI polls) ───────────────────────────────
 
 bool EngineController::pollLevels(AudioLevels& out)

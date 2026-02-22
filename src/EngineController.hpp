@@ -142,8 +142,16 @@ public:
     void setInputGain(int value);
     [[nodiscard]] int getInputGain() const;
 
+    void setBalance(int value);
+    [[nodiscard]] int getBalance() const;
+
     void setBypass(bool bypass);
     [[nodiscard]] bool isBypassed() const;
+
+    void tapTempo();
+
+    /// Get the display name for an effect type (0-46).
+    [[nodiscard]] std::string getEffectTypeName(int effectType) const;
 
     // ─── Real-Time Telemetry (GUI thread reads, RT thread writes) ──
 

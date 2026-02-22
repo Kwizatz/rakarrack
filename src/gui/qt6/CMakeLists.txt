@@ -12,6 +12,9 @@ qt_standard_project_setup()
 set(QT6_GUI_SOURCES
     main.cpp
     MainWindow.cpp
+    TopBar.cpp
+    EffectSlotBar.cpp
+    panels/EffectPanel.cpp
     widgets/MidiSlider.cpp
     widgets/VUMeter.cpp
     widgets/SpectrumAnalyzer.cpp
@@ -21,6 +24,9 @@ set(QT6_GUI_SOURCES
 
 set(QT6_GUI_HEADERS
     MainWindow.hpp
+    TopBar.hpp
+    EffectSlotBar.hpp
+    panels/EffectPanel.hpp
     widgets/MidiSlider.hpp
     widgets/VUMeter.hpp
     widgets/SpectrumAnalyzer.hpp
