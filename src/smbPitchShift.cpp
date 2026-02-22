@@ -84,8 +84,13 @@ PitchShifter::PitchShifter (long fftFrameSize, long osamp, float sampleRate)
     int nfftFrameSize = (int) fftFrameSize;
     //printf("nfs= %d, lfs= %ld\n", nfftFrameSize, fftFrameSize);
 
-    ftPlanForward = fftw_plan_dft_1d(nfftFrameSize, fftw_in.data(), fftw_out.data(), FFTW_FORWARD, FFTW_MEASURE);
-    ftPlanInverse = fftw_plan_dft_1d(nfftFrameSize, fftw_in.data(), fftw_out.data(), FFTW_BACKWARD, FFTW_MEASURE);
+    fftw_in = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * nfftFrameSize);
+    fftw_out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * nfftFrameSize);
+    memset(fftw_in, 0, sizeof(fftw_complex) * nfftFrameSize);
+    memset(fftw_out, 0, sizeof(fftw_complex) * nfftFrameSize);
+
+    ftPlanForward = fftw_plan_dft_1d(nfftFrameSize, fftw_in, fftw_out, FFTW_FORWARD, FFTW_MEASURE);
+    ftPlanInverse = fftw_plan_dft_1d(nfftFrameSize, fftw_in, fftw_out, FFTW_BACKWARD, FFTW_MEASURE);
 
     //Pre-compute window function
     makeWindow(fftFrameSize);
@@ -96,6 +101,8 @@ PitchShifter::~PitchShifter ()
 
     fftw_destroy_plan(ftPlanForward);
     fftw_destroy_plan(ftPlanInverse);
+    fftw_free(fftw_in);
+    fftw_free(fftw_out);
 }
 
 void

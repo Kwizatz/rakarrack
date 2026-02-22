@@ -967,9 +967,9 @@ RKR::savefile (char *filename)
     FILE *fn;
     char buf[256];
     fn = fopen (filename, "w");
-    if(errno == EACCES) {
-        Error_Handle(3);
-        fclose(fn);
+    if(fn == nullptr) {
+        if(errno == EACCES)
+            Error_Handle(3);
         return;
     }
 
@@ -2530,9 +2530,9 @@ RKR::saveskin (char *filename)
     FILE *fn;
     char buf[256];
     fn = fopen (filename, "w");
-    if(errno == EACCES) {
-        Error_Handle(3);
-        fclose(fn);
+    if(fn == nullptr) {
+        if(errno == EACCES)
+            Error_Handle(3);
         return;
     }
 
@@ -2764,9 +2764,9 @@ RKR::savemiditable(char *filename)
     FILE *fn;
     char buf[256];
     fn = fopen (filename, "w");
-    if(errno == EACCES) {
-        Error_Handle(3);
-        fclose(fn);
+    if(fn == nullptr) {
+        if(errno == EACCES)
+            Error_Handle(3);
         return;
     }
 

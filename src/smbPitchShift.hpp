@@ -77,7 +77,7 @@ private:
     long k, qpd, index, inFifoLatency, stepSize, fftFrameSize2, gRover, FS_osamp;
 
     //FFTW variables
-    std::array<fftw_complex, MAX_FRAME_LENGTH> fftw_in{}, fftw_out{};
+    fftw_complex *fftw_in{}, *fftw_out{};
     fftw_plan ftPlanForward, ftPlanInverse;
 };
 

@@ -41,9 +41,9 @@ main(int argc, char *argv[])
  FILE *fn;
  SNDFILE *infile = NULL;
  SF_INFO sfinfo;
- char Outputfile[128];
- char Inputfile[128];
- char tempfile[128];
+ char Outputfile[512];
+ char Inputfile[256];
+ char tempfile[256];
  float *buf;
  float *index, *data;
  float sample;
@@ -115,9 +115,10 @@ main(int argc, char *argv[])
 
 if(!have_output)
 {
- strncpy(tempfile, Inputfile, 128);
+ strncpy(tempfile, Inputfile, sizeof(tempfile) - 1);
+ tempfile[sizeof(tempfile) - 1] = '\0';
  tempfile[strlen(tempfile)-4] = 0;
- sprintf(Outputfile, "%s.rvb",tempfile);
+ snprintf(Outputfile, sizeof(Outputfile), "%s.rvb",tempfile);
 }
 
 // open output and save headers

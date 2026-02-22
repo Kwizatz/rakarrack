@@ -27,7 +27,6 @@
 #define STEREOHARM_H
 
 #include "dsp_constants.hpp"
-#include "smbPitchShift_mayerfft.hpp"
 #include "Resample.hpp"
 #include "smbPitchShift.hpp"
 #include "Effect.hpp"
