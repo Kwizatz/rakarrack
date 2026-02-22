@@ -12,16 +12,21 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
+# ============================================================================
+# Engine sources — GUI-independent DSP, effects, JACK, MIDI, preferences
+# ============================================================================
+
 if(ENABLE_MIDI)
-	set(RAKARRACK_MIDI_SOURCES
+	set(ENGINE_MIDI_SOURCES
 		MIDIConverter.cpp
 		rkrMIDI.cpp
 	)
-	set(RAKARRACK_MIDI_HEADERS
+	set(ENGINE_MIDI_HEADERS
 		MIDIConverter.hpp
 	)
 endif()
-set(RAKARRACK_SOURCES
+
+set(ENGINE_SOURCES
 	Alienwah.cpp
 	AnalogFilter.cpp
 	APhaser.cpp
@@ -39,6 +44,7 @@ set(RAKARRACK_SOURCES
 	Echo.cpp
 	Echotron.cpp
 	EffectLFO.cpp
+	EngineController.cpp
 	EQ.cpp
 	Exciter.cpp
 	Expander.cpp
@@ -50,8 +56,6 @@ set(RAKARRACK_SOURCES
 	Gate.cpp
 	HarmonicEnhancer.cpp
 	Harmonizer.cpp
-	icono_rakarrack_128x128.xpm
-	icono_rakarrack_32x32.xpm
 	Infinity.cpp
 	jack.cpp
 	Looper.cpp
@@ -91,16 +95,15 @@ set(RAKARRACK_SOURCES
 	Vibe.cpp
 	Vocoder.cpp
 	Waveshaper.cpp
-	main.cpp
-	XIcon.cpp
-	rakarrack.cxx
 )
-set(RAKARRACK_HEADERS
+
+set(ENGINE_HEADERS
 	AllEffects.hpp
 	Alienwah.hpp
 	AnalogFilter.hpp
 	AppConfig.hpp
 	EmbeddedResource.hpp
+	EngineController.hpp
 	APhaser.hpp
 	Arpie.hpp
 	beattracker.hpp
@@ -153,6 +156,7 @@ set(RAKARRACK_HEADERS
 	Reverb.hpp
 	Reverbtron.hpp
 	Ring.hpp
+	RingBuffer.hpp
 	RyanWah.hpp
 	Sequence.hpp
 	ShelfBoost.hpp
@@ -169,22 +173,16 @@ set(RAKARRACK_HEADERS
 	Vibe.hpp
 	Vocoder.hpp
 	Waveshaper.hpp
-	XIcon.hpp
-	rakarrack.h
 )
 
-add_custom_command(OUTPUT rakarrack.cxx rakarrack.h
-	COMMAND ${FLTK_FLUID_EXECUTABLE} -c ${CMAKE_CURRENT_SOURCE_DIR}/rakarrack.fl
-	MAIN_DEPENDENCY rakarrack.fl
-	WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-)
+# ============================================================================
+# Embedded data resources (banks, IRs, skins — used by engine)
+# ============================================================================
 
-# Embed data files as compiled-in resources via xxd
 include(embed_resource)
 
 set(RAKARRACK_DATA_DIR ${CMAKE_SOURCE_DIR}/data)
 
-# Define resources as: filename -> C++ identifier
 set(RESOURCE_LIST
 	1.wav   res_1_wav
 	2.wav   res_2_wav
@@ -249,22 +247,26 @@ foreach(_i RANGE 0 ${_last} 2)
 	list(APPEND RESOURCE_GENERATED_HEADERS "${_hpp}")
 endforeach()
 
-add_executable(rakarrack
-	${RAKARRACK_SOURCES}
-	${RAKARRACK_HEADERS}
-	${RAKARRACK_MIDI_SOURCES}
-	${RAKARRACK_MIDI_HEADERS}
+# ============================================================================
+# Engine static library — shared by both FLTK and Qt6 GUI targets
+# ============================================================================
+
+add_library(rakarrack_engine STATIC
+	${ENGINE_SOURCES}
+	${ENGINE_HEADERS}
+	${ENGINE_MIDI_SOURCES}
+	${ENGINE_MIDI_HEADERS}
 	${RESOURCE_GENERATED_SOURCES}
 	${RESOURCE_GENERATED_HEADERS}
 )
-target_include_directories(rakarrack PRIVATE
+
+target_include_directories(rakarrack_engine PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}
-	${FLTK_INCLUDE_DIR}
 	${ALSA_INCLUDE_DIRS}
 )
-target_link_libraries(rakarrack
-	${FLTK_LIBRARIES}
+
+target_link_libraries(rakarrack_engine PUBLIC
 	${ALSA_LIBRARIES}
 	PkgConfig::FFTW
 	PkgConfig::XPM
@@ -273,7 +275,8 @@ target_link_libraries(rakarrack
 	PkgConfig::SNDFILE
 	nlohmann_json::nlohmann_json
 )
-target_precompile_headers(rakarrack PRIVATE
+
+target_precompile_headers(rakarrack_engine PRIVATE
 	dsp_constants.hpp
 	<memory>
 	<array>
@@ -284,4 +287,51 @@ target_precompile_headers(rakarrack PRIVATE
 	<string>
 )
 
+# ============================================================================
+# FLTK GUI (legacy — built by default)
+# ============================================================================
+
+add_custom_command(OUTPUT rakarrack.cxx rakarrack.h
+	COMMAND ${FLTK_FLUID_EXECUTABLE} -c ${CMAKE_CURRENT_SOURCE_DIR}/rakarrack.fl
+	MAIN_DEPENDENCY rakarrack.fl
+	WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+)
+
+set(FLTK_GUI_SOURCES
+	main.cpp
+	XIcon.cpp
+	rakarrack.cxx
+	icono_rakarrack_128x128.xpm
+	icono_rakarrack_32x32.xpm
+)
+
+set(FLTK_GUI_HEADERS
+	XIcon.hpp
+	rakarrack.h
+)
+
+add_executable(rakarrack
+	${FLTK_GUI_SOURCES}
+	${FLTK_GUI_HEADERS}
+)
+
+target_include_directories(rakarrack PRIVATE
+	${FLTK_INCLUDE_DIR}
+)
+
+target_link_libraries(rakarrack PRIVATE
+	rakarrack_engine
+	${FLTK_LIBRARIES}
+)
+
 install(TARGETS rakarrack RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+# ============================================================================
+# Qt6 GUI (opt-in via -DUSE_QT6=ON)
+# ============================================================================
+
+option(USE_QT6 "Build Qt6 GUI alongside FLTK" OFF)
+
+if(USE_QT6)
+	add_subdirectory(gui/qt6)
+endif()
