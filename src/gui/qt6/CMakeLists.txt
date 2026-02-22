@@ -12,10 +12,20 @@ qt_standard_project_setup()
 set(QT6_GUI_SOURCES
     main.cpp
     MainWindow.cpp
+    widgets/MidiSlider.cpp
+    widgets/VUMeter.cpp
+    widgets/SpectrumAnalyzer.cpp
+    widgets/Oscilloscope.cpp
+    widgets/TunerDisplay.cpp
 )
 
 set(QT6_GUI_HEADERS
     MainWindow.hpp
+    widgets/MidiSlider.hpp
+    widgets/VUMeter.hpp
+    widgets/SpectrumAnalyzer.hpp
+    widgets/Oscilloscope.hpp
+    widgets/TunerDisplay.hpp
 )
 
 add_executable(rakarrack-qt6
