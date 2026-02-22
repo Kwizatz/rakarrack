@@ -15,6 +15,15 @@ set(QT6_GUI_SOURCES
     TopBar.cpp
     EffectSlotBar.cpp
     panels/EffectPanel.cpp
+    panels/SliderPanel.cpp
+    panels/EQPanel.cpp
+    panels/DynamicsPanels.cpp
+    panels/DistortionPanels.cpp
+    panels/ModulationPanels.cpp
+    panels/DelayReverbPanels.cpp
+    panels/PitchPanels.cpp
+    panels/FilterPanels.cpp
+    panels/MiscPanels.cpp
     widgets/MidiSlider.cpp
     widgets/VUMeter.cpp
     widgets/SpectrumAnalyzer.cpp
@@ -27,6 +36,16 @@ set(QT6_GUI_HEADERS
     TopBar.hpp
     EffectSlotBar.hpp
     panels/EffectPanel.hpp
+    panels/ParamDesc.hpp
+    panels/SliderPanel.hpp
+    panels/EQPanel.hpp
+    panels/DynamicsPanels.hpp
+    panels/DistortionPanels.hpp
+    panels/ModulationPanels.hpp
+    panels/DelayReverbPanels.hpp
+    panels/PitchPanels.hpp
+    panels/FilterPanels.hpp
+    panels/MiscPanels.hpp
     widgets/MidiSlider.hpp
     widgets/VUMeter.hpp
     widgets/SpectrumAnalyzer.hpp

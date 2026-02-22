@@ -8,6 +8,16 @@
 #include "EffectPanel.hpp"
 #include "EngineController.hpp"
 
+// Panel subclass headers for the factory
+#include "EQPanel.hpp"
+#include "DynamicsPanels.hpp"
+#include "DistortionPanels.hpp"
+#include "ModulationPanels.hpp"
+#include "DelayReverbPanels.hpp"
+#include "PitchPanels.hpp"
+#include "FilterPanels.hpp"
+#include "MiscPanels.hpp"
+
 #include <QComboBox>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -105,17 +115,85 @@ void EffectPanel::syncToEngine()
 }
 
 // ---------------------------------------------------------------------------
-// Factory — returns generic placeholder for unimplemented effects
+// Factory — returns the appropriate panel subclass for each effect type.
 // ---------------------------------------------------------------------------
 
 std::unique_ptr<EffectPanel> EffectPanel::create(
     int effectType, EngineController& engine, QWidget* parent)
 {
-    // TODO Phase 4: switch on effectType to return concrete panel subclasses
-    // For now, return a generic panel with just the header (On + Preset).
+    switch (effectType)
+    {
+    // ── EQ ──────────────────────────────────────────────────────────
+    case  0: return std::make_unique<EQPanel>(engine, 0, parent);   // EQ1
+    case  9: return std::make_unique<EQPanel>(engine, 9, parent);   // EQ2
+    case 12: return std::make_unique<EQPanel>(engine, 12, parent);  // Cabinet
+
+    // ── Dynamics ────────────────────────────────────────────────────
+    case  1: return std::make_unique<CompressorPanel>(engine, parent);
+    case 16: return std::make_unique<GatePanel>(engine, parent);
+    case 25: return std::make_unique<ExpanderPanel>(engine, parent);
+    case 43: return std::make_unique<CompBandPanel>(engine, parent);
+
+    // ── Distortion ──────────────────────────────────────────────────
+    case  2: return std::make_unique<DistorsionPanel>(engine, 2, parent);  // Distorsion
+    case  3: return std::make_unique<DistorsionPanel>(engine, 3, parent);  // Overdrive
+    case 17: return std::make_unique<NewDistPanel>(engine, parent);
+    case 19: return std::make_unique<ValvePanel>(engine, parent);
+    case 23: return std::make_unique<MBDistPanel>(engine, parent);
+    case 39: return std::make_unique<StompBoxPanel>(engine, parent);
+
+    // ── Modulation ──────────────────────────────────────────────────
+    case  5: return std::make_unique<ChorusPanel>(engine, 5, parent);   // Chorus
+    case  7: return std::make_unique<ChorusPanel>(engine, 7, parent);   // Flanger
+    case  6: return std::make_unique<PhaserPanel>(engine, parent);
+    case 11: return std::make_unique<AlienwahPanel>(engine, parent);
+    case 13: return std::make_unique<PanPanel>(engine, parent);
+    case 18: return std::make_unique<APhaserPanel>(engine, parent);
+    case 20: return std::make_unique<DualFlangePanel>(engine, parent);
+    case 27: return std::make_unique<SynthfilterPanel>(engine, parent);
+    case 44: return std::make_unique<OpticaltremPanel>(engine, parent);
+    case 45: return std::make_unique<VibePanel>(engine, parent);
+    case 46: return std::make_unique<InfinityPanel>(engine, parent);
+
+    // ── Delay & Reverb ──────────────────────────────────────────────
+    case  4: return std::make_unique<EchoPanel>(engine, parent);
+    case  8: return std::make_unique<ReverbPanel>(engine, parent);
+    case 15: return std::make_unique<MusicDelayPanel>(engine, parent);
+    case 24: return std::make_unique<ArpiePanel>(engine, parent);
+    case 29: return std::make_unique<ConvolotronPanel>(engine, parent);
+    case 32: return std::make_unique<RBEchoPanel>(engine, parent);
+    case 40: return std::make_unique<ReverbtronPanel>(engine, parent);
+    case 41: return std::make_unique<EchotronPanel>(engine, parent);
+
+    // ── Pitch ───────────────────────────────────────────────────────
+    case 14: return std::make_unique<HarmonizerPanel>(engine, parent);
+    case 21: return std::make_unique<RingPanel>(engine, parent);
+    case 38: return std::make_unique<ShifterPanel>(engine, parent);
+    case 42: return std::make_unique<StereoHarmPanel>(engine, parent);
+
+    // ── Filters ─────────────────────────────────────────────────────
+    case 10: return std::make_unique<WahWahPanel>(engine, parent);
+    case 31: return std::make_unique<RyanWahPanel>(engine, parent);
+    case 33: return std::make_unique<CoilCrafterPanel>(engine, parent);
+    case 34: return std::make_unique<ShelfBoostPanel>(engine, parent);
+
+    // ── Misc ────────────────────────────────────────────────────────
+    case 22: return std::make_unique<ExciterPanel>(engine, parent);
+    case 26: return std::make_unique<ShufflePanel>(engine, parent);
+    case 28: return std::make_unique<MBVvolPanel>(engine, parent);
+    case 30: return std::make_unique<LooperPanel>(engine, parent);
+    case 35: return std::make_unique<VocoderPanel>(engine, parent);
+    case 36: return std::make_unique<SustainerPanel>(engine, parent);
+    case 37: return std::make_unique<SequencePanel>(engine, parent);
+
+    default:
+        break;
+    }
+
+    // Fallback: generic placeholder (should be unreachable for valid types).
     auto panel = std::make_unique<EffectPanel>(engine, effectType, parent);
     auto* label = new QLabel(
-        QStringLiteral("Effect %1 — panel coming in Phase 4").arg(effectType),
+        QStringLiteral("Effect %1 — unknown type").arg(effectType),
         panel.get());
     label->setAlignment(Qt::AlignCenter);
     label->setWordWrap(true);
