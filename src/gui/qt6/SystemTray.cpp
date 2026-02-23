@@ -31,6 +31,13 @@ SystemTray::SystemTray(EngineController& engine,
     icon.addFile(QStringLiteral(":/icons/rakarrack-64.png"),  QSize(64, 64));
     icon.addFile(QStringLiteral(":/icons/rakarrack-128.png"), QSize(128, 128));
 
+    // Fall back to the application-wide window icon if resource loading failed
+    if (icon.isNull())
+        icon = QApplication::windowIcon();
+
+    if (icon.isNull())
+        return;
+
     m_trayIcon = new QSystemTrayIcon(icon, this);
     m_trayIcon->setToolTip(QStringLiteral("Rakarrack"));
 
@@ -61,7 +68,8 @@ SystemTray::SystemTray(EngineController& engine,
             toggleWindowVisibility();
     });
 
-    m_trayIcon->show();
+    if (!icon.isNull())
+        m_trayIcon->show();
 }
 
 bool SystemTray::isAvailable() const

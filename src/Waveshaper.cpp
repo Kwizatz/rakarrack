@@ -54,7 +54,10 @@ Waveshaper::Waveshaper()
         period_coeff = 12;
         ncSAMPLE_RATE=cSAMPLE_RATE/12.0f;
         break;
-
+    default:
+        period_coeff = 1;
+        ncSAMPLE_RATE=cSAMPLE_RATE;
+        break;
     }
 
 
