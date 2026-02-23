@@ -1,0 +1,395 @@
+/*
+ * Rakarrack Qt6 — Dark Theme Stylesheet
+ * SPDX-License-Identifier: GPL-2.0-only
+ *
+ * Base dark palette for all widgets.  The background skin image (if enabled)
+ * is tiled underneath the central widget by ThemeManager; this stylesheet
+ * makes sure the chrome around it stays dark.
+ */
+
+/* ── Global defaults ────────────────────────────────────────────────── */
+
+QWidget {
+    background-color: #2b2b2b;
+    color: #dcdcdc;
+    font-size: 10pt;
+}
+
+QMainWindow {
+    background-color: #1e1e1e;
+}
+
+/* ── Menu bar ───────────────────────────────────────────────────────── */
+
+QMenuBar {
+    background-color: #1e1e1e;
+    color: #dcdcdc;
+    border-bottom: 1px solid #444;
+}
+
+QMenuBar::item:selected {
+    background-color: #3d3d3d;
+    color: #ffffff;
+}
+
+QMenu {
+    background-color: #2b2b2b;
+    color: #dcdcdc;
+    border: 1px solid #444;
+}
+
+QMenu::item:selected {
+    background-color: #3daee9;
+    color: #ffffff;
+}
+
+QMenu::separator {
+    height: 1px;
+    background: #444;
+    margin: 4px 8px;
+}
+
+/* ── Status bar ─────────────────────────────────────────────────────── */
+
+QStatusBar {
+    background-color: #1e1e1e;
+    color: #888;
+    border-top: 1px solid #444;
+}
+
+/* ── Push buttons ───────────────────────────────────────────────────── */
+
+QPushButton {
+    background-color: #3d3d3d;
+    color: #dcdcdc;
+    border: 1px solid #555;
+    border-radius: 3px;
+    padding: 4px 12px;
+    min-height: 20px;
+}
+
+QPushButton:hover {
+    background-color: #4a4a4a;
+    border-color: #666;
+}
+
+QPushButton:pressed {
+    background-color: #2a2a2a;
+}
+
+QPushButton:checked {
+    background-color: #27ae60;
+    color: #ffffff;
+    border-color: #2ecc71;
+}
+
+QPushButton:disabled {
+    background-color: #333;
+    color: #666;
+    border-color: #444;
+}
+
+/* ── Checkable effect-on/bypass button (TopBar FX On) ───────────────── */
+
+QPushButton[objectName="fxOnButton"]:checked {
+    background-color: #27ae60;
+}
+
+QPushButton[objectName="fxOnButton"]:!checked {
+    background-color: #c0392b;
+    color: #ffffff;
+}
+
+/* ── Tab widgets ────────────────────────────────────────────────────── */
+
+QTabWidget::pane {
+    border: 1px solid #444;
+    background-color: #2b2b2b;
+}
+
+QTabBar::tab {
+    background-color: #333;
+    color: #aaa;
+    border: 1px solid #444;
+    border-bottom: none;
+    padding: 6px 14px;
+    margin-right: 2px;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+}
+
+QTabBar::tab:selected {
+    background-color: #2b2b2b;
+    color: #dcdcdc;
+    border-bottom: 2px solid #3daee9;
+}
+
+QTabBar::tab:hover:!selected {
+    background-color: #3d3d3d;
+    color: #dcdcdc;
+}
+
+/* ── Sliders (horizontal) ───────────────────────────────────────────── */
+
+QSlider::groove:horizontal {
+    background: #444;
+    border-radius: 3px;
+    height: 6px;
+}
+
+QSlider::handle:horizontal {
+    background: #3daee9;
+    width: 14px;
+    margin: -4px 0;
+    border-radius: 7px;
+}
+
+QSlider::handle:horizontal:hover {
+    background: #5bbef5;
+}
+
+/* ── Sliders (vertical) ─────────────────────────────────────────────── */
+
+QSlider::groove:vertical {
+    background: #444;
+    border-radius: 3px;
+    width: 6px;
+}
+
+QSlider::handle:vertical {
+    background: #3daee9;
+    height: 14px;
+    margin: 0 -4px;
+    border-radius: 7px;
+}
+
+QSlider::handle:vertical:hover {
+    background: #5bbef5;
+}
+
+/* ── Spin boxes ─────────────────────────────────────────────────────── */
+
+QSpinBox, QDoubleSpinBox {
+    background-color: #333;
+    color: #dcdcdc;
+    border: 1px solid #555;
+    border-radius: 3px;
+    padding: 2px 6px;
+}
+
+QSpinBox::up-button, QDoubleSpinBox::up-button {
+    background-color: #3d3d3d;
+    border-left: 1px solid #555;
+}
+
+QSpinBox::down-button, QDoubleSpinBox::down-button {
+    background-color: #3d3d3d;
+    border-left: 1px solid #555;
+}
+
+/* ── Combo boxes ────────────────────────────────────────────────────── */
+
+QComboBox {
+    background-color: #333;
+    color: #dcdcdc;
+    border: 1px solid #555;
+    border-radius: 3px;
+    padding: 3px 8px;
+    min-height: 20px;
+}
+
+QComboBox::drop-down {
+    border-left: 1px solid #555;
+    background-color: #3d3d3d;
+    width: 20px;
+}
+
+QComboBox QAbstractItemView {
+    background-color: #2b2b2b;
+    color: #dcdcdc;
+    selection-background-color: #3daee9;
+    selection-color: #ffffff;
+    border: 1px solid #555;
+}
+
+/* ── Line edits ─────────────────────────────────────────────────────── */
+
+QLineEdit {
+    background-color: #333;
+    color: #dcdcdc;
+    border: 1px solid #555;
+    border-radius: 3px;
+    padding: 3px 6px;
+}
+
+QLineEdit:focus {
+    border-color: #3daee9;
+}
+
+QLineEdit:read-only {
+    background-color: #2a2a2a;
+    color: #aaa;
+}
+
+/* ── Check boxes ────────────────────────────────────────────────────── */
+
+QCheckBox {
+    spacing: 6px;
+    color: #dcdcdc;
+}
+
+QCheckBox::indicator {
+    width: 16px;
+    height: 16px;
+    border: 1px solid #555;
+    border-radius: 3px;
+    background-color: #333;
+}
+
+QCheckBox::indicator:checked {
+    background-color: #3daee9;
+    border-color: #3daee9;
+}
+
+/* ── Group boxes ────────────────────────────────────────────────────── */
+
+QGroupBox {
+    border: 1px solid #444;
+    border-radius: 4px;
+    margin-top: 8px;
+    padding-top: 12px;
+    color: #dcdcdc;
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top left;
+    padding: 0 6px;
+    color: #aaa;
+}
+
+/* ── List widgets ───────────────────────────────────────────────────── */
+
+QListWidget, QListView {
+    background-color: #2b2b2b;
+    color: #dcdcdc;
+    border: 1px solid #555;
+    border-radius: 3px;
+}
+
+QListWidget::item:selected, QListView::item:selected {
+    background-color: #3daee9;
+    color: #ffffff;
+}
+
+QListWidget::item:hover, QListView::item:hover {
+    background-color: #3d3d3d;
+}
+
+/* ── Scroll bars ────────────────────────────────────────────────────── */
+
+QScrollBar:vertical {
+    background: #2b2b2b;
+    width: 12px;
+    margin: 0;
+}
+
+QScrollBar::handle:vertical {
+    background: #555;
+    border-radius: 4px;
+    min-height: 20px;
+    margin: 2px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background: #666;
+}
+
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    height: 0;
+}
+
+QScrollBar:horizontal {
+    background: #2b2b2b;
+    height: 12px;
+    margin: 0;
+}
+
+QScrollBar::handle:horizontal {
+    background: #555;
+    border-radius: 4px;
+    min-width: 20px;
+    margin: 2px;
+}
+
+QScrollBar::handle:horizontal:hover {
+    background: #666;
+}
+
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
+    width: 0;
+}
+
+/* ── Text browser (help viewer) ─────────────────────────────────────── */
+
+QTextBrowser {
+    background-color: #1e1e1e;
+    color: #dcdcdc;
+    border: 1px solid #555;
+}
+
+/* ── Dialogs ────────────────────────────────────────────────────────── */
+
+QDialog {
+    background-color: #2b2b2b;
+}
+
+QDialogButtonBox QPushButton {
+    min-width: 80px;
+}
+
+/* ── Tool tips ──────────────────────────────────────────────────────── */
+
+QToolTip {
+    background-color: #3d3d3d;
+    color: #dcdcdc;
+    border: 1px solid #555;
+    padding: 4px;
+}
+
+/* ── Progress bar (used in VU meters fallback) ──────────────────────── */
+
+QProgressBar {
+    background-color: #333;
+    border: 1px solid #555;
+    border-radius: 3px;
+    text-align: center;
+    color: #dcdcdc;
+}
+
+QProgressBar::chunk {
+    background-color: #27ae60;
+    border-radius: 2px;
+}
+
+/* ── Effect slot bar buttons ────────────────────────────────────────── */
+
+QPushButton[objectName^="effectSlot"]:checked {
+    background-color: #3daee9;
+    color: #ffffff;
+    font-weight: bold;
+    border-color: #5bbef5;
+}
+
+/* ── Labels ─────────────────────────────────────────────────────────── */
+
+QLabel {
+    background: transparent;
+    color: #dcdcdc;
+}
+
+/* ── Form layout label alignment ────────────────────────────────────── */
+
+QFormLayout {
+    margin: 8px;
+}

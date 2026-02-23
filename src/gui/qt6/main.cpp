@@ -13,6 +13,7 @@
 
 #include <QApplication>
 #include <QCommandLineParser>
+#include <QIcon>
 #include <QMessageBox>
 
 #include <chrono>
@@ -33,9 +34,20 @@
 
 int main(int argc, char* argv[])
 {
+    // ── High-DPI support (must be set before QApplication) ─────────
+    QApplication::setHighDpiScaleFactorRoundingPolicy(
+        Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
+
     QApplication app(argc, argv);
     app.setApplicationName(QStringLiteral(PACKAGE));
     app.setApplicationVersion(QStringLiteral(VERSION));
+
+    // Application-wide icon (used by window managers, task bars, etc.)
+    QIcon appIcon;
+    appIcon.addFile(QStringLiteral(":/icons/rakarrack-32.png"),  QSize(32, 32));
+    appIcon.addFile(QStringLiteral(":/icons/rakarrack-64.png"),  QSize(64, 64));
+    appIcon.addFile(QStringLiteral(":/icons/rakarrack-128.png"), QSize(128, 128));
+    app.setWindowIcon(appIcon);
 
     fprintf(stderr,
             "\n%s %s - Copyright (c) Josep Andreu - Ryan Billing - "

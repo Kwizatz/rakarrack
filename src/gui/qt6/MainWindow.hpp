@@ -17,6 +17,8 @@ class EngineController;
 class TopBar;
 class EffectSlotBar;
 class EffectPanel;
+class ThemeManager;
+class SystemTray;
 class QStackedWidget;
 
 // Dialogs
@@ -38,12 +40,21 @@ public:
     explicit MainWindow(EngineController& engine, QWidget* parent = nullptr);
     ~MainWindow() override = default;
 
+    /// Access the theme manager (used by SettingsDialog).
+    [[nodiscard]] ThemeManager* themeManager() const { return m_theme; }
+
 private Q_SLOTS:
     /// Called at 40 Hz to poll engine state (levels, tuner, MIDI, etc.)
     void onGuiTick();
 
     /// Called when the user selects an effect slot.
     void onSlotSelected(int slotIndex);
+
+    // File actions
+    void loadPreset();
+    void savePreset();
+    void nextPreset();
+    void previousPreset();
 
     // Dialog launchers
     void showBankDialog();
@@ -58,16 +69,23 @@ private Q_SLOTS:
 private:
     void setupUi();
     void setupMenuBar();
+    void setupShortcuts();
     void createEffectPanels();
     void connectTopBarSignals();
+    void applyThemeFromEngine();
 
     EngineController& m_engine;
     QTimer*           m_guiTimer{nullptr};
+
+    // Theme & tray
+    ThemeManager*     m_theme{nullptr};
+    SystemTray*       m_tray{nullptr};
 
     // Composed widgets
     TopBar*           m_topBar{nullptr};
     EffectSlotBar*    m_slotBar{nullptr};
     QStackedWidget*   m_panelStack{nullptr};
+    QWidget*          m_centralWidget{nullptr};
 
     // Effect panels (one per slot)
     std::array<EffectPanel*, kMainEffectSlots> m_effectPanels{};

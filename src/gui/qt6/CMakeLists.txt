@@ -12,6 +12,8 @@ qt_standard_project_setup()
 set(QT6_GUI_SOURCES
     main.cpp
     MainWindow.cpp
+    ThemeManager.cpp
+    SystemTray.cpp
     TopBar.cpp
     EffectSlotBar.cpp
     panels/EffectPanel.cpp
@@ -40,6 +42,8 @@ set(QT6_GUI_SOURCES
 
 set(QT6_GUI_HEADERS
     MainWindow.hpp
+    ThemeManager.hpp
+    SystemTray.hpp
     TopBar.hpp
     EffectSlotBar.hpp
     panels/EffectPanel.hpp
@@ -67,9 +71,14 @@ set(QT6_GUI_HEADERS
     widgets/TunerDisplay.hpp
 )
 
+set(QT6_RESOURCES
+    resources.qrc
+)
+
 add_executable(rakarrack-qt6
     ${QT6_GUI_SOURCES}
     ${QT6_GUI_HEADERS}
+    ${QT6_RESOURCES}
 )
 
 target_link_libraries(rakarrack-qt6 PRIVATE

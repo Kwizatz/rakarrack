@@ -1,0 +1,20 @@
+<RCC>
+    <qresource prefix="/icons">
+        <file alias="rakarrack-32.png">../../../icons/icono_rakarrack_32x32.png</file>
+        <file alias="rakarrack-64.png">../../../icons/icono_rakarrack_64x64.png</file>
+        <file alias="rakarrack-128.png">../../../icons/icono_rakarrack_128x128.png</file>
+    </qresource>
+    <qresource prefix="/skins">
+        <file alias="bg.png">../../../data/bg.png</file>
+        <file alias="bg1.png">../../../data/bg1.png</file>
+        <file alias="bg2.png">../../../data/bg2.png</file>
+        <file alias="bg3.png">../../../data/bg3.png</file>
+        <file alias="bg4.png">../../../data/bg4.png</file>
+        <file alias="bg5.png">../../../data/bg5.png</file>
+        <file alias="bg6.png">../../../data/bg6.png</file>
+        <file alias="bg_gray_furr.png">../../../data/bg_gray_furr.png</file>
+    </qresource>
+    <qresource prefix="/styles">
+        <file alias="dark.qss">styles/dark.qss</file>
+    </qresource>
+</RCC>
