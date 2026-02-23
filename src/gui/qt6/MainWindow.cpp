@@ -11,6 +11,15 @@
 #include "TopBar.hpp"
 #include "panels/EffectPanel.hpp"
 
+// Dialogs
+#include "dialogs/AboutDialog.hpp"
+#include "dialogs/BankDialog.hpp"
+#include "dialogs/HelpBrowser.hpp"
+#include "dialogs/MidiLearnDialog.hpp"
+#include "dialogs/OrderDialog.hpp"
+#include "dialogs/SettingsDialog.hpp"
+#include "dialogs/TriggerDialog.hpp"
+
 #include <QMenuBar>
 #include <QStackedWidget>
 #include <QStatusBar>
@@ -64,6 +73,9 @@ void MainWindow::setupUi()
 
     setCentralWidget(central);
 
+    // Connect TopBar signals to dialog launches
+    connectTopBarSignals();
+
     // Status bar
     statusBar()->showMessage(tr("Ready"));
 }
@@ -88,6 +100,30 @@ void MainWindow::setupMenuBar()
                                     panel->syncFromEngine();
                             }
                         });
+
+    auto* windowsMenu = menuBar()->addMenu(tr("&Windows"));
+    windowsMenu->addAction(tr("&Bank Manager"), QKeySequence(Qt::CTRL | Qt::Key_B),
+                           this, &MainWindow::showBankDialog);
+    windowsMenu->addAction(tr("Effect &Order"), QKeySequence(Qt::CTRL | Qt::Key_O),
+                           this, &MainWindow::showOrderDialog);
+    windowsMenu->addAction(tr("&MIDI Learn"),
+                           this, &MainWindow::showMidiLearnDialog);
+    windowsMenu->addAction(tr("&Trigger (ACI)"),
+                           this, &MainWindow::showTriggerDialog);
+
+    auto* settingsMenu = menuBar()->addMenu(tr("&Settings"));
+    settingsMenu->addAction(tr("&Preferences..."),
+                            QKeySequence(Qt::CTRL | Qt::Key_Comma),
+                            this, &MainWindow::showSettingsDialog);
+
+    auto* helpMenu = menuBar()->addMenu(tr("&Help"));
+    helpMenu->addAction(tr("&Help Contents"), QKeySequence::HelpContents,
+                        this, &MainWindow::showHelp);
+    helpMenu->addAction(tr("&License"),
+                        this, &MainWindow::showLicense);
+    helpMenu->addSeparator();
+    helpMenu->addAction(tr("&About Rakarrack..."),
+                        this, &MainWindow::showAboutDialog);
 }
 
 // ---------------------------------------------------------------------------
@@ -142,4 +178,85 @@ void MainWindow::onGuiTick()
                 ? tr("Signal: YES")
                 : tr("Signal: no"));
     }
+}
+
+// ---------------------------------------------------------------------------
+// TopBar signal wiring
+// ---------------------------------------------------------------------------
+
+void MainWindow::connectTopBarSignals()
+{
+    connect(m_topBar, &TopBar::bankWindowRequested,
+            this, &MainWindow::showBankDialog);
+    connect(m_topBar, &TopBar::orderWindowRequested,
+            this, &MainWindow::showOrderDialog);
+}
+
+// ---------------------------------------------------------------------------
+// Dialog launchers
+// ---------------------------------------------------------------------------
+
+void MainWindow::showBankDialog()
+{
+    if (!m_bankDialog)
+        m_bankDialog = new BankDialog(m_engine, this);
+
+    m_bankDialog->refreshBank();
+    m_bankDialog->show();
+    m_bankDialog->raise();
+    m_bankDialog->activateWindow();
+}
+
+void MainWindow::showOrderDialog()
+{
+    // OrderDialog is modal — each open gets a fresh copy with current state
+    OrderDialog dlg(m_engine, this);
+    if (dlg.exec() == QDialog::Accepted)
+    {
+        // Rebuild panels if order changed
+        createEffectPanels();
+        m_slotBar->syncFromEngine();
+    }
+}
+
+void MainWindow::showSettingsDialog()
+{
+    SettingsDialog dlg(m_engine, this);
+    dlg.exec();
+}
+
+void MainWindow::showMidiLearnDialog()
+{
+    MidiLearnDialog dlg(m_engine, this);
+    dlg.exec();
+}
+
+void MainWindow::showAboutDialog()
+{
+    AboutDialog dlg(this);
+    dlg.exec();
+}
+
+void MainWindow::showHelp()
+{
+    if (!m_helpBrowser)
+        m_helpBrowser = new HelpBrowser(this);
+    m_helpBrowser->showHelp();
+}
+
+void MainWindow::showLicense()
+{
+    if (!m_helpBrowser)
+        m_helpBrowser = new HelpBrowser(this);
+    m_helpBrowser->showLicense();
+}
+
+void MainWindow::showTriggerDialog()
+{
+    if (!m_triggerDialog)
+        m_triggerDialog = new TriggerDialog(m_engine, this);
+
+    m_triggerDialog->show();
+    m_triggerDialog->raise();
+    m_triggerDialog->activateWindow();
 }

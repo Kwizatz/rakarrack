@@ -24,6 +24,13 @@ set(QT6_GUI_SOURCES
     panels/PitchPanels.cpp
     panels/FilterPanels.cpp
     panels/MiscPanels.cpp
+    dialogs/BankDialog.cpp
+    dialogs/OrderDialog.cpp
+    dialogs/SettingsDialog.cpp
+    dialogs/MidiLearnDialog.cpp
+    dialogs/AboutDialog.cpp
+    dialogs/HelpBrowser.cpp
+    dialogs/TriggerDialog.cpp
     widgets/MidiSlider.cpp
     widgets/VUMeter.cpp
     widgets/SpectrumAnalyzer.cpp
@@ -46,6 +53,13 @@ set(QT6_GUI_HEADERS
     panels/PitchPanels.hpp
     panels/FilterPanels.hpp
     panels/MiscPanels.hpp
+    dialogs/BankDialog.hpp
+    dialogs/OrderDialog.hpp
+    dialogs/SettingsDialog.hpp
+    dialogs/MidiLearnDialog.hpp
+    dialogs/AboutDialog.hpp
+    dialogs/HelpBrowser.hpp
+    dialogs/TriggerDialog.hpp
     widgets/MidiSlider.hpp
     widgets/VUMeter.hpp
     widgets/SpectrumAnalyzer.hpp

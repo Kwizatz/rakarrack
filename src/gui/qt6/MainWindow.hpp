@@ -19,6 +19,14 @@ class EffectSlotBar;
 class EffectPanel;
 class QStackedWidget;
 
+// Dialogs
+class BankDialog;
+class OrderDialog;
+class SettingsDialog;
+class MidiLearnDialog;
+class HelpBrowser;
+class TriggerDialog;
+
 /// Number of effect processing slots.
 inline constexpr int kMainEffectSlots = 10;
 
@@ -37,10 +45,21 @@ private Q_SLOTS:
     /// Called when the user selects an effect slot.
     void onSlotSelected(int slotIndex);
 
+    // Dialog launchers
+    void showBankDialog();
+    void showOrderDialog();
+    void showSettingsDialog();
+    void showMidiLearnDialog();
+    void showAboutDialog();
+    void showHelp();
+    void showLicense();
+    void showTriggerDialog();
+
 private:
     void setupUi();
     void setupMenuBar();
     void createEffectPanels();
+    void connectTopBarSignals();
 
     EngineController& m_engine;
     QTimer*           m_guiTimer{nullptr};
@@ -52,4 +71,9 @@ private:
 
     // Effect panels (one per slot)
     std::array<EffectPanel*, kMainEffectSlots> m_effectPanels{};
+
+    // Persistent dialogs (created on first use)
+    BankDialog*      m_bankDialog{nullptr};
+    HelpBrowser*     m_helpBrowser{nullptr};
+    TriggerDialog*   m_triggerDialog{nullptr};
 };
