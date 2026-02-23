@@ -30,10 +30,9 @@ jobs:
         pacboy: >-
           toolchain:p
           cmake:p
-          fltk:p
+          qt6-base:p
           dlfcn:p
           jack2:p
-          xpm-nox:p
           nlohmann-json:p
           fftw:p
           libsamplerate:p
