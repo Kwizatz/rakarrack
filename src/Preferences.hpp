@@ -2,7 +2,7 @@
   rakarrack - a guitar effects software
 
   Preferences.hpp - Toolkit-agnostic preferences storage
-  Replaces Fl_Preferences with nlohmann::json backend.
+  JSON-backed preferences using nlohmann::json.
 
   Copyright (C) 2008-2010 Josep Andreu
   Copyright (C) 2024 Rodrigo Jose Hernandez Cordoba
@@ -30,11 +30,9 @@
 #include <cstring>
 
 /// Toolkit-agnostic user/system preferences store.
-/// Drop-in replacement for Fl_Preferences with matching method signatures.
 /// Data is persisted as JSON under $XDG_CONFIG_HOME/<application>/preferences.json.
 class Preferences {
 public:
-    /// Mirrors Fl_Preferences::Root so call-sites compile unchanged.
     enum Root { SYSTEM = 0, USER = 1 };
 
     Preferences(Root root, const char* vendor, const char* application);

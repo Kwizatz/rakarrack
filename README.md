@@ -21,6 +21,17 @@ Building For Arch or Manjaro
 
 There is a PKGBUILD file at the [AeonGames Arch Repo](https://github.com/AeonGames/ArchRepo/tree/main/rakarrack) which you can download and run makepkg on.
 
+Dependencies
+------------
+
+- Qt6 (Widgets)
+- JACK Audio Connection Kit
+- FFTW3
+- libsamplerate
+- libsndfile
+- nlohmann-json
+- ALSA (optional, for MIDI support)
+
 Building For Windows
 --------------------
 
@@ -28,5 +39,5 @@ Running on Windows is in the experimental stage right now, building for [MSYS2](
 
 This is the partial list of dependencies for building on MSYS:
 
-`pacman -S --needed --noconfirm mingw-w64-x86_64-fltk mingw-w64-x86_64-dlfcn mingw-w64-x86_64-jack2 mingw-w64-x86_64-qjackctl mingw-w64-x86_64-xpm-nox mingw-w64-x86_64-nlohmann-json`
+`pacman -S --needed --noconfirm mingw-w64-x86_64-qt6-base mingw-w64-x86_64-dlfcn mingw-w64-x86_64-jack2 mingw-w64-x86_64-qjackctl mingw-w64-x86_64-nlohmann-json`
 

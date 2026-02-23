@@ -248,7 +248,7 @@ foreach(_i RANGE 0 ${_last} 2)
 endforeach()
 
 # ============================================================================
-# Engine static library — shared by both FLTK and Qt6 GUI targets
+# Engine static library
 # ============================================================================
 
 add_library(rakarrack_engine STATIC
@@ -269,7 +269,6 @@ target_include_directories(rakarrack_engine PUBLIC
 target_link_libraries(rakarrack_engine PUBLIC
 	${ALSA_LIBRARIES}
 	PkgConfig::FFTW
-	PkgConfig::XPM
 	PkgConfig::JACK
 	PkgConfig::SAMPLERATE
 	PkgConfig::SNDFILE
@@ -288,50 +287,7 @@ target_precompile_headers(rakarrack_engine PRIVATE
 )
 
 # ============================================================================
-# FLTK GUI (legacy — built by default)
+# Qt6 GUI
 # ============================================================================
 
-add_custom_command(OUTPUT rakarrack.cxx rakarrack.h
-	COMMAND ${FLTK_FLUID_EXECUTABLE} -c ${CMAKE_CURRENT_SOURCE_DIR}/rakarrack.fl
-	MAIN_DEPENDENCY rakarrack.fl
-	WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-)
-
-set(FLTK_GUI_SOURCES
-	main.cpp
-	XIcon.cpp
-	rakarrack.cxx
-	icono_rakarrack_128x128.xpm
-	icono_rakarrack_32x32.xpm
-)
-
-set(FLTK_GUI_HEADERS
-	XIcon.hpp
-	rakarrack.h
-)
-
-add_executable(rakarrack
-	${FLTK_GUI_SOURCES}
-	${FLTK_GUI_HEADERS}
-)
-
-target_include_directories(rakarrack PRIVATE
-	${FLTK_INCLUDE_DIR}
-)
-
-target_link_libraries(rakarrack PRIVATE
-	rakarrack_engine
-	${FLTK_LIBRARIES}
-)
-
-install(TARGETS rakarrack RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
-
-# ============================================================================
-# Qt6 GUI (opt-in via -DUSE_QT6=ON)
-# ============================================================================
-
-option(USE_QT6 "Build Qt6 GUI alongside FLTK" OFF)
-
-if(USE_QT6)
-	add_subdirectory(gui/qt6)
-endif()
+add_subdirectory(gui/qt6)

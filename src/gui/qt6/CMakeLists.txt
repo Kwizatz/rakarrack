@@ -86,7 +86,6 @@ target_link_libraries(rakarrack-qt6 PRIVATE
     Qt6::Widgets
     ${ALSA_LIBRARIES}
     PkgConfig::FFTW
-    PkgConfig::XPM
     PkgConfig::JACK
     PkgConfig::SAMPLERATE
     PkgConfig::SNDFILE

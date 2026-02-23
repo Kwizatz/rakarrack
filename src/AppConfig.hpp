@@ -3,7 +3,7 @@
 #include <array>
 
 // GUI and application configuration extracted from the RKR class.
-// These are persisted via Fl_Preferences and skin files.
+// These are persisted via Preferences and skin files.
 struct AppConfig {
     // Font & schema
     int font{};

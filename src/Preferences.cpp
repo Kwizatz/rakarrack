@@ -2,7 +2,7 @@
   rakarrack - a guitar effects software
 
   Preferences.cpp - Toolkit-agnostic preferences storage
-  Replaces Fl_Preferences with nlohmann::json backend.
+  JSON-backed preferences using nlohmann::json.
 
   Copyright (C) 2008-2010 Josep Andreu
   Copyright (C) 2024 Rodrigo Jose Hernandez Cordoba

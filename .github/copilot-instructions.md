@@ -6,7 +6,7 @@ Rakarrack is a multi-effects processor emulating a guitar effects pedalboard, de
 
 **Key Technologies:**
 - C++ (file extension: `.cpp` for implementation files, `.hpp` for headers)
-- FLTK (Fast Light Toolkit) for GUI
+- Qt6 (Widgets) for GUI
 - JACK Audio Connection Kit for audio I/O
 - FFTW3 for FFT operations
 - libsamplerate, libsndfile for audio processing
@@ -30,9 +30,9 @@ Building on Windows is experimental and **must be done within an MSYS2 environme
 
 Required MSYS2 packages:
 ```bash
-pacman -S --needed --noconfirm automake autoconf mingw-w64-x86_64-fltk \
+pacman -S --needed --noconfirm mingw-w64-x86_64-qt6-base \
   mingw-w64-x86_64-dlfcn mingw-w64-x86_64-jack2 mingw-w64-x86_64-qjackctl \
-  mingw-w64-x86_64-xpm-nox mingw-w64-x86_64-nlohmann-json
+  mingw-w64-x86_64-nlohmann-json
 ```
 
 Use the MSYS2 MinGW 64-bit shell for all build and compilation steps.
@@ -42,14 +42,15 @@ Use the MSYS2 MinGW 64-bit shell for all build and compilation steps.
 ### Core Components
 
 **Main Application Flow:**
-1. `main.cpp` - Entry point, command-line parsing, initialization
-2. `rakarrack.fl` - FLTK FLUID file defining GUI layout (generates `rakarrack.cxx` and `rakarrack.h`)
+1. `src/gui/qt6/main.cpp` - Entry point, command-line parsing, Qt application initialization
+2. `src/gui/qt6/MainWindow.hpp/cpp` - Main window with effect navigation and stacked panels
 3. `jack.cpp` - JACK audio interface and callback setup
 4. `process.cpp` - Main processing loop, global variables
 
 **Central Classes:**
 - `RKR` (in `global.hpp`) - Main effects processor, owns all effect instances and handles signal routing
-- `RKRGUI` (in `rakarrack.h`) - Main GUI window and user interface management
+- `EngineController` (in `EngineController.hpp`) - Bridges the audio engine and the Qt6 GUI thread
+- `MainWindow` (in `src/gui/qt6/MainWindow.hpp`) - Main GUI window and user interface management
 
 ### Effects Architecture
 
@@ -82,20 +83,23 @@ Input → RKR::Alg() → Effect Chain → Output
 - Signal routing handled by `RKR::Alg()` function
 - Optional upsampling via `Resample` class for certain effects
 
-### FLUID GUI Generation
+### Qt6 GUI Architecture
 
-The GUI is designed using FLTK's FLUID tool:
-- Source: `src/rakarrack.fl`
-- Generated files: `rakarrack.cxx`, `rakarrack.h` (auto-generated during build)
-- **Never edit generated files directly** - modify the `.fl` file instead
-- Custom widgets: `SliderW`, `NewVum`, `Scope`, `Analyzer`, `TunerLed`
+The GUI uses Qt6 Widgets:
+- Entry point: `src/gui/qt6/main.cpp`
+- Main window: `src/gui/qt6/MainWindow.hpp/cpp` with QStackedWidget-based effect panel navigation
+- Effect panels: `src/gui/qt6/panels/` — one file per effect or logical group (22 panel files, 47 effects)
+- Dialogs: `src/gui/qt6/dialogs/` — settings, MIDI learn, bank browser, etc.
+- Custom widgets: `src/gui/qt6/widgets/` — MidiSlider, VUMeter, SpectrumAnalyzer, Oscilloscope, TunerDisplay
+- Engine bridge: `EngineController` (in `src/`) uses a lock-free ring buffer for thread-safe audio↔GUI communication
+- Styling: `src/gui/qt6/RakarrackStyle.hpp/cpp` with QSS stylesheet and QProxyStyle overrides
 
 ## File Naming Conventions
 
 - Implementation files use `.cpp` extension
 - Headers use `.hpp` extension
 - Effect files named after the effect: `Echo.cpp`/`Echo.hpp`, `Reverb.cpp`/`Reverb.hpp`
-- FLUID-generated files retain their original extensions: `rakarrack.cxx`/`rakarrack.h`
+- Qt6 GUI files in `src/gui/qt6/` with subdirectories: `panels/`, `dialogs/`, `widgets/`
 - Supporting modules: `AnalogFilter`, `EffectLFO`, `FilterParams`, `delayline`
 
 ## Important Constants and Macros
