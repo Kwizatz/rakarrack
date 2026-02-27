@@ -273,6 +273,8 @@ target_link_libraries(rakarrack_engine PUBLIC
 	PkgConfig::SAMPLERATE
 	PkgConfig::SNDFILE
 	nlohmann_json::nlohmann_json
+	rakconvert_lib
+	rakverb_lib
 )
 
 target_precompile_headers(rakarrack_engine PRIVATE

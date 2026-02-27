@@ -21,12 +21,15 @@
 */
 
 #include <errno.h>
+#include <filesystem>
 #include <fstream>
 #include <string>
 #include <cstring>
 #include "global.hpp"
 #include "AllEffects.hpp"
 #include "EmbeddedResource.hpp"
+#include "rakconvert_lib.hpp"
+#include "rakverb_lib.hpp"
 
 void RKR::putbuf(char *buf, int j)
 {
@@ -2609,22 +2612,13 @@ RKR::CheckOldBank(char *filename)
 void
 RKR::ConvertOldFile(char * filename)
 {
-
-    char buff[255];
-    memset(buff,0,sizeof(buff));
-    sprintf(buff,"rakconvert -c '%s'",filename);
-    system(buff);
-
+    rakconvert_convert_bank(filename);
 }
 
 void
 RKR::ConvertReverbFile(char * filename)
 {
-    char buff[255];
-    memset(buff,0, sizeof(buff));
-    sprintf(buff,"rakverb -i '%s'",filename);
-    printf("%s\n",buff);
-    system(buff);
+    rakverb_convert(filename);
 }
 
 
@@ -2691,37 +2685,40 @@ RKR::DelIntPreset(int num, char *name)
     fclose(fs);
     fclose(fn);
 
-    sprintf(orden,"mv %s %s\n",tempfile2,tempfile);
-    system(orden);
-
+    std::error_code ec;
+    std::filesystem::rename(tempfile2, tempfile, ec);
 }
 
 void
 RKR::MergeIntPreset(char *filename)
 {
-
-    char orden[1024];
     char tempfile[256];
     char tempfile2[256];
 
-    memset(tempfile,0,sizeof(tempfile));
-    memset(tempfile2,0,sizeof(tempfile2));
-    memset(orden,0,sizeof(orden));
+    memset(tempfile, 0, sizeof(tempfile));
+    memset(tempfile2, 0, sizeof(tempfile2));
 
+    sprintf(tempfile, "%s%s", getenv("HOME"), "/.rkrintpreset");
+    sprintf(tempfile2, "%s%s", getenv("HOME"), "/.rkrtemp");
 
-    sprintf (tempfile, "%s%s", getenv ("HOME"), "/.rkrintpreset");
-    sprintf (tempfile2, "%s%s", getenv ("HOME"), "/.rkrtemp");
+    // Concatenate tempfile and filename into tempfile2
+    {
+        std::ofstream out(tempfile2, std::ios::binary);
+        if (!out.is_open()) return;
 
+        auto append_file = [&out](const char* path) {
+            std::ifstream in(path, std::ios::binary);
+            if (in.is_open())
+                out << in.rdbuf();
+        };
 
-    sprintf(orden,"cat %s %s > %s\n",tempfile,filename,tempfile2);
-    system(orden);
+        append_file(tempfile);
+        append_file(filename);
+    }
 
-    memset(orden,0,sizeof(orden));
-
-    sprintf(orden,"mv %s %s\n",tempfile2,tempfile);
-    system(orden);
-
-
+    // Move tempfile2 to tempfile
+    std::error_code ec;
+    std::filesystem::rename(tempfile2, tempfile, ec);
 }
 
 void

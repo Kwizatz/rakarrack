@@ -12,13 +12,27 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
-add_executable(rakconvert rakconvert.cpp)
-add_executable(rakverb rakverb.cpp)
-add_executable(rakverb2 rakverb2.cpp)
-add_executable(rakgit2new rakgit2new.cpp)
+# --- Static libraries for conversion routines ---
 
-target_link_libraries(rakverb PkgConfig::SNDFILE)
+add_library(rakconvert_lib STATIC rakconvert_lib.cpp rakconvert_lib.hpp)
+target_include_directories(rakconvert_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
+add_library(rakverb_lib STATIC rakverb_lib.cpp rakverb_lib.hpp)
+target_include_directories(rakverb_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(rakverb_lib PUBLIC PkgConfig::SNDFILE)
+
+# --- Standalone command-line tools ---
+
+add_executable(rakconvert rakconvert.cpp)
+target_link_libraries(rakconvert PRIVATE rakconvert_lib)
+
+add_executable(rakverb rakverb.cpp)
+target_link_libraries(rakverb PRIVATE rakverb_lib)
+
+add_executable(rakverb2 rakverb2.cpp)
 target_link_libraries(rakverb2 PkgConfig::SNDFILE)
+
+add_executable(rakgit2new rakgit2new.cpp)
 
 install(TARGETS rakconvert rakverb rakverb2 rakgit2new
 	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
