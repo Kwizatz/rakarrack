@@ -33,18 +33,18 @@ public:
 
     virtual ~ Effect () {
     };
-    virtual void setpreset (int npreset) {
+    virtual void setpreset ([[maybe_unused]] int npreset) {
     };
-    virtual void changepar (int npar, int value) {
+    virtual void changepar ([[maybe_unused]] int npar, [[maybe_unused]] int value) {
     };
-    virtual int getpar (int npar) {
+    virtual int getpar ([[maybe_unused]] int npar) {
         return (0);
     };
-    virtual void out (float * smpsl, float * smpsr) {
+    virtual void out ([[maybe_unused]] float * smpsl, [[maybe_unused]] float * smpsr) {
     };
     virtual void cleanup () {
     };
-    virtual float getfreqresponse (float freq) {
+    virtual float getfreqresponse ([[maybe_unused]] float freq) {
         return (0);
     };				//this is only used for EQ (for user interface)
 

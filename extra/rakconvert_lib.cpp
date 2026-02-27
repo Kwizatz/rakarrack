@@ -269,8 +269,7 @@ int loadbank(const char* filename)
     FILE* fn;
     if ((fn = fopen(filename, "rb")) != nullptr) {
         while (!feof(fn)) {
-            i = fread(&Bank, sizeof(Bank), 1, fn);
-            (void)i;
+            if (fread(&Bank, sizeof(Bank), 1, fn) < 1) break;
         }
         fclose(fn);
         if (BigEndian()) old_fix_endianess();
@@ -282,16 +281,16 @@ int loadbank(const char* filename)
 
         for (j = 0; j < 80; j++) {
             memset(buf, 0, sizeof(buf));
-            if (!fgets(buf, sizeof buf, fn)) break;
+            if (!fgets(buf, sizeof buf, fn)) {break;}
             sscanf(buf, "%d\n", &k);
             if (k) {
                 for (i = 0; i < 128; i++) {
                     memset(buf, 0, sizeof(buf));
-                    if (!fgets(buf, sizeof buf, fn)) break;
+                    if (!fgets(buf, sizeof buf, fn)) {break;}
                     sscanf(buf, "%d\n", &t);
                     if (t) {
                         memset(buf, 0, sizeof(buf));
-                        if (!fgets(buf, sizeof buf, fn)) break;
+                        if (!fgets(buf, sizeof buf, fn)) {break;}
                         sscanf(buf,
                             "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
                             &PML[j].XUserMIDI[i][0], &PML[j].XUserMIDI[i][1],

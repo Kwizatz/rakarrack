@@ -180,7 +180,7 @@ fft_filter::cleanup ()
 }
 
 void
-fft_filter::out (float * smpsl, float * smpr)
+fft_filter::out ([[maybe_unused]] float * smpsl, [[maybe_unused]] float * smpr)
 {
 
 }
@@ -529,13 +529,13 @@ void fft_filter::resample_impulse(int size, float* ir)
 
 }
 
-void fft_filter::load_impulse(int size, char* filename)
+void fft_filter::load_impulse([[maybe_unused]] int size, [[maybe_unused]] char* filename)
 {
 
 
 }
 
-void fft_filter::run_filter(float* smps)
+void fft_filter::run_filter([[maybe_unused]] float* smps)
 {
 
 }

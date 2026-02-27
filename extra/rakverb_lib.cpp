@@ -44,12 +44,12 @@ int rakverb_convert(const char* input_file, const char* output_file)
     float* buf;
     float* index;
     float* data;
-    float sample;
-    float testzero, time, tmp, iSR, lastbuf;
-    float skip = 0.0f;
-    int indexx;
-    float chunk, incr, findex;
-    float compress, quality;
+    float sample{0.0f};
+    float testzero{0.0f}, time{0.0f}, tmp{0.0f}, iSR{0.0f}, lastbuf{0.0f};
+    float skip{0.0f};
+    int indexx{0};
+    float chunk{0.0f}, incr{0.0f}, findex{0.0f};
+    float compress{0.0f}, quality{0.0f};
     int x = 0;
 
     // Open input WAV file

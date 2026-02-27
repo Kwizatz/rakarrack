@@ -194,7 +194,7 @@ CoilCrafter::setq2()
 }
 
 void
-CoilCrafter::sethpf (int value)
+CoilCrafter::sethpf ([[maybe_unused]] int value)
 {
     harm->set_freqh (0,(float)Ptone);
 };

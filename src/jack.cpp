@@ -122,7 +122,7 @@ JACKstart (RKR * rkr_, jack_client_t * jackclient_)
 
 
 int
-jackprocess (jack_nframes_t nframes, void *arg)
+jackprocess (jack_nframes_t nframes, [[maybe_unused]] void *arg)
 {
     jack_position_t pos;
     jack_transport_state_t astate;
@@ -263,7 +263,7 @@ JACKfinish ()
 
 
 void
-jackshutdown (void *arg)
+jackshutdown ([[maybe_unused]] void *arg)
 {
     if (gui == 0)
         printf ("Jack Shut Down, sorry.\n");
@@ -275,7 +275,7 @@ jackshutdown (void *arg)
 
 
 int
-timebase(jack_transport_state_t state, jack_position_t *pos, void *arg)
+timebase(jack_transport_state_t state, jack_position_t *pos, [[maybe_unused]] void *arg)
 {
 
     JackOUT->jt_state=state;

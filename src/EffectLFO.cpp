@@ -143,6 +143,7 @@ float EffectLFO::getlfoshape (float x)
         break;
     case 8:                       //Lorenz Fractal, faster, using X,Y outputs
         iterations = 4;
+        [[fallthrough]];
     case 7:			// Lorenz Fractal
         for(int j=0; j<iterations; j++) {
             x1 = x0 + h * a * (y0 - x0);

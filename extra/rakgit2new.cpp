@@ -195,7 +195,7 @@ loadbank (char *filename)
     {
       while (!feof (fn))
 	{
-	  fread (&Bank, sizeof (Bank), 1, fn);
+	  if (fread (&Bank, sizeof (Bank), 1, fn) < 1) break;
 	}
       fclose (fn);
       return (1);

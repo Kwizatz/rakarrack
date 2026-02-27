@@ -718,7 +718,8 @@ RKR::conectaaconnect ()
     char tempi[128];
     memset (tempi, 0, sizeof (tempi));
     sprintf (tempi, "aconnect %d:%d  %d:%d", jack.Ccin, jack.Pcin, jack.Cyoin, jack.Pyoin);
-    system (tempi);
+    if (system (tempi) != 0)
+        fprintf (stderr, "aconnect failed\n");
     jack.IsCoIn = 1;
 };
 
@@ -729,7 +730,8 @@ RKR::disconectaaconnect ()
     char tempi[128];
     memset (tempi, 0, sizeof (tempi));
     sprintf (tempi, "aconnect -d %d:%d  %d:%d", jack.Ccin, jack.Pcin, jack.Cyoin, jack.Pyoin);
-    system (tempi);
+    if (system (tempi) != 0)
+        fprintf (stderr, "aconnect disconnect failed\n");
     jack.IsCoIn = 0;
 };
 

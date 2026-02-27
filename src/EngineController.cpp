@@ -203,7 +203,7 @@ void EngineController::newPreset()
     m_engine.New();
 }
 
-std::string EngineController::getPresetName(int bankSlot) const
+std::string EngineController::getPresetName([[maybe_unused]] int bankSlot) const
 {
     // Bank names are stored in the preset bank structure
     // For now return empty — will be connected when PresetBank is refactored
