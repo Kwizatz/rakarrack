@@ -715,11 +715,21 @@ RKR::Conecta ()
 void
 RKR::conectaaconnect ()
 {
-    char tempi[128];
-    memset (tempi, 0, sizeof (tempi));
-    sprintf (tempi, "aconnect %d:%d  %d:%d", jack.Ccin, jack.Pcin, jack.Cyoin, jack.Pyoin);
-    if (system (tempi) != 0)
-        fprintf (stderr, "aconnect failed\n");
+    snd_seq_addr_t sender, dest;
+    snd_seq_port_subscribe_t *subs;
+
+    sender.client = static_cast<unsigned char>(jack.Ccin);
+    sender.port   = static_cast<unsigned char>(jack.Pcin);
+    dest.client   = static_cast<unsigned char>(jack.Cyoin);
+    dest.port     = static_cast<unsigned char>(jack.Pyoin);
+
+    snd_seq_port_subscribe_alloca (&subs);
+    snd_seq_port_subscribe_set_sender (subs, &sender);
+    snd_seq_port_subscribe_set_dest (subs, &dest);
+
+    if (snd_seq_subscribe_port (midi_in, subs) < 0)
+        fprintf (stderr, "aconnect %d:%d %d:%d failed\n",
+                 jack.Ccin, jack.Pcin, jack.Cyoin, jack.Pyoin);
     jack.IsCoIn = 1;
 };
 
@@ -727,11 +737,21 @@ RKR::conectaaconnect ()
 void
 RKR::disconectaaconnect ()
 {
-    char tempi[128];
-    memset (tempi, 0, sizeof (tempi));
-    sprintf (tempi, "aconnect -d %d:%d  %d:%d", jack.Ccin, jack.Pcin, jack.Cyoin, jack.Pyoin);
-    if (system (tempi) != 0)
-        fprintf (stderr, "aconnect disconnect failed\n");
+    snd_seq_addr_t sender, dest;
+    snd_seq_port_subscribe_t *subs;
+
+    sender.client = static_cast<unsigned char>(jack.Ccin);
+    sender.port   = static_cast<unsigned char>(jack.Pcin);
+    dest.client   = static_cast<unsigned char>(jack.Cyoin);
+    dest.port     = static_cast<unsigned char>(jack.Pyoin);
+
+    snd_seq_port_subscribe_alloca (&subs);
+    snd_seq_port_subscribe_set_sender (subs, &sender);
+    snd_seq_port_subscribe_set_dest (subs, &dest);
+
+    if (snd_seq_unsubscribe_port (midi_in, subs) < 0)
+        fprintf (stderr, "aconnect -d %d:%d %d:%d failed\n",
+                 jack.Ccin, jack.Pcin, jack.Cyoin, jack.Pyoin);
     jack.IsCoIn = 0;
 };
 
