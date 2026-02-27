@@ -15,6 +15,7 @@
 #include <QCommandLineParser>
 #include <QIcon>
 #include <QMessageBox>
+#include <QStyleFactory>
 
 #include <chrono>
 #include <cstdio>
@@ -39,6 +40,7 @@ int main(int argc, char* argv[])
         Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
 
     QApplication app(argc, argv);
+    app.setStyle(QStyleFactory::create(QStringLiteral("Fusion")));
     app.setApplicationName(QStringLiteral(PACKAGE));
     app.setApplicationVersion(QStringLiteral(VERSION));
 

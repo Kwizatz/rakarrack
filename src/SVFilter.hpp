@@ -45,11 +45,18 @@ public:
 
 private:
     struct fstage {
-        float low, high, band, notch;
-    } st[MAX_FILTER_STAGES + 1];
+        float low{0.0f};
+        float high{0.0f};
+        float band{0.0f};
+        float notch{0.0f};
+    };
+    std::array<fstage, MAX_FILTER_STAGES + 1> st{};
 
-    struct parameters {
-        float f, q, q_sqrt;
+    struct parameters 
+    {
+        float f{0.0f};
+        float q{0.0f};
+        float q_sqrt{0.0f};
     } par, ipar;
 
 

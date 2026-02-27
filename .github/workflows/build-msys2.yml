@@ -27,6 +27,7 @@ jobs:
         install: >-
           git
           make
+          vim
         pacboy: >-
           toolchain:p
           cmake:p

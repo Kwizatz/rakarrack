@@ -54,8 +54,11 @@ private:
         float low, high, band, notch;
     } st[MAX_FILTER_STAGES + 1];
 
-    struct parameters {
-        float f, q, q_sqrt;
+    struct parameters 
+    {
+        float f{0.0f};
+        float q{0.0f};
+        float q_sqrt{0.0f};
     } par, ipar;
 
     void singlefilterout (float * smp, fstage & x, parameters & par);

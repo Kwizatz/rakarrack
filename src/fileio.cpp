@@ -21,6 +21,7 @@
 */
 
 #include <errno.h>
+#include <fstream>
 #include <string>
 #include <cstring>
 #include "global.hpp"
@@ -1051,71 +1052,50 @@ RKR::savefile (char *filename)
 void
 RKR::loadfile (char *filename)
 {
-
-    int i, j;
-    int l[10];
-    FILE *fn;
-    float in_vol, out_vol;
-    float balance=1.0f;
-    char buf[256];
-
-    if ((fn = fopen (filename, "r")) == nullptr)
+    std::ifstream file(filename);
+    if (!file.is_open())
         return;
-
 
     New();
 
-    for (i = 0; i < 14; i++) {
-        memset (buf, 0, sizeof (buf));
-        fgets (buf, sizeof buf, fn);
+    std::string line;
+    int l[10];
 
-    }
+    // Skip first 14 header lines
+    for (int i = 0; i < 14; i++)
+        std::getline(file, line);
 
-    //Order
-    memset (buf, 0, sizeof (buf));
-    fgets (buf, sizeof buf, fn);
-    sscanf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
-            &l[0], &l[1], &l[2], &l[3], &l[4], &l[5], &l[6], &l[7], &l[8],
-            &l[9]);
+    // Order (line 15) — read once to get the effect ordering
+    std::getline(file, line);
+    std::sscanf(line.c_str(), "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",
+                &l[0], &l[1], &l[2], &l[3], &l[4], &l[5], &l[6], &l[7],
+                &l[8], &l[9]);
 
+    // Re-open to read from the beginning with the ordering known
+    file.clear();
+    file.seekg(0);
 
-    fclose (fn);
+    // Version (line 1)
+    std::getline(file, line);
 
+    // Author (line 2)
+    std::fill(presets.Author.begin(), presets.Author.end(), '\0');
+    std::getline(file, line);
+    for (int i = 0; i < 64 && i < static_cast<int>(line.size()); i++)
+        if (line[i] > 20)
+            presets.Author[i] = line[i];
 
-    if ((fn = fopen (filename, "r")) == nullptr) {
-        return;
-    }
-    //Version
-    memset (buf, 0, sizeof (buf));
-    fgets (buf, sizeof buf, fn);
+    // Preset Name (line 3)
+    std::fill(presets.Preset_Name.begin(), presets.Preset_Name.end(), '\0');
+    std::getline(file, line);
+    for (int i = 0; i < 64 && i < static_cast<int>(line.size()); i++)
+        if (line[i] > 20)
+            presets.Preset_Name[i] = line[i];
 
-
-    //presets.Author
-
-    memset (presets.Author.data(), 0, presets.Author.size());
-    memset (buf, 0, sizeof (buf));
-    fgets (buf, sizeof buf, fn);
-
-    for (i = 0; i < 64; i++)
-        if (buf[i] > 20)
-            presets.Author[i] = buf[i];
-
-
-    // Preset Name
-
-    memset (presets.Preset_Name.data(), 0, presets.Preset_Name.size());
-    memset(buf, 0, sizeof (buf));
-    fgets (buf, sizeof buf, fn);
-
-    for (i = 0; i < 64; i++)
-        if (buf[i] > 20)
-            presets.Preset_Name[i] = buf[i];
-
-    //General
-
-    memset (buf, 0, sizeof (buf));
-    fgets (buf, sizeof buf, fn);
-    sscanf (buf, "%f,%f,%f,%d\n", &in_vol, &out_vol, &balance, &Bypass_B);
+    // General (line 4)
+    float in_vol{}, out_vol{}, balance{1.0f};
+    std::getline(file, line);
+    std::sscanf(line.c_str(), "%f,%f,%f,%d", &in_vol, &out_vol, &balance, &Bypass_B);
 
     if ((actuvol == 0) || (needtoloadstate)) {
         Fraction_Bypass = balance;
@@ -1123,44 +1103,36 @@ RKR::loadfile (char *filename)
         Master_Volume = out_vol;
     }
 
-
-    for (i = 0; i < 10; i++) {
-        j = l[i];
-
-        memset (buf, 0, sizeof (buf));
-        fgets (buf, sizeof buf, fn);
-        putbuf(buf,j);
-
-
-
+    // Effect slot data (10 lines)
+    for (int i = 0; i < 10; i++) {
+        std::getline(file, line);
+        // putbuf expects a mutable char buffer
+        char buf[256]{};
+        std::strncpy(buf, line.c_str(), sizeof(buf) - 1);
+        putbuf(buf, l[i]);
     }
 
-    //Order
-    memset (buf, 0, sizeof (buf));
-    fgets (buf, sizeof buf, fn);
-    sscanf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
-            &lv[10][0], &lv[10][1], &lv[10][2], &lv[10][3], &lv[10][4],
-            &lv[10][5], &lv[10][6], &lv[10][7], &lv[10][8], &lv[10][9]);
+    // Order (again)
+    std::getline(file, line);
+    std::sscanf(line.c_str(), "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",
+                &lv[10][0], &lv[10][1], &lv[10][2], &lv[10][3], &lv[10][4],
+                &lv[10][5], &lv[10][6], &lv[10][7], &lv[10][8], &lv[10][9]);
 
-
-
-    for(i=0; i<128; i++) {
-        memset(buf,0, sizeof(buf));
-        fgets (buf, sizeof buf, fn);
-
-        sscanf(buf,"%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
-               &XUserMIDI[i][0], &XUserMIDI[i][1], &XUserMIDI[i][2], &XUserMIDI[i][3], &XUserMIDI[i][4],
-               &XUserMIDI[i][5], &XUserMIDI[i][6], &XUserMIDI[i][7], &XUserMIDI[i][8], &XUserMIDI[i][9],
-               &XUserMIDI[i][10], &XUserMIDI[i][10], &XUserMIDI[i][12], &XUserMIDI[i][13], &XUserMIDI[i][14],
-               &XUserMIDI[i][15], &XUserMIDI[i][16], &XUserMIDI[i][17], &XUserMIDI[i][18], &XUserMIDI[i][19]);
-
+    // User MIDI table (128 lines)
+    for (int i = 0; i < 128; i++) {
+        std::getline(file, line);
+        std::sscanf(line.c_str(),
+                    "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",
+                    &XUserMIDI[i][0], &XUserMIDI[i][1], &XUserMIDI[i][2],
+                    &XUserMIDI[i][3], &XUserMIDI[i][4], &XUserMIDI[i][5],
+                    &XUserMIDI[i][6], &XUserMIDI[i][7], &XUserMIDI[i][8],
+                    &XUserMIDI[i][9], &XUserMIDI[i][10], &XUserMIDI[i][10],
+                    &XUserMIDI[i][12], &XUserMIDI[i][13], &XUserMIDI[i][14],
+                    &XUserMIDI[i][15], &XUserMIDI[i][16], &XUserMIDI[i][17],
+                    &XUserMIDI[i][18], &XUserMIDI[i][19]);
     }
 
-
-
-    fclose (fn);
-    Actualizar_Audio ();
-
+    Actualizar_Audio();
 }
 
 
@@ -1676,8 +1648,8 @@ RKR::loadnames()
             if ((fn = fopen (temp, "rb")) != nullptr) {
                 New_Bank();
                 while (!feof (fn)) {
-                    fread (&presets.Bank, sizeof(presets.Bank), 1, fn);
-                    for(j=1; j<=60; j++) strcpy(presets.B_Names[k][j].Preset_Name.data(),presets.Bank[j].Preset_Name.data());
+                    if (fread (&presets.Bank, sizeof(presets.Bank), 1, fn) == 0) {break;}
+                    for(j=1; j<=60; j++) {strcpy(presets.B_Names[k][j].Preset_Name.data(),presets.Bank[j].Preset_Name.data());}
                 }
                 fclose (fn);
             }
@@ -1723,11 +1695,10 @@ RKR::loadbank (char *filename)
 
     }
 
-
     if ((fn = fopen (filename, "rb")) != nullptr) {
         New_Bank();
         while (!feof (fn)) {
-            fread (&presets.Bank, sizeof(presets.Bank), 1, fn);
+            if(fread (&presets.Bank, sizeof(presets.Bank), 1, fn) == 0) {break;}
         }
         fclose (fn);
         if(BigEndian()) fix_endianess();
@@ -2568,38 +2539,36 @@ RKR::saveskin (char *filename)
 void
 RKR::loadskin (char *filename)
 {
-    unsigned int i;
-    char buf[256];
-    FILE *fn;
-
-    if ((fn = fopen (filename, "r")) == nullptr)
+    std::ifstream file(filename);
+    if (!file.is_open())
         return;
 
-    memset (buf, 0, sizeof (buf));
-    fgets (buf, sizeof buf, fn);
-    sscanf (buf, "%d,%d\n", &config.resolution, &sh);
+    std::string line;
 
-    memset (buf, 0, sizeof (buf));
-    fgets (buf, sizeof buf, fn);
-    sscanf (buf, "%d,%d,%d,%d\n", &config.sback_color,&config.sfore_color,&config.slabel_color,&config.sleds_color);
+    // Resolution
+    std::getline(file, line);
+    std::sscanf(line.c_str(), "%d,%d", &config.resolution, &sh);
 
-    memset (config.BackgroundImage.data(), 0, config.BackgroundImage.size());
-    memset (buf, 0, sizeof (buf));
-    fgets (buf, sizeof buf, fn);
+    // Colors
+    std::getline(file, line);
+    std::sscanf(line.c_str(), "%d,%d,%d,%d",
+                &config.sback_color, &config.sfore_color,
+                &config.slabel_color, &config.sleds_color);
 
-    for(i=0; i<256; i++) if(buf[i]>20) config.BackgroundImage[i]=buf[i];
+    // Background image path
+    std::fill(config.BackgroundImage.begin(), config.BackgroundImage.end(), '\0');
+    std::getline(file, line);
+    for (unsigned int i = 0; i < 256 && i < line.size(); i++)
+        if (line[i] > 20)
+            config.BackgroundImage[i] = line[i];
 
-    memset (buf, 0, sizeof (buf));
-    fgets (buf, sizeof buf, fn);
-    sscanf (buf, "%d,%d\n", &config.relfontsize,&config.font);
+    // Font
+    std::getline(file, line);
+    std::sscanf(line.c_str(), "%d,%d", &config.relfontsize, &config.font);
 
-    memset (buf, 0, sizeof (buf));
-    fgets (buf, sizeof buf, fn);
-    sscanf (buf, "%d\n", &config.sschema);
-
-
-    fclose(fn);
-
+    // Schema
+    std::getline(file, line);
+    std::sscanf(line.c_str(), "%d", &config.sschema);
 }
 
 void
@@ -2625,7 +2594,6 @@ RKR::CheckOldBank(char *filename)
     FILE *fs;
 
     if ((fs = fopen (filename, "r")) != nullptr) {
-        ftell(fs);
         fseek(fs, 0L, SEEK_END);
         Length = ftell(fs);
         fclose(fs);
@@ -2783,19 +2751,15 @@ RKR::savemiditable(char *filename)
 void
 RKR::loadmiditable (char *filename)
 {
-    int i;
-    char buf[256];
-    FILE *fn;
-
-    if ((fn = fopen (filename, "r")) == nullptr)
+    std::ifstream file(filename);
+    if (!file.is_open())
         return;
 
-    for(i=0; i<128; i++) {
-        memset (buf, 0, sizeof (buf));
-        fgets (buf, sizeof buf, fn);
-        sscanf (buf, "%d,%d\n", &presets.M_table[i].bank, &presets.M_table[i].preset);
+    std::string line;
+    for (int i = 0; i < 128; i++) {
+        std::getline(file, line);
+        std::sscanf(line.c_str(), "%d,%d",
+                    &presets.M_table[i].bank, &presets.M_table[i].preset);
     }
-    fclose(fn);
-
 }
 
