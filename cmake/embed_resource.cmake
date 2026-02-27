@@ -18,20 +18,19 @@ if(NOT XXD_EXECUTABLE)
 endif()
 
 function(embed_resource)
-  cmake_parse_arguments(ER "" "INPUT;CPP;HPP;NAME" "" ${ARGN})
+  cmake_parse_arguments(ER "" "WORKDIR;INPUT;CPP;HPP;NAME" "" ${ARGN})
 
   if(NOT ER_INPUT OR NOT ER_CPP OR NOT ER_HPP OR NOT ER_NAME)
-    message(FATAL_ERROR "embed_resource requires INPUT, CPP, HPP, and NAME arguments")
+    message(FATAL_ERROR "embed_resource requires WORKDIR, INPUT, CPP, HPP, and NAME arguments")
   endif()
 
   set(GUARD "EMBEDDED_${ER_NAME}_HPP")
   string(TOUPPER "${GUARD}" GUARD)
-
   # Generate the .hpp and .cpp with a single cmake -P script invocation.
   # The script runs xxd -i on the input file and wraps the output.
   add_custom_command(
     OUTPUT "${ER_CPP}" "${ER_HPP}"
-    COMMAND ${XXD_EXECUTABLE} -i -n "${ER_NAME}" "${ER_INPUT}" "${ER_CPP}"
+    COMMAND ${XXD_EXECUTABLE} -i "${ER_INPUT}" "${ER_CPP}"
     COMMAND ${CMAKE_COMMAND} -E echo "//// Auto-generated — do not edit." > "${ER_HPP}"
     COMMAND ${CMAKE_COMMAND} -E echo "#ifndef ${GUARD}" >> "${ER_HPP}"
     COMMAND ${CMAKE_COMMAND} -E echo "#define ${GUARD}" >> "${ER_HPP}"
@@ -43,7 +42,8 @@ function(embed_resource)
     COMMAND ${CMAKE_COMMAND} -E echo "extern unsigned int ${ER_NAME}_len;" >> "${ER_HPP}"
     COMMAND ${CMAKE_COMMAND} -E echo "" >> "${ER_HPP}"
     COMMAND ${CMAKE_COMMAND} -E echo "#endif // ${GUARD}" >> "${ER_HPP}"
-    DEPENDS "${ER_INPUT}"
+    WORKING_DIRECTORY "${ER_WORKDIR}"
+    DEPENDS "${ER_WORKDIR}/${ER_INPUT}"
     COMMENT "Embedding resource ${ER_NAME} from ${ER_INPUT}"
     VERBATIM
   )

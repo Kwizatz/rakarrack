@@ -23,9 +23,12 @@
 
 #include <chrono>
 #include <thread>
+#include "config.hpp"
 #include <jack/jack.h>
 #include <jack/midiport.h>
+#ifdef HAVE_JACK_TRANSPORT
 #include <jack/transport.h>
+#endif
 #include "jack.hpp"
 #include "global.hpp"
 #include "AllEffects.hpp"
@@ -50,7 +53,9 @@ JACKstart (RKR * rkr_, jack_client_t * jackclient_)
     JackOUT = rkr_;
     jackclient = jackclient_;
 
+#ifdef HAVE_JACK_TRANSPORT
     jack_set_sync_callback(jackclient, timebase, nullptr);
+#endif
     jack_set_process_callback (jackclient, jackprocess, 0);
 
     jack_on_shutdown (jackclient, jackshutdown, 0);
@@ -124,8 +129,10 @@ JACKstart (RKR * rkr_, jack_client_t * jackclient_)
 int
 jackprocess (jack_nframes_t nframes, [[maybe_unused]] void *arg)
 {
+#ifdef HAVE_JACK_TRANSPORT
     jack_position_t pos;
     jack_transport_state_t astate;
+#endif
 
     jack_default_audio_sample_t *outl = (jack_default_audio_sample_t *)
                                         jack_port_get_buffer (outport_left, nframes);
@@ -145,6 +152,7 @@ jackprocess (jack_nframes_t nframes, [[maybe_unused]] void *arg)
     JackOUT->cpuload = jack_cpu_load(jackclient);
 
 
+#ifdef HAVE_JACK_TRANSPORT
     if((JackOUT->Tap_Bypass) && (JackOUT->Tap_Selection == 2)) {
         astate = jack_transport_query(jackclient, &pos);
         if(astate >0) {
@@ -167,6 +175,7 @@ jackprocess (jack_nframes_t nframes, [[maybe_unused]] void *arg)
 
         }
     }
+#endif
 
 
 
@@ -274,6 +283,7 @@ jackshutdown ([[maybe_unused]] void *arg)
 
 
 
+#ifdef HAVE_JACK_TRANSPORT
 int
 timebase(jack_transport_state_t state, jack_position_t *pos, [[maybe_unused]] void *arg)
 {
@@ -297,6 +307,7 @@ timebase(jack_transport_state_t state, jack_position_t *pos, [[maybe_unused]] vo
     return(1);
 
 }
+#endif
 
 void
 actualiza_tap(double val)

@@ -27,7 +27,9 @@
 
 int JACKstart (RKR * rkr_, jack_client_t * jackclient);
 void JACKfinish ();
+#ifdef HAVE_JACK_TRANSPORT
 int timebase(jack_transport_state_t state, jack_position_t *pos, void *arg);
+#endif
 void actualiza_tap(double val);
 void jackshutdown (void *arg);
 

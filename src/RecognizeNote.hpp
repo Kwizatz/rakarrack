@@ -14,6 +14,7 @@
 #define RECOGNIZE_H_
 
 #include <cmath>
+#include <vector>
 #include "dsp_constants.hpp"
 #include "AnalogFilter.hpp"
 #include "Sustainer.hpp"
@@ -53,6 +54,8 @@ private:
     std::unique_ptr<AnalogFilter> lpfl, lpfr, hpfl, hpfr;
 
     std::unique_ptr<Sustainer> Sus;
+
+    std::vector<signed short int> buf{};
 
 };
 

@@ -1,0 +1,53 @@
+name: Build on Windows
+
+on: [push, pull_request]
+
+env:
+  VCPKG_EXE: C:\vcpkg\vcpkg.exe
+  FEED_URL: https://nuget.pkg.github.com/Kwizatz/index.json
+  VCPKG_BINARY_SOURCES: "clear;nuget,https://nuget.pkg.github.com/Kwizatz/index.json,readwrite;nugettimeout,900"
+  VCPKG_FEATURE_FLAGS: "binarycaching,manifests,versions"
+
+jobs:
+  build:
+    runs-on: windows-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Install xxd
+      shell: pwsh
+      run: choco install xxd -y
+
+    - name: Update VCPKG
+      shell: pwsh
+      run: |
+        cd C:\vcpkg
+        git pull
+        .\bootstrap-vcpkg.bat
+
+    - name: Add NuGet sources
+      shell: pwsh
+      run: |
+        .$(${{ env.VCPKG_EXE }} fetch nuget) `
+          sources add `
+          -Source "${{ env.FEED_URL }}" `
+          -StorePasswordInClearText `
+          -Name GitHubPackages `
+          -UserName "Kwizatz" `
+          -Password "${{ secrets.PAT }}"
+        .$(${{ env.VCPKG_EXE }} fetch nuget) `
+          setapikey "${{ secrets.PAT }}" `
+          -Source "${{ env.FEED_URL }}"
+
+    - name: Configure CMake
+      shell: pwsh
+      run: |
+        cmake -DCMAKE_TOOLCHAIN_FILE="C:\vcpkg\scripts\buildsystems\vcpkg.cmake" -B ${{github.workspace}}/build
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build

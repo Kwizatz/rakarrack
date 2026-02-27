@@ -184,47 +184,47 @@ include(embed_resource)
 set(RAKARRACK_DATA_DIR ${CMAKE_SOURCE_DIR}/data)
 
 set(RESOURCE_LIST
-	1.wav   res_1_wav
-	2.wav   res_2_wav
-	3.wav   res_3_wav
-	4.wav   res_4_wav
-	5.wav   res_5_wav
-	6.wav   res_6_wav
-	7.wav   res_7_wav
-	8.wav   res_8_wav
-	9.wav   res_9_wav
-	1.rvb   res_1_rvb
-	2.rvb   res_2_rvb
-	3.rvb   res_3_rvb
-	4.rvb   res_4_rvb
-	5.rvb   res_5_rvb
-	6.rvb   res_6_rvb
-	7.rvb   res_7_rvb
-	8.rvb   res_8_rvb
-	9.rvb   res_9_rvb
-	10.rvb  res_10_rvb
-	1.dly   res_1_dly
-	2.dly   res_2_dly
-	3.dly   res_3_dly
-	4.dly   res_4_dly
-	5.dly   res_5_dly
-	6.dly   res_6_dly
-	7.dly   res_7_dly
-	8.dly   res_8_dly
-	9.dly   res_9_dly
-	10.dly  res_10_dly
-	11.dly  res_11_dly
-	Default.rkrb  res_Default_rkrb
-	Extra.rkrb    res_Extra_rkrb
-	Extra1.rkrb   res_Extra1_rkrb
-	bg.png        res_bg_png
-	bg1.png       res_bg1_png
-	bg2.png       res_bg2_png
-	bg3.png       res_bg3_png
-	bg4.png       res_bg4_png
-	bg5.png       res_bg5_png
-	bg6.png       res_bg6_png
-	bg_gray_furr.png  res_bg_gray_furr_png
+	1.wav   1_wav
+	2.wav   2_wav
+	3.wav   3_wav
+	4.wav   4_wav
+	5.wav   5_wav
+	6.wav   6_wav
+	7.wav   7_wav
+	8.wav   8_wav
+	9.wav   9_wav
+	1.rvb   1_rvb
+	2.rvb   2_rvb
+	3.rvb   3_rvb
+	4.rvb   4_rvb
+	5.rvb   5_rvb
+	6.rvb   6_rvb
+	7.rvb   7_rvb
+	8.rvb   8_rvb
+	9.rvb   9_rvb
+	10.rvb  10_rvb
+	1.dly   1_dly
+	2.dly   2_dly
+	3.dly   3_dly
+	4.dly   4_dly
+	5.dly   5_dly
+	6.dly   6_dly
+	7.dly   7_dly
+	8.dly   8_dly
+	9.dly   9_dly
+	10.dly  10_dly
+	11.dly  11_dly
+	Default.rkrb  Default_rkrb
+	Extra.rkrb    Extra_rkrb
+	Extra1.rkrb   Extra1_rkrb
+	bg.png        bg_png
+	bg1.png       bg1_png
+	bg2.png       bg2_png
+	bg3.png       bg3_png
+	bg4.png       bg4_png
+	bg5.png       bg5_png
+	bg6.png       bg6_png
+	bg_gray_furr.png  bg_gray_furr_png
 )
 
 set(RESOURCE_GENERATED_SOURCES "")
@@ -238,7 +238,8 @@ foreach(_i RANGE 0 ${_last} 2)
 	set(_cpp "${CMAKE_CURRENT_BINARY_DIR}/${_varname}.cpp")
 	set(_hpp "${CMAKE_CURRENT_BINARY_DIR}/${_varname}.hpp")
 	embed_resource(
-		INPUT "${RAKARRACK_DATA_DIR}/${_filename}"
+		WORKDIR "${RAKARRACK_DATA_DIR}"
+		INPUT "${_filename}"
 		CPP   "${_cpp}"
 		HPP   "${_hpp}"
 		NAME  "${_varname}"

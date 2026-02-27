@@ -21,7 +21,9 @@ add_library(rakverb_lib STATIC rakverb_lib.cpp rakverb_lib.hpp)
 target_include_directories(rakverb_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(rakverb_lib PUBLIC PkgConfig::SNDFILE)
 
-# --- Standalone command-line tools ---
+# --- Standalone command-line tools (POSIX only, require getopt.h) ---
+
+if(NOT MSVC)
 
 add_executable(rakconvert rakconvert.cpp)
 target_link_libraries(rakconvert PRIVATE rakconvert_lib)
@@ -34,6 +36,7 @@ target_link_libraries(rakverb2 PkgConfig::SNDFILE)
 
 add_executable(rakgit2new rakgit2new.cpp)
 
-install(TARGETS rakconvert rakverb rakverb2 rakgit2new
+  install(TARGETS rakconvert rakverb rakverb2 rakgit2new
 	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
+  )
+endif()

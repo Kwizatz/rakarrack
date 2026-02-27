@@ -326,7 +326,7 @@ Vocoder::setbands (int numbands, float startfreq, float endfreq)
     float start = startfreq;   //useful variables
     float endband = endfreq;
     float fnumbands = (float) numbands;
-    float output[VOC_BANDS + 1]{};
+    output.resize(VOC_BANDS + 1);
     int k;
 
     //calculate intermediate values
@@ -342,7 +342,6 @@ Vocoder::setbands (int numbands, float startfreq, float endfreq)
         filterbank[k].aux->setfreq_and_q (filterbank[k].sfreq, filterbank[k].sq);
     }
     cleanup();
-
 }
 
 /*

@@ -27,11 +27,9 @@
 #include "dsp_constants.hpp"
 #include "PresetBank.hpp"
 #include "AppConfig.hpp"
+#include "compat_time.hpp"
 
 #include <signal.h>
-#include <dirent.h>
-#include <search.h>
-#include <sys/time.h>
 #include <jack/jack.h>
 #include <jack/midiport.h>
 #ifdef ENABLE_MIDI
@@ -519,7 +517,7 @@ public:
     double u_down;
     double u_up;
 
-    timeval timeA;
+    compat_timeval timeA;
 
     float booster;
     float cpuload;

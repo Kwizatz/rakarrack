@@ -85,8 +85,8 @@ inline constexpr int REV_APS = 4;
 inline constexpr int MAX_SFILTER_STAGES = 12;
 
 // Utility functions
-inline constexpr float RND() { return static_cast<float>(rand()) / (RAND_MAX + 1.0f); }
-inline constexpr float RND1() { return static_cast<float>(rand()) / (static_cast<float>(RAND_MAX) + 1.0f); }
+inline float RND() { return static_cast<float>(rand()) / (RAND_MAX + 1.0f); }
+inline float RND1() { return static_cast<float>(rand()) / (static_cast<float>(RAND_MAX) + 1.0f); }
 inline void F2I(float f, int &i) { i = (f > 0) ? static_cast<int>(f) : static_cast<int>(f - 1.0f); }
 inline float dB2rap(float dB) { return expf(dB * LOG_10 / 20.0f); }
 inline float rap2dB(float rap) { return 20.0f * logf(rap) / LOG_10; }

@@ -41,9 +41,8 @@ private:
     void schmittInit (int size);
     void schmittS16LE (int nframes, signed short int *indata);
     void schmittFree ();
-
     int blockSize;
-
+    std::vector<signed short int> buf;
 };
 
 #endif /*TUNER_H_ */

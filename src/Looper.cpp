@@ -131,8 +131,11 @@ Looper::out (float * smpsl, float * smpsr)
 {
     int i;
     float rswell, lswell;
-    float ticktock[PERIOD];
-    if((Pmetro) && (Pplay) && (!Pstop)) ticker.metronomeout(ticktock);
+    ticktock.resize(PERIOD);
+    if ((Pmetro) && (Pplay) && (!Pstop))
+    {
+        ticker.metronomeout(ticktock.data());
+    }
 
     for (i = 0; i < PERIOD; i++) {
 
@@ -159,8 +162,6 @@ Looper::out (float * smpsl, float * smpsr)
                 rvkl2 = dl2 - 1 - kl2;
                 if((Plink) || (PT1)) timeposition(kl);
                 else timeposition(kl2);
-
-
             }
 
             if(Preverse) {
@@ -194,13 +195,11 @@ Looper::out (float * smpsl, float * smpsr)
         }
 
         if((Pmetro) && (Pplay) && (!Pstop)) {
-            efxoutl[i] += ticktock[i]*mvol;  //if you want to hear the metronome in Looper
-            efxoutr[i] += ticktock[i]*mvol;
+            efxoutl[i] += ticktock[i] * mvol;  //if you want to hear the metronome in Looper
+            efxoutr[i] += ticktock[i] * mvol;
         }
-    };
-
-
-};
+    }
+}
 
 
 /*

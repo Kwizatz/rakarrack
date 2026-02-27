@@ -27,7 +27,6 @@
 #include <cstdlib>
 #include <fcntl.h>
 #include <sys/types.h>
-#include <unistd.h>
 #include "Preferences.hpp"
 #include "global.hpp"
 #include "AllEffects.hpp"
@@ -885,11 +884,11 @@ RKR::init_rkr ()
         base = base ? base + 1 : bfn;
 
         if (strcmp(base, "Default.rkrb") == 0) {
-            loadbank_from_memory(res_Default_rkrb, res_Default_rkrb_len);
+            loadbank_from_memory(Default_rkrb, Default_rkrb_len);
         } else if (strcmp(base, "Extra.rkrb") == 0) {
-            loadbank_from_memory(res_Extra_rkrb, res_Extra_rkrb_len);
+            loadbank_from_memory(Extra_rkrb, Extra_rkrb_len);
         } else if (strcmp(base, "Extra1.rkrb") == 0) {
-            loadbank_from_memory(res_Extra1_rkrb, res_Extra1_rkrb_len);
+            loadbank_from_memory(Extra1_rkrb, Extra1_rkrb_len);
         } else {
             loadbank(presets.BankFilename.data());
         }

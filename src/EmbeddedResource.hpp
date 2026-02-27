@@ -30,55 +30,55 @@ struct MemStream {
 };
 
 // Declarations for all embedded WAV resources (Convolotron)
-extern unsigned char res_1_wav[];  extern unsigned int res_1_wav_len;
-extern unsigned char res_2_wav[];  extern unsigned int res_2_wav_len;
-extern unsigned char res_3_wav[];  extern unsigned int res_3_wav_len;
-extern unsigned char res_4_wav[];  extern unsigned int res_4_wav_len;
-extern unsigned char res_5_wav[];  extern unsigned int res_5_wav_len;
-extern unsigned char res_6_wav[];  extern unsigned int res_6_wav_len;
-extern unsigned char res_7_wav[];  extern unsigned int res_7_wav_len;
-extern unsigned char res_8_wav[];  extern unsigned int res_8_wav_len;
-extern unsigned char res_9_wav[];  extern unsigned int res_9_wav_len;
+extern unsigned char __1_wav[];  extern unsigned int __1_wav_len;
+extern unsigned char __2_wav[];  extern unsigned int __2_wav_len;
+extern unsigned char __3_wav[];  extern unsigned int __3_wav_len;
+extern unsigned char __4_wav[];  extern unsigned int __4_wav_len;
+extern unsigned char __5_wav[];  extern unsigned int __5_wav_len;
+extern unsigned char __6_wav[];  extern unsigned int __6_wav_len;
+extern unsigned char __7_wav[];  extern unsigned int __7_wav_len;
+extern unsigned char __8_wav[];  extern unsigned int __8_wav_len;
+extern unsigned char __9_wav[];  extern unsigned int __9_wav_len;
 
 // Declarations for all embedded RVB resources (Reverbtron)
-extern unsigned char res_1_rvb[];  extern unsigned int res_1_rvb_len;
-extern unsigned char res_2_rvb[];  extern unsigned int res_2_rvb_len;
-extern unsigned char res_3_rvb[];  extern unsigned int res_3_rvb_len;
-extern unsigned char res_4_rvb[];  extern unsigned int res_4_rvb_len;
-extern unsigned char res_5_rvb[];  extern unsigned int res_5_rvb_len;
-extern unsigned char res_6_rvb[];  extern unsigned int res_6_rvb_len;
-extern unsigned char res_7_rvb[];  extern unsigned int res_7_rvb_len;
-extern unsigned char res_8_rvb[];  extern unsigned int res_8_rvb_len;
-extern unsigned char res_9_rvb[];  extern unsigned int res_9_rvb_len;
-extern unsigned char res_10_rvb[]; extern unsigned int res_10_rvb_len;
+extern unsigned char __1_rvb[];  extern unsigned int __1_rvb_len;
+extern unsigned char __2_rvb[];  extern unsigned int __2_rvb_len;
+extern unsigned char __3_rvb[];  extern unsigned int __3_rvb_len;
+extern unsigned char __4_rvb[];  extern unsigned int __4_rvb_len;
+extern unsigned char __5_rvb[];  extern unsigned int __5_rvb_len;
+extern unsigned char __6_rvb[];  extern unsigned int __6_rvb_len;
+extern unsigned char __7_rvb[];  extern unsigned int __7_rvb_len;
+extern unsigned char __8_rvb[];  extern unsigned int __8_rvb_len;
+extern unsigned char __9_rvb[];  extern unsigned int __9_rvb_len;
+extern unsigned char __10_rvb[]; extern unsigned int __10_rvb_len;
 
 // Declarations for all embedded DLY resources (Echotron)
-extern unsigned char res_1_dly[];  extern unsigned int res_1_dly_len;
-extern unsigned char res_2_dly[];  extern unsigned int res_2_dly_len;
-extern unsigned char res_3_dly[];  extern unsigned int res_3_dly_len;
-extern unsigned char res_4_dly[];  extern unsigned int res_4_dly_len;
-extern unsigned char res_5_dly[];  extern unsigned int res_5_dly_len;
-extern unsigned char res_6_dly[];  extern unsigned int res_6_dly_len;
-extern unsigned char res_7_dly[];  extern unsigned int res_7_dly_len;
-extern unsigned char res_8_dly[];  extern unsigned int res_8_dly_len;
-extern unsigned char res_9_dly[];  extern unsigned int res_9_dly_len;
-extern unsigned char res_10_dly[]; extern unsigned int res_10_dly_len;
-extern unsigned char res_11_dly[]; extern unsigned int res_11_dly_len;
+extern unsigned char __1_dly[];  extern unsigned int __1_dly_len;
+extern unsigned char __2_dly[];  extern unsigned int __2_dly_len;
+extern unsigned char __3_dly[];  extern unsigned int __3_dly_len;
+extern unsigned char __4_dly[];  extern unsigned int __4_dly_len;
+extern unsigned char __5_dly[];  extern unsigned int __5_dly_len;
+extern unsigned char __6_dly[];  extern unsigned int __6_dly_len;
+extern unsigned char __7_dly[];  extern unsigned int __7_dly_len;
+extern unsigned char __8_dly[];  extern unsigned int __8_dly_len;
+extern unsigned char __9_dly[];  extern unsigned int __9_dly_len;
+extern unsigned char __10_dly[]; extern unsigned int __10_dly_len;
+extern unsigned char __11_dly[]; extern unsigned int __11_dly_len;
 
 // Declarations for embedded bank resources (fileio)
-extern unsigned char res_Default_rkrb[]; extern unsigned int res_Default_rkrb_len;
-extern unsigned char res_Extra_rkrb[];   extern unsigned int res_Extra_rkrb_len;
-extern unsigned char res_Extra1_rkrb[];  extern unsigned int res_Extra1_rkrb_len;
+extern unsigned char Default_rkrb[]; extern unsigned int Default_rkrb_len;
+extern unsigned char Extra_rkrb[];   extern unsigned int Extra_rkrb_len;
+extern unsigned char Extra1_rkrb[];  extern unsigned int Extra1_rkrb_len;
 
 // Declarations for embedded PNG resources (GUI backgrounds)
-extern unsigned char res_bg_png[];            extern unsigned int res_bg_png_len;
-extern unsigned char res_bg1_png[];           extern unsigned int res_bg1_png_len;
-extern unsigned char res_bg2_png[];           extern unsigned int res_bg2_png_len;
-extern unsigned char res_bg3_png[];           extern unsigned int res_bg3_png_len;
-extern unsigned char res_bg4_png[];           extern unsigned int res_bg4_png_len;
-extern unsigned char res_bg5_png[];           extern unsigned int res_bg5_png_len;
-extern unsigned char res_bg6_png[];           extern unsigned int res_bg6_png_len;
-extern unsigned char res_bg_gray_furr_png[];  extern unsigned int res_bg_gray_furr_png_len;
+extern unsigned char bg_png[];            extern unsigned int bg_png_len;
+extern unsigned char bg1_png[];           extern unsigned int bg1_png_len;
+extern unsigned char bg2_png[];           extern unsigned int bg2_png_len;
+extern unsigned char bg3_png[];           extern unsigned int bg3_png_len;
+extern unsigned char bg4_png[];           extern unsigned int bg4_png_len;
+extern unsigned char bg5_png[];           extern unsigned int bg5_png_len;
+extern unsigned char bg6_png[];           extern unsigned int bg6_png_len;
+extern unsigned char bg_gray_furr_png[];  extern unsigned int bg_gray_furr_png_len;
 
 // Lookup tables indexed by Filenum (0-based)
 struct ResourceEntry {
@@ -87,28 +87,28 @@ struct ResourceEntry {
 };
 
 inline const ResourceEntry wav_resources[] = {
-    {res_1_wav, &res_1_wav_len}, {res_2_wav, &res_2_wav_len},
-    {res_3_wav, &res_3_wav_len}, {res_4_wav, &res_4_wav_len},
-    {res_5_wav, &res_5_wav_len}, {res_6_wav, &res_6_wav_len},
-    {res_7_wav, &res_7_wav_len}, {res_8_wav, &res_8_wav_len},
-    {res_9_wav, &res_9_wav_len},
+    {__1_wav, &__1_wav_len}, {__2_wav, &__2_wav_len},
+    {__3_wav, &__3_wav_len}, {__4_wav, &__4_wav_len},
+    {__5_wav, &__5_wav_len}, {__6_wav, &__6_wav_len},
+    {__7_wav, &__7_wav_len}, {__8_wav, &__8_wav_len},
+    {__9_wav, &__9_wav_len},
 };
 
 inline const ResourceEntry rvb_resources[] = {
-    {res_1_rvb, &res_1_rvb_len}, {res_2_rvb, &res_2_rvb_len},
-    {res_3_rvb, &res_3_rvb_len}, {res_4_rvb, &res_4_rvb_len},
-    {res_5_rvb, &res_5_rvb_len}, {res_6_rvb, &res_6_rvb_len},
-    {res_7_rvb, &res_7_rvb_len}, {res_8_rvb, &res_8_rvb_len},
-    {res_9_rvb, &res_9_rvb_len}, {res_10_rvb, &res_10_rvb_len},
+    {__1_rvb, &__1_rvb_len}, {__2_rvb, &__2_rvb_len},
+    {__3_rvb, &__3_rvb_len}, {__4_rvb, &__4_rvb_len},
+    {__5_rvb, &__5_rvb_len}, {__6_rvb, &__6_rvb_len},
+    {__7_rvb, &__7_rvb_len}, {__8_rvb, &__8_rvb_len},
+    {__9_rvb, &__9_rvb_len}, {__10_rvb, &__10_rvb_len},
 };
 
 inline const ResourceEntry dly_resources[] = {
-    {res_1_dly, &res_1_dly_len},  {res_2_dly, &res_2_dly_len},
-    {res_3_dly, &res_3_dly_len},  {res_4_dly, &res_4_dly_len},
-    {res_5_dly, &res_5_dly_len},  {res_6_dly, &res_6_dly_len},
-    {res_7_dly, &res_7_dly_len},  {res_8_dly, &res_8_dly_len},
-    {res_9_dly, &res_9_dly_len},  {res_10_dly, &res_10_dly_len},
-    {res_11_dly, &res_11_dly_len},
+    {__1_dly, &__1_dly_len},  {__2_dly, &__2_dly_len},
+    {__3_dly, &__3_dly_len},  {__4_dly, &__4_dly_len},
+    {__5_dly, &__5_dly_len},  {__6_dly, &__6_dly_len},
+    {__7_dly, &__7_dly_len},  {__8_dly, &__8_dly_len},
+    {__9_dly, &__9_dly_len},  {__10_dly, &__10_dly_len},
+    {__11_dly, &__11_dly_len},
 };
 
 inline constexpr int NUM_WAV_RESOURCES = 9;
@@ -123,14 +123,14 @@ struct NamedResource {
 };
 
 inline const NamedResource png_resources[] = {
-    {"bg.png",           res_bg_png,           &res_bg_png_len},
-    {"bg1.png",          res_bg1_png,          &res_bg1_png_len},
-    {"bg2.png",          res_bg2_png,          &res_bg2_png_len},
-    {"bg3.png",          res_bg3_png,          &res_bg3_png_len},
-    {"bg4.png",          res_bg4_png,          &res_bg4_png_len},
-    {"bg5.png",          res_bg5_png,          &res_bg5_png_len},
-    {"bg6.png",          res_bg6_png,          &res_bg6_png_len},
-    {"bg_gray_furr.png", res_bg_gray_furr_png, &res_bg_gray_furr_png_len},
+    {"bg.png",           bg_png,           &bg_png_len},
+    {"bg1.png",          bg1_png,          &bg1_png_len},
+    {"bg2.png",          bg2_png,          &bg2_png_len},
+    {"bg3.png",          bg3_png,          &bg3_png_len},
+    {"bg4.png",          bg4_png,          &bg4_png_len},
+    {"bg5.png",          bg5_png,          &bg5_png_len},
+    {"bg6.png",          bg6_png,          &bg6_png_len},
+    {"bg_gray_furr.png", bg_gray_furr_png, &bg_gray_furr_png_len},
 };
 inline constexpr int NUM_PNG_RESOURCES = 8;
 

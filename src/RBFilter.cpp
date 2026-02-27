@@ -251,13 +251,13 @@ void
 RBFilter::filterout (float * smp)
 {
     int i;
-    float ismp[PERIOD];
+    ismp.resize(PERIOD);
 
     if (needsinterpolation != 0) {
         for (i = 0; i < PERIOD; i++)
             {ismp[i] = smp[i];}
         for (i = 0; i < stages + 1; i++)
-            {singlefilterout (ismp, st[i], ipar);}
+            {singlefilterout (ismp.data(), st[i], ipar); }
 
         needsinterpolation = 0;
     };

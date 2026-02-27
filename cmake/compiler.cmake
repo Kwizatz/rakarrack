@@ -16,11 +16,15 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
                         "RelWithDebInfo")
 endif()
 
-set(CMAKE_CXX_STANDARD 26)
+# Use C++23 as the base standard (universally supported by CMake).
+# Compilers that support C++26 features get the flag added manually below.
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  # GCC 14+ and Clang 17+ support -std=c++2c
+  add_compile_options(-std=c++2c)
   option(USE_ASAN "Instrument the build to use ASAN sanitizers" OFF)
   option(PROFILING "Instrument the build to generate profiling binaries" OFF)
   if(USE_ASAN)
@@ -39,6 +43,9 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
       set(PREPROCESS_ONLY_FLAGS -x c++ -E)
       set(PREPROCESS_OUTPUT_FLAG -o)
       set(PREPROCESS_VA_OPT "__VA_OPT__(,)")
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+  # MSVC: /std:c++latest enables the latest C++ features
+  add_compile_options(/std:c++latest)
 endif()
 
 option(USE_CPPCHECK "Use cppcheck static code analisys" OFF)

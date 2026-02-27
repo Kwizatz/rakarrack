@@ -425,7 +425,6 @@ void RKR::putbuf(char *buf, int j)
 
 void RKR::getbuf(char *buf, int j)
 {
-
     switch (j) {
     case 8:
         //Reverb
@@ -1620,18 +1619,18 @@ RKR::loadnames()
         switch(k) {
 
         case 0:
-            bank_data = res_Default_rkrb;
-            bank_len = res_Default_rkrb_len;
+            bank_data = Default_rkrb;
+            bank_len = Default_rkrb_len;
             break;
 
         case 1:
-            bank_data = res_Extra_rkrb;
-            bank_len = res_Extra_rkrb_len;
+            bank_data = Extra_rkrb;
+            bank_len = Extra_rkrb_len;
             break;
 
         case 2:
-            bank_data = res_Extra1_rkrb;
-            bank_len = res_Extra1_rkrb_len;
+            bank_data = Extra1_rkrb;
+            bank_len = Extra1_rkrb_len;
             break;
 
         case 3:

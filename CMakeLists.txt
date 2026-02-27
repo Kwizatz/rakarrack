@@ -1,17 +1,4 @@
-# Copyright (C) 2022 Rodrigo Jose Hernandez Cordoba
-#
-# Licensed under the Apache License, Version 2.0 (the "License"); you may not
-# use this file except in compliance with the License. You may obtain a copy of
-# the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-# License for the specific language governing permissions and limitations under
-# the License.
-
+# Copyright (C) 2022, 2026 Rodrigo Jose Hernandez Cordoba
 cmake_minimum_required(VERSION 3.12.0)
 if(COMMAND cmake_policy)
   cmake_policy(SET CMP0003 NEW)
@@ -63,6 +50,10 @@ pkg_search_module(FFTW REQUIRED fftw3 IMPORTED_TARGET)
 pkg_search_module(JACK REQUIRED jack IMPORTED_TARGET)
 pkg_search_module(SAMPLERATE REQUIRED samplerate IMPORTED_TARGET)
 pkg_search_module(SNDFILE REQUIRED sndfile IMPORTED_TARGET)
+
+# Check if JACK transport API is available (vcpkg jack2 on Windows may lack it)
+include(CheckLibraryExists)
+check_library_exists("${JACK_LINK_LIBRARIES}" jack_transport_query "" HAVE_JACK_TRANSPORT)
 
 configure_file(cmake/config.hpp.in src/config.hpp)
 

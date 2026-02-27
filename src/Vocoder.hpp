@@ -82,6 +82,7 @@ private:
     std::vector<float> tmpl, tmpr;
     std::vector<float> tsmpsl, tsmpsr;
     std::vector<float> tmpaux;
+    std::vector<float> output{};
     struct fbank {
         float sfreq, sq,speak,gain,oldgain;
         std::unique_ptr<AnalogFilter> l, r, aux;

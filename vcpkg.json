@@ -1,0 +1,11 @@
+{
+  "dependencies": [
+    "fftw3",
+    "jack2",
+    "libsamplerate",
+    "libsndfile",
+    "nlohmann-json",
+    "pkgconf",
+    "qtbase"
+  ]
+}

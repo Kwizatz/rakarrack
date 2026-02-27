@@ -27,6 +27,8 @@
 
 #include "dsp_constants.hpp"
 #include "Filter_.hpp"
+#include <vector>
+
 class RBFilter:public Filter_
 {
 public:
@@ -80,11 +82,7 @@ private:
     float oldq, oldsq, oldf;
     float a_smooth_tc, b_smooth_tc;
     float iper;			//inverse of PERIOD
-
-
-
-
-
+    std::vector<float> ismp{};
 };
 
 
