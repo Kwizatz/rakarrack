@@ -33,7 +33,7 @@ Chorus::Chorus (float * efxoutl_, float * efxoutr_)
     efxoutr = efxoutr_;
     dlk = 0;
     drk = 0;
-    maxdelay = lrintf (MAX_CHORUS_DELAY / 1000.0 * SAMPLE_RATE);
+    maxdelay = lrintf (MAX_CHORUS_DELAY / 1000.0f * SAMPLE_RATE);
     delayl.resize(maxdelay);
     delayr.resize(maxdelay);
 

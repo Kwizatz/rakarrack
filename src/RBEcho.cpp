@@ -147,7 +147,7 @@ RBEcho::out (float * smpsl, float * smpsr)
             rdiff = rdl - avg;
 
             tmp = avg + ldiff * pes;
-            ldl = 0.5 * tmp;
+            ldl = 0.5f * tmp;
 
             tmp = avg + rdiff * pes;
             rdl = 0.5f * tmp;

@@ -58,7 +58,7 @@ RyanWah::RyanWah (float * efxoutl_, float * efxoutr_)
     filterl = std::make_unique<RBFilter> (0, 80.0f, 70.0f, 1);
     filterr = std::make_unique<RBFilter> (0, 80.0f, 70.0f, 1);
     
-    sidechain_filter = std::make_unique<AnalogFilter> (1, 630.0, 1.0, 1);
+    sidechain_filter = std::make_unique<AnalogFilter> (1, 630.0f, 1.0f, 1);
     setpreset (Ppreset);
 
     cleanup ();

@@ -6,11 +6,13 @@
             "compilerPath": "@CMAKE_CXX_COMPILER@",
             "includePath": [
                 @INCLIST@,
-                "@CMAKE_SOURCE_DIR@/src"
+                "{workspaceFolder}/src",
+                "{workspaceFolder}/src/gui/qt6",
+                "{workspaceFolder}/extra"
             ],
             "defines": [],
             "cStandard": "c11",
-            "cppStandard": "c++26"
+            "cppStandard": "c++23"
         }
     ],
     "version": 4

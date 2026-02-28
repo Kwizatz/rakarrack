@@ -196,8 +196,8 @@ void
 Ring::setscale()
 {
     scale = sin + tri + saw + squ;
-    if (scale==0.0) scale = 1.0;
-    scale = 1.0 / scale;
+    if (scale==0.0f) scale = 1.0f;
+    scale = 1.0f / scale;
 }
 
 void
@@ -253,7 +253,7 @@ Ring::changepar (int npar, int value)
         break;
     case 4:
         Pdepthp = value;
-        depth = (float) Pdepthp / 100.0;
+        depth = (float) Pdepthp / 100.0f;
         idepth = 1.0f - depth;
         break;
     case 5:
@@ -272,22 +272,22 @@ Ring::changepar (int npar, int value)
         break;
     case 7:
         Psin = value;
-        sin = (float) Psin / 100.0;
+        sin = (float) Psin / 100.0f;
         setscale();
         break;
     case 8:
         Ptri = value;
-        tri = (float) Ptri / 100.0;
+        tri = (float) Ptri / 100.0f;
         setscale();
         break;
     case 9:
         Psaw = value;
-        saw = (float) Psaw / 100.0;
+        saw = (float) Psaw / 100.0f;
         setscale();
         break;
     case 10:
         Psqu = value;
-        squ = (float) Psqu / 100.0;
+        squ = (float) Psqu / 100.0f;
         setscale();
         break;
     case 11:

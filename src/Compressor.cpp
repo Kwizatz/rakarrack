@@ -147,9 +147,9 @@ Compressor::Compressor_Change (int np, int value)
     kratio = logf(ratio)/LOG_2;  //  Log base 2 relationship matches slope
     knee = -kpct*thres_db;
 
-    coeff_kratio = 1.0 / kratio;
-    coeff_ratio = 1.0 / ratio;
-    coeff_knee = 1.0 / knee;
+    coeff_kratio = 1.0f / kratio;
+    coeff_ratio = 1.0f / ratio;
+    coeff_knee = 1.0f / knee;
 
     coeff_kk = knee * coeff_kratio;
 

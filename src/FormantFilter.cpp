@@ -207,8 +207,8 @@ FormantFilter::filterout (float * smp)
             for (i = 0; i < PERIOD; i++)
                 smp[i] +=
                     tmpbuf[i] * INTERPOLATE_AMPLITUDE (oldformantamp[j],
-                                                       currentformants[j].amp, i,
-                                                       PERIOD);
+                                                       currentformants[j].amp, static_cast<float>(i),
+                                                       static_cast<float>(PERIOD));
         else
             for (i = 0; i < PERIOD; i++)
                 smp[i] += tmpbuf[i] * currentformants[j].amp;

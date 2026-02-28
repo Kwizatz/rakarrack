@@ -55,8 +55,8 @@ MBDist::MBDist (float * efxoutl_, float * efxoutr_)
     lpf2r = std::make_unique<AnalogFilter>(2, 2500.0f, .7071f, 0);
     hpf2l = std::make_unique<AnalogFilter>(3, 2500.0f, .7071f, 0);
     hpf2r = std::make_unique<AnalogFilter>(3, 2500.0f, .7071f, 0);
-    DCl = std::make_unique<AnalogFilter>(3, 30, 1, 0);
-    DCr = std::make_unique<AnalogFilter>(3, 30, 1, 0);
+    DCl = std::make_unique<AnalogFilter>(3, 30.0f, 1.0f, 0);
+    DCr = std::make_unique<AnalogFilter>(3, 30.0f, 1.0f, 0);
     DCl->setfreq (30.0f);
     DCr->setfreq (30.0f);
 
@@ -317,17 +317,17 @@ MBDist::changepar (int npar, int value)
         break;
     case 8:
         PvolL = value;
-        volL = (float) value /100.0;
+        volL = (float) value /100.0f;
         PdriveL = (int)((float)Pdrive*volL);
         break;
     case 9:
         PvolM = value;
-        volM = (float) value /100.0;
+        volM = (float) value /100.0f;
         PdriveM = (int)((float)Pdrive*volM);
         break;
     case 10:
         PvolH = value;
-        volH = (float) value /100.0;
+        volH = (float) value /100.0f;
         PdriveH = (int)((float)Pdrive*volH);
         break;
     case 11:

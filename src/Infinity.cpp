@@ -34,8 +34,8 @@ Infinity::Infinity (float * efxoutl_, float * efxoutr_)
 
     int i;
     for (i = 0; i<NUM_INF_BANDS; i++) {
-        filterl[i] = std::make_unique<RBFilter>(0, 80.0f, 70.0f, 1.0f);
-        filterr[i] = std::make_unique<RBFilter>(0, 80.0f, 70.0f, 1.0f);
+        filterl[i] = std::make_unique<RBFilter>(0, 80.0f, 70.0f, 1);
+        filterr[i] = std::make_unique<RBFilter>(0, 80.0f, 70.0f, 1);
         rbandstate[i].level = 1.0f;
         rbandstate[i].vol = 1.0f;
         lphaser[i].gain = 0.5f;
@@ -270,7 +270,7 @@ void
 Infinity::reinitfilter ()
 {
     float fbandnum = (float) (NUM_INF_BANDS);
-    float halfpi = -M_PI/2.0f;  //offset so rbandstate[0].sinp = -1.0 when rbandstate[0].ramp = 0;
+    float halfpi = static_cast<float>(-M_PI / 2.0);  //offset so rbandstate[0].sinp = -1.0 when rbandstate[0].ramp = 0;
     float stateconst = 0;
     float idx = 0;
 

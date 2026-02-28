@@ -43,10 +43,10 @@ HarmEnhancer::HarmEnhancer(float *Rmag, float hfreq, float lfreq, float gain)
 
     hpffreq = hfreq;
     lpffreq = lfreq;
-    hpfl = std::make_unique<AnalogFilter>(3, hfreq, 1, 0);
-    hpfr = std::make_unique<AnalogFilter>(3, hfreq, 1, 0);
-    lpfl = std::make_unique<AnalogFilter>(2, lfreq, 1, 0);
-    lpfr = std::make_unique<AnalogFilter>(2, lfreq, 1, 0);
+    hpfl = std::make_unique<AnalogFilter>(3, hfreq, 1.0f, 0);
+    hpfr = std::make_unique<AnalogFilter>(3, hfreq, 1.0f, 0);
+    lpfl = std::make_unique<AnalogFilter>(2, lfreq, 1.0f, 0);
+    lpfr = std::make_unique<AnalogFilter>(2, lfreq, 1.0f, 0);
 
     limiter = std::make_unique<Compressor>(inputl.data(), inputr.data());
     limiter->Compressor_Change_Preset(0,4);
@@ -128,7 +128,7 @@ HarmEnhancer::chebpc (float c[], float d[])
     for (j = HARMONICS - 2; j >= 1; j--) {
         for (k = HARMONICS - j; k >= 1; k--) {
             sv = d[k];
-            d[k] = 2.0 * d[k - 1] - dd[k];
+            d[k] = 2.0f * d[k - 1] - dd[k];
             dd[k] = sv;
         }
         sv = d[0];
@@ -139,7 +139,7 @@ HarmEnhancer::chebpc (float c[], float d[])
     for (j = HARMONICS - 1; j >= 1; j--) {
         d[j] = d[j - 1] - dd[j];
     }
-    d[0] = -dd[0] + 0.5 * c[0];
+    d[0] = -dd[0] + 0.5f * c[0];
 
 
 

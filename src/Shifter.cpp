@@ -211,7 +211,7 @@ Shifter::out (float *smpsl, float *smpsr)
                 }
             }
         }
-        outi[i] = (smpsl[i] + smpsr[i])*.5;
+        outi[i] = (smpsl[i] + smpsr[i])*.5f;
         if (outi[i] > 1.0)
             outi[i] = 1.0f;
         if (outi[i] < -1.0)

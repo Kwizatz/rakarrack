@@ -256,7 +256,7 @@ Valve::out (float * smpsl, float * smpsr)
 void
 Valve::init_coefs()
 {
-    coef = 1.0 / (1.0f - powf(2.0f,dist * q ));
+    coef = 1.0f / (1.0f - powf(2.0f,dist * q ));
     qcoef = q * coef;
     fdist = 1.0f / dist;
     inputvol = powf (4.0f, ((float)Pdrive - 32.0f) / 127.0f);

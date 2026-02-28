@@ -24,17 +24,17 @@
 #include "Preferences.hpp"
 #include <fstream>
 #include <iostream>
-
+#include "portable_crt.hpp"
 Preferences::Preferences(Root /*root*/, const char* /*vendor*/,
                          const char* application)
 {
     // Determine base config directory (XDG_CONFIG_HOME or ~/.config).
-    const char* xdg = std::getenv("XDG_CONFIG_HOME");
-    if (xdg && xdg[0] != '\0') {
+    auto xdg = rkr::portable_getenv("XDG_CONFIG_HOME");
+    if (!xdg.empty()) {
         m_filepath = std::filesystem::path(xdg) / application / "preferences.json";
     } else {
-        const char* home = std::getenv("HOME");
-        m_filepath = std::filesystem::path(home ? home : "/tmp")
+        auto home = rkr::portable_getenv("HOME");
+        m_filepath = std::filesystem::path(home.empty() ? "/tmp" : home)
                      / ".config" / application / "preferences.json";
     }
     load();
@@ -84,8 +84,7 @@ void Preferences::get(const char* key, char* value,
 {
     std::string s = m_data.value(key, std::string(defaultValue));
     if (maxSize > 0) {
-        std::strncpy(value, s.c_str(), static_cast<std::size_t>(maxSize - 1));
-        value[maxSize - 1] = '\0';
+        snprintf(value, static_cast<std::size_t>(maxSize), "%s", s.c_str());
     }
 }
 

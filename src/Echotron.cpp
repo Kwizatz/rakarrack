@@ -29,6 +29,7 @@
 #include "Echotron.hpp"
 #include "FPreset.hpp"
 #include "EmbeddedResource.hpp"
+#include "portable_crt.hpp"
 
 Echotron::Echotron (float * efxoutl_, float * efxoutr_)
 {
@@ -62,8 +63,8 @@ Echotron::Echotron (float * efxoutl_, float * efxoutr_)
 
     offset = 0;
 
-    lpfl = std::make_unique<AnalogFilter> (0, 800, 1, 0);;
-    lpfr = std::make_unique<AnalogFilter> (0, 800, 1, 0);;
+    lpfl = std::make_unique<AnalogFilter> (0, 800.0f, 1.0f, 0);;
+    lpfr = std::make_unique<AnalogFilter> (0, 800.0f, 1.0f, 0);;
 
     float center, qq;
     for (int i = 0; i < ECHOTRON_MAXFILTERS; i++) {
@@ -235,7 +236,7 @@ Echotron::setfile(int value)
             return(0);
         }
     } else {
-        if ((fs = fopen (Filename.data(), "r")) == nullptr) {
+        if ((fs = rkr::portable_fopen (Filename.data(), "r")) == nullptr) {
             loaddefault();
             return(0);
         }
@@ -251,7 +252,7 @@ Echotron::setfile(int value)
         memset(wbuf,0,sizeof(wbuf));
     }
 
-    sscanf(wbuf,"%f\t%f\t%d",&subdiv_fmod,&subdiv_dmod,&f_qmode); //Second line has tempo subdivision
+    RKR_SSCANF(wbuf,"%f\t%f\t%d",&subdiv_fmod,&subdiv_dmod,&f_qmode); //Second line has tempo subdivision
 
     int count = 0;
     memset(iStages,0,sizeof(iStages));
@@ -261,7 +262,7 @@ Echotron::setfile(int value)
     while ((readline(wbuf,sizeof wbuf) != nullptr) && (count<ECHOTRON_F_SIZE)) {
         if(wbuf[0]==10) break;  // Check Carriage Return
         if(wbuf[0]=='#') continue;
-        sscanf(wbuf,"%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%d",&tPan, &tTime, &tLevel,
+        RKR_SSCANF(wbuf,"%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%d",&tPan, &tTime, &tLevel,
                &tLP,  &tBP,  &tHP,  &tFreq,  &tQ,  &tiStages);
         if((tPan<-1.0f) || (tPan>1.0f)) {
             error_num=5;
@@ -348,7 +349,7 @@ void Echotron::init_params()
 
     initparams=0;
     depth = ((float) (Pdepth - 64))/64.0f;
-    dlyrange = 0.008*f_pow2(4.5f*depth);
+    dlyrange = 0.008f*f_pow2(4.5f*depth);
     width = ((float) Pwidth)/127.0f;
 
     tmptempo = (float) Ptempo;
@@ -374,11 +375,11 @@ void Echotron::init_params()
         rdata[i]=fLevel[i]*tpanr;
 
         if((tfcnt<ECHOTRON_MAXFILTERS)&&(iStages[i]>=0)) {
-            int Freq=fFreq[i]*f_pow2(depth*4.5f);
-            if (Freq<20.0) Freq=20.0f;
-            if (Freq>hSR) Freq=hSR;
-            filterbank[tfcnt].l->setfreq_and_q(Freq,fQ[i]);
-            filterbank[tfcnt].r->setfreq_and_q(Freq,fQ[i]);
+            int Freq = static_cast<int>(fFreq[i]*f_pow2(depth*4.5f));
+            if (Freq < 20) Freq = 20;
+            if (Freq > hSR) Freq = static_cast<int>(hSR);
+            filterbank[tfcnt].l->setfreq_and_q(static_cast<float>(Freq),fQ[i]);
+            filterbank[tfcnt].r->setfreq_and_q(static_cast<float>(Freq),fQ[i]);
             filterbank[tfcnt].l->setstages(iStages[i]);
             filterbank[tfcnt].r->setstages(iStages[i]);
             filterbank[tfcnt].l->setmix (1, fLP[i] , fBP[i], fHP[i]);
@@ -523,7 +524,7 @@ Echotron::changepar (int npar, int value)
         break;
     case 7:
         Plrcross = value;
-        lrcross = ((float)(Plrcross)-64)/64.0;
+        lrcross = ((float)(Plrcross)-64)/64.0f;
         ilrcross = 1.0f - abs(lrcross);
         break;
     case 8:

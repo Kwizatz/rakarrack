@@ -239,7 +239,7 @@ int Looper::set_len(int value)
 int Looper::cal_len(int value)
 {
 
-    int lenbar = lrintf((float)value*60.0/(float)Ptempo*fSAMPLE_RATE);
+    int lenbar = lrintf((float)value*60.0f/(float)Ptempo*fSAMPLE_RATE);
 
     looper_ts = lenbar / value;
     return(lenbar);

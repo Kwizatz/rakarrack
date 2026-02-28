@@ -54,7 +54,7 @@ MIDIConverter::MIDIConverter (char *jname)
 
     // Create Alsa Seq Client
 
-    sprintf (portname, "%s MC OUT",jname);
+    snprintf (portname, sizeof(portname), "%s MC OUT",jname);
     snd_seq_create_simple_port (port, portname,
     SND_SEQ_PORT_CAP_READ |
     SND_SEQ_PORT_CAP_SUBS_READ,

@@ -311,7 +311,7 @@ Convolotron::setfile(int value)
     }
 
     if (sfinfo.frames > maxx_read) real_len = maxx_read;
-    else real_len=sfinfo.frames;
+    else real_len = static_cast<int>(sfinfo.frames);
     sf_seek (infile,0, SEEK_SET);
     sf_readf_float(infile,buf.data(),real_len);
     sf_close(infile);
@@ -348,7 +348,7 @@ Convolotron::process_rbuf()
     alpha = 0.16f;
     a0 = 0.5f*(1.0f - alpha);
     a1 = 0.5f;
-    a2 = 0.5*alpha;
+    a2 = 0.5f*alpha;
     N = length;
     N2 = length/2;
     Nm1p = D_PI/((float) (N - 1));
@@ -382,7 +382,7 @@ Convolotron::process_rbuf()
 
     //if(maxamp < 0.3f) maxamp = 0.3f;
     ngain = IRpowa/IRpowb;
-    if (ngain > maxx_read) ngain = maxx_read;
+    if (ngain > maxx_read) ngain = static_cast<float>(maxx_read);
     for(j=0; j<length; j++) buf[j] *= ngain;
 
     if (Psafe) {

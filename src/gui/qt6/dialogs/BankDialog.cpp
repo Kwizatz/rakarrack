@@ -230,7 +230,7 @@ void BankDialog::onLoadBuiltinBank(int which)
         {
             // loadbank expects char* (legacy API)
             char buf[256]{};
-            std::strncpy(buf, udir, sizeof(buf) - 1);
+            snprintf(buf, sizeof(buf), "%s", udir);
             rkr.loadbank(buf);
         }
         break;

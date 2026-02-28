@@ -14,7 +14,7 @@ The author makes no guarantee of its suitability for any purpose.
 #include "dsp_constants.hpp"
 
 //globals
-static const float p2 = M_PI/2.0f;
+static const float p2 = static_cast<float>(M_PI / 2.0);
 static const float fact3 = 0.148148148148148f; //can multiply by 1/fact3
 
 static inline float
@@ -34,7 +34,7 @@ f_sin(float x)
 
     if (x <= p2) y = x - x*x*x*fact3;
     else {
-        tmp = x - M_PI;
+        tmp = x - static_cast<float>(M_PI);
         y = -tmp + tmp*tmp*tmp*fact3;
     }
 

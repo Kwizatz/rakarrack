@@ -43,7 +43,7 @@ StompBox::StompBox (float * efxoutl_, float * efxoutr_)
     lpost = std::make_unique<AnalogFilter> (0, 720.0f, 1.0f, 0);
     ltonehg = std::make_unique<AnalogFilter> (1, 1500.0f, 1.0f, 0);
     ltonemd = std::make_unique<AnalogFilter> (4, 1000.0f, 1.0f, 0);
-    ltonelw = std::make_unique<AnalogFilter> (0, 500.0f, 1.0, 0);
+    ltonelw = std::make_unique<AnalogFilter> (0, 500.0f, 1.0f, 0);
 
     //Right channel filters
     rinput = std::make_unique<AnalogFilter> (1, 80.0f, 1.0f, 0);  //  AnalogFilter (unsigned char Ftype, float Ffreq, float Fq,unsigned char Fstages);

@@ -63,7 +63,7 @@ Pan::out (float *smpsl, float *smpsr)
     int i;
     float avg, ldiff, rdiff, tmp;
     float pp;
-    float coeff_PERIOD = 1.0 / fPERIOD;
+    float coeff_PERIOD = 1.0f / fPERIOD;
     float fi,P_i;
 
 
@@ -135,7 +135,7 @@ Pan::setpanning (int Ppanning)
 {
     this->Ppanning = Ppanning;
     panning = ((float)Ppanning)/ 127.0f;
-    dvalue= panning*M_PI_2;
+    dvalue= panning * static_cast<float>(M_PI_2);
     cdvalue=cosf(dvalue);
     sdvalue=sinf(dvalue);
 

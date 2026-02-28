@@ -418,8 +418,8 @@ void SettingsDialog::applyToEngine()
     rkr.config.EnableBackgroundImage = m_enableBackground->isChecked() ? 1 : 0;
     {
         QByteArray ba = m_backgroundPath->text().toLocal8Bit();
-        std::strncpy(rkr.config.BackgroundImage.data(), ba.constData(),
-                     rkr.config.BackgroundImage.size() - 1);
+        snprintf(rkr.config.BackgroundImage.data(), rkr.config.BackgroundImage.size(),
+                 "%s", ba.constData());
     }
     rkr.deachide = m_hideUnused->isChecked() ? 1 : 0;
 
@@ -465,8 +465,8 @@ void SettingsDialog::applyToEngine()
     // Misc
     {
         QByteArray ba = m_username->text().toLocal8Bit();
-        std::strncpy(rkr.presets.UserRealName.data(), ba.constData(),
-                     rkr.presets.UserRealName.size() - 1);
+        snprintf(rkr.presets.UserRealName.data(), rkr.presets.UserRealName.size(),
+                 "%s", ba.constData());
     }
     rkr.mess_dis  = m_disableWarnings->isChecked() ? 1 : 0;
     rkr.t_timeout = m_tapTimeout->value();
@@ -475,13 +475,13 @@ void SettingsDialog::applyToEngine()
     // Bank Paths
     {
         QByteArray ba = m_bankFilename->text().toLocal8Bit();
-        std::strncpy(rkr.presets.BankFilename.data(), ba.constData(),
-                     rkr.presets.BankFilename.size() - 1);
+        snprintf(rkr.presets.BankFilename.data(), rkr.presets.BankFilename.size(),
+                 "%s", ba.constData());
     }
     {
         QByteArray ba = m_userDir->text().toLocal8Bit();
-        std::strncpy(rkr.presets.UDirFilename.data(), ba.constData(),
-                     rkr.presets.UDirFilename.size() - 1);
+        snprintf(rkr.presets.UDirFilename.data(), rkr.presets.UDirFilename.size(),
+                 "%s", ba.constData());
     }
 }
 

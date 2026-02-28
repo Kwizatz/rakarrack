@@ -21,6 +21,7 @@
 #include "FPreset.hpp"
 #include <cstdio>
 #include <cstring>
+#include "portable_crt.hpp"
 
 
 
@@ -36,17 +37,19 @@ FPreset::ReadPreset(int eff, int num)
     int reff=0;
     memset(tempfile,0,sizeof(tempfile));
     pdata.fill(0);
-    sprintf (tempfile, "%s%s", getenv ("HOME"), "/.rkrintpreset");
-    if (( fn = fopen (tempfile, "r")) != nullptr) {
+    auto home = rkr::portable_getenv("HOME");
+    snprintf (tempfile, sizeof(tempfile), "%s%s", home.c_str(), "/.rkrintpreset");
+    if (( fn = rkr::portable_fopen (tempfile, "r")) != nullptr) {
         while (fgets (buf, sizeof buf, fn) != nullptr)
 
         {
-            sscanf(buf,"%d",&reff);
+            RKR_SSCANF(buf,"%d",&reff);
             if(reff==eff) k++;
             if(k==num) {
-                strtok(buf,",");
-                sbuf = strtok(nullptr,",");
-                sscanf(sbuf,"%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d.%d.%d\n",
+                char *strtok_ctx = nullptr;
+                rkr::portable_strtok(buf,",", &strtok_ctx);
+                sbuf = rkr::portable_strtok(nullptr,",", &strtok_ctx);
+                RKR_SSCANF(sbuf,"%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d.%d.%d\n",
                        &pdata[0],&pdata[1],&pdata[2],&pdata[3],&pdata[4],&pdata[5],&pdata[6],&pdata[7],&pdata[8],&pdata[9],
                        &pdata[10],&pdata[11],&pdata[12],&pdata[13],&pdata[14],&pdata[15],&pdata[16],&pdata[17],&pdata[18],&pdata[19],
                        &pdata[20],&pdata[21],&pdata[22],&pdata[23],&pdata[24],&pdata[25],&pdata[26],&pdata[27],&pdata[28],&pdata[29]);

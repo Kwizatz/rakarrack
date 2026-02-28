@@ -157,7 +157,7 @@ Sustainer::changepar (int npar, int value)
         fsustain =  (float) Psustain/127.0f;
         cratio = 1.25f - fsustain;
         input = dB2rap (42.0f * fsustain - 6.0f);
-        cthresh = 0.25 + fsustain;
+        cthresh = 0.25f + fsustain;
         break;
 
     };

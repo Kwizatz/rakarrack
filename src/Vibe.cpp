@@ -50,7 +50,7 @@ Vibe::Vibe (float * efxoutl_, float * efxoutr_)
     alphal = 1.0f - cSAMPLE_RATE/(dRCl + cSAMPLE_RATE);
     alphar = alphal;
     dalphal = dalphar = alphal;
-    lampTC = cSAMPLE_RATE/(0.012 + cSAMPLE_RATE);  //guessing twiddle factor
+    lampTC = cSAMPLE_RATE/(0.012f + cSAMPLE_RATE);  //guessing twiddle factor
     ilampTC = 1.0f - lampTC;
     lstep = 0.0f;
     rstep = 0.0f;

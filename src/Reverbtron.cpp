@@ -28,6 +28,7 @@
 #include "Reverbtron.hpp"
 #include "FPreset.hpp"
 #include "EmbeddedResource.hpp"
+#include "portable_crt.hpp"
 
 Reverbtron::Reverbtron (float * efxoutl_, float * efxoutr_,int DS, int uq, int dq)
 {
@@ -72,8 +73,8 @@ Reverbtron::Reverbtron (float * efxoutl_, float * efxoutr_,int DS, int uq, int d
     idelay = 0.0f;
     decay = f_exp(-1.0f/(0.2f*nfSAMPLE_RATE));  //0.2 seconds
 
-    lpfl =  std::make_unique<AnalogFilter> (0, 800, 1, 0);
-    lpfr =  std::make_unique<AnalogFilter> (0, 800, 1, 0);
+    lpfl =  std::make_unique<AnalogFilter> (0, 800.0f, 1.0f, 0);
+    lpfr =  std::make_unique<AnalogFilter> (0, 800.0f, 1.0f, 0);
 
     lpfl->setSR(nSAMPLE_RATE);
     lpfr->setSR(nSAMPLE_RATE);
@@ -169,7 +170,7 @@ Reverbtron::out (float * smpsl, float * smpsr)
 
             imdelay[imctr] = decay*ldiff;
             imctr--;
-            if (imctr<0) imctr = roomsize;
+            if (imctr<0) imctr = static_cast<int>(roomsize);
 
             templ[i] = (lyn + ldiff ) * levpanl;
             tempr[i] = (lyn + rdiff ) * levpanr;
@@ -186,7 +187,7 @@ Reverbtron::out (float * smpsl, float * smpsr)
         offset--;
         if (offset<0) offset = maxx_size;
 
-        doffset = (offset + roomsize);
+        doffset = static_cast<int>(offset + roomsize);
         if (doffset>maxx_size) doffset -= maxx_size;
 
         hoffset--;
@@ -194,7 +195,7 @@ Reverbtron::out (float * smpsl, float * smpsr)
 
         lxn[doffset] += feedback;
 
-        xindex = offset + roomsize;
+        xindex = static_cast<int>(offset + roomsize);
 
     };
 
@@ -262,7 +263,7 @@ Reverbtron::setfile(int value)
             return(0);
         }
     } else {
-        if ((fs = fopen (Filename.data(), "r")) == nullptr) {
+        if ((fs = rkr::portable_fopen (Filename.data(), "r")) == nullptr) {
             loaddefault();
             return(0);
         }
@@ -285,18 +286,18 @@ Reverbtron::setfile(int value)
 // Subsample Compresion Skip
     memset(wbuf,0, sizeof(wbuf));
     readline(wbuf,sizeof wbuf);
-    sscanf(wbuf,"%f,%f\n",&compresion,&quality);
+    RKR_SSCANF(wbuf,"%f,%f\n",&compresion,&quality);
 
 //Length
     memset(wbuf,0,sizeof(wbuf));
     readline(wbuf,sizeof wbuf);
-    sscanf(wbuf, "%d\n", &data_length);
+    RKR_SSCANF(wbuf, "%d\n", &data_length);
     if(data_length>2000) data_length = 2000;
 //Time Data
     for(i=0; i<data_length; i++) {
         memset(wbuf,0, sizeof(wbuf));
         readline(wbuf,sizeof wbuf);
-        sscanf(wbuf,"%f,%f\n",&ftime[i],&tdata[i]);
+        RKR_SSCANF(wbuf,"%f,%f\n",&ftime[i],&tdata[i]);
     }
 
     if(fs) fclose(fs);
@@ -412,8 +413,8 @@ void Reverbtron::convert_time()
     }
 
 //guess at room size
-    roomsize = time[0] + (time[1] - time[0])/2;  //to help stagger left/right reflection times
-    if(roomsize>imax) roomsize = imax;
+    roomsize = static_cast<float>(time[0] + (time[1] - time[0])/2);  //to help stagger left/right reflection times
+    if(roomsize>imax) roomsize = static_cast<float>(imax);
     setfb(Pfb);
 
 

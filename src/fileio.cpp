@@ -20,10 +20,15 @@
 
 */
 
-#include <errno.h>
+#include <algorithm>
+#include <cerrno>
+#include <charconv>
+#include <cstdio>
+#include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <string>
+#include <string_view>
 #include <cstring>
 #include "global.hpp"
 #include "AllEffects.hpp"
@@ -31,390 +36,503 @@
 #include "rakconvert_lib.hpp"
 #include "rakverb_lib.hpp"
 
+namespace {
+
+// Portable fopen wrapper — uses fopen_s on MSVC, fopen elsewhere.
+FILE* portable_fopen(const char* filename, const char* mode)
+{
+#ifdef _MSC_VER
+    FILE* fp = nullptr;
+    if (fopen_s(&fp, filename, mode) != 0)
+        fp = nullptr;
+    return fp;
+#else
+    return std::fopen(filename, mode);
+#endif
+}
+
+// Portable getenv wrapper — uses _dupenv_s on MSVC, std::getenv elsewhere.
+// Returns a std::string (empty if the variable is unset).
+std::string portable_getenv(const char* name)
+{
+#ifdef _MSC_VER
+    char* val = nullptr;
+    std::size_t len = 0;
+    if (_dupenv_s(&val, &len, name) == 0 && val != nullptr) {
+        std::string result(val);
+        std::free(val);
+        return result;
+    }
+    return {};
+#else
+    const char* val = std::getenv(name);
+    return val ? std::string(val) : std::string{};
+#endif
+}
+
+// Safe copy of a C-string into a std::array<char, N>, always null-terminated.
+template<std::size_t N>
+void safe_copy(std::array<char, N>& dst, const char* src)
+{
+    std::size_t len = std::strlen(src);
+    if (len >= N) len = N - 1;
+    std::memcpy(dst.data(), src, len);
+    dst[len] = '\0';
+}
+
+// Safe copy between two std::array<char, N> buffers.
+template<std::size_t Nd, std::size_t Ns>
+void safe_copy(std::array<char, Nd>& dst, const std::array<char, Ns>& src)
+{
+    safe_copy(dst, src.data());
+}
+
+// Advance past leading delimiters and parse one numeric value via std::from_chars.
+// Returns the remaining string_view, or empty on parse failure.
+template<typename T>
+std::string_view consume_value(std::string_view sv, T& out)
+{
+    while (!sv.empty() && (sv.front() == ',' || sv.front() == ' '
+                           || sv.front() == '\n' || sv.front() == '\r'))
+        sv.remove_prefix(1);
+    if (sv.empty())
+        return sv;
+    auto [ptr, ec] = std::from_chars(sv.data(), sv.data() + sv.size(), out);
+    if (ec != std::errc{})
+        return {};
+    return {ptr, static_cast<std::size_t>(sv.data() + sv.size() - ptr)};
+}
+
+// Parse comma-separated numeric values (int or float) from a string_view.
+template<typename... Args>
+void parse_csv(std::string_view sv, Args&... args)
+{
+    ((sv = consume_value(sv, args)), ...);
+}
+
+// Return the first non-delimiter token from the remaining text.
+inline std::string_view remaining_token(std::string_view sv)
+{
+    while (!sv.empty() && (sv.front() == ',' || sv.front() == ' '))
+        sv.remove_prefix(1);
+    while (!sv.empty() && (sv.back() == '\n' || sv.back() == '\r' || sv.back() == ' '))
+        sv.remove_suffix(1);
+    return sv;
+}
+
+// Parse comma-separated values then return the remaining trailing string
+// (e.g. a filename appended after the numeric fields).
+template<typename... Args>
+std::string_view parse_csv_then_str(std::string_view sv, Args&... args)
+{
+    ((sv = consume_value(sv, args)), ...);
+    return remaining_token(sv);
+}
+
+// Append a single numeric value via std::to_chars.
+// Returns the updated write position.
+template<typename T>
+char* emit_value(char* pos, char* end, T val)
+{
+    if (pos >= end)
+        return pos;
+    auto [ptr, ec] = std::to_chars(pos, end, val);
+    return (ec == std::errc{}) ? ptr : pos;
+}
+
+// Write comma-separated numeric values followed by '\n' into buf.
+template<typename... Args>
+void format_csv(char* buf, std::size_t bufsize, Args... args)
+{
+    char* pos = buf;
+    char* end = buf + bufsize - 2; // room for \n\0
+    bool first = true;
+    auto write_one = [&](auto val) {
+        if (!first && pos < end)
+            *pos++ = ',';
+        first = false;
+        pos = emit_value(pos, end, val);
+    };
+    (write_one(args), ...);
+    if (pos < end)
+        *pos++ = '\n';
+    *pos = '\0';
+}
+
+// Write comma-separated numeric values, then a trailing string, followed by '\n'.
+template<typename... Args>
+void format_csv_str(char* buf, std::size_t bufsize, const char* str, Args... args)
+{
+    char* pos = buf;
+    char* end = buf + bufsize - 2;
+    bool first = true;
+    auto write_one = [&](auto val) {
+        if (!first && pos < end)
+            *pos++ = ',';
+        first = false;
+        pos = emit_value(pos, end, val);
+    };
+    (write_one(args), ...);
+    if (pos < end)
+        *pos++ = ',';
+    while (*str && pos < end)
+        *pos++ = *str++;
+    if (pos < end)
+        *pos++ = '\n';
+    *pos = '\0';
+}
+
+// Safe string copy into a sized buffer with newline termination.
+inline void copy_line(char* buf, std::size_t bufsize, const char* str)
+{
+    std::size_t len = std::strlen(str);
+    if (len >= bufsize - 1)
+        len = bufsize - 2;
+    std::memcpy(buf, str, len);
+    buf[len] = '\n';
+    buf[len + 1] = '\0';
+}
+
+} // anonymous namespace
+
 void RKR::putbuf(char *buf, int j)
 {
-    char cfilename[128];
-
     switch (j) {
 
     case 8:
         //Reverb
-        sscanf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
-                &lv[0][0], &lv[0][1], &lv[0][2], &lv[0][3], &lv[0][4],
-                &lv[0][5], &lv[0][6], &lv[0][7], &lv[0][8], &lv[0][9],
-                &lv[0][10], &lv[0][11], &Reverb_B);
+        parse_csv(buf, lv[0][0], lv[0][1], lv[0][2], lv[0][3], lv[0][4],
+                lv[0][5], lv[0][6], lv[0][7], lv[0][8], lv[0][9],
+                lv[0][10], lv[0][11], Reverb_B);
         break;
 
     case 4:
         //Echo
-        sscanf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
-                &lv[1][0], &lv[1][1], &lv[1][2], &lv[1][3], &lv[1][4],
-                &lv[1][5], &lv[1][6], &lv[1][7], &lv[1][8],&Echo_B);
+        parse_csv(buf, lv[1][0], lv[1][1], lv[1][2], lv[1][3], lv[1][4],
+                lv[1][5], lv[1][6], lv[1][7], lv[1][8], Echo_B);
         break;
 
     case 5:
         //Chorus
-        sscanf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
-                &lv[2][0], &lv[2][1], &lv[2][2], &lv[2][3], &lv[2][4],
-                &lv[2][5], &lv[2][6], &lv[2][7], &lv[2][8], &lv[2][9],
-                &lv[2][10], &lv[2][11], &lv[2][12], &Chorus_B);
+        parse_csv(buf, lv[2][0], lv[2][1], lv[2][2], lv[2][3], lv[2][4],
+                lv[2][5], lv[2][6], lv[2][7], lv[2][8], lv[2][9],
+                lv[2][10], lv[2][11], lv[2][12], Chorus_B);
         break;
 
     case 7:
         //Flanger
-        sscanf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
-                &lv[3][0], &lv[3][1], &lv[3][2], &lv[3][3], &lv[3][4],
-                &lv[3][5], &lv[3][6], &lv[3][7], &lv[3][8], &lv[3][9],
-                &lv[3][10], &lv[3][11], &lv[3][12], &Flanger_B);
+        parse_csv(buf, lv[3][0], lv[3][1], lv[3][2], lv[3][3], lv[3][4],
+                lv[3][5], lv[3][6], lv[3][7], lv[3][8], lv[3][9],
+                lv[3][10], lv[3][11], lv[3][12], Flanger_B);
         break;
 
     case 6:
         //Phaser
-        sscanf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
-                &lv[4][0], &lv[4][1], &lv[4][2], &lv[4][3], &lv[4][4],
-                &lv[4][5], &lv[4][6], &lv[4][7], &lv[4][8], &lv[4][9],
-                &lv[4][10], &lv[4][11], &Phaser_B);
+        parse_csv(buf, lv[4][0], lv[4][1], lv[4][2], lv[4][3], lv[4][4],
+                lv[4][5], lv[4][6], lv[4][7], lv[4][8], lv[4][9],
+                lv[4][10], lv[4][11], Phaser_B);
         break;
 
     case 3:
         //Overdrive
-        sscanf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
-                &lv[5][0], &lv[5][1], &lv[5][2], &lv[5][3], &lv[5][4],
-                &lv[5][5], &lv[5][6], &lv[5][7], &lv[5][8], &lv[5][9],
-                &lv[5][10], &lv[5][11], &lv[5][12],&Overdrive_B);
+        parse_csv(buf, lv[5][0], lv[5][1], lv[5][2], lv[5][3], lv[5][4],
+                lv[5][5], lv[5][6], lv[5][7], lv[5][8], lv[5][9],
+                lv[5][10], lv[5][11], lv[5][12], Overdrive_B);
         break;
 
     case 2:
         //Distorsion
-        sscanf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
-                &lv[6][0], &lv[6][1], &lv[6][2], &lv[6][3], &lv[6][4],
-                &lv[6][5], &lv[6][6], &lv[6][7], &lv[6][8], &lv[6][9],
-                &lv[6][10], &lv[6][11], &lv[6][12], &Distorsion_B);
+        parse_csv(buf, lv[6][0], lv[6][1], lv[6][2], lv[6][3], lv[6][4],
+                lv[6][5], lv[6][6], lv[6][7], lv[6][8], lv[6][9],
+                lv[6][10], lv[6][11], lv[6][12], Distorsion_B);
         break;
 
     case 0:
         //EQ1
-        sscanf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
-                &lv[7][0], &lv[7][1], &lv[7][2], &lv[7][3], &lv[7][4],
-                &lv[7][5], &lv[7][6], &lv[7][7], &lv[7][8], &lv[7][9],
-                &lv[7][10], &lv[7][11], &EQ1_B);
+        parse_csv(buf, lv[7][0], lv[7][1], lv[7][2], lv[7][3], lv[7][4],
+                lv[7][5], lv[7][6], lv[7][7], lv[7][8], lv[7][9],
+                lv[7][10], lv[7][11], EQ1_B);
         break;
 
     case 9:
         //EQ2
-        sscanf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
-                &lv[8][0], &lv[8][1], &lv[8][2], &lv[8][3], &lv[8][4],
-                &lv[8][5], &lv[8][6], &lv[8][7], &lv[8][8], &lv[8][9],
-                &EQ2_B);
+        parse_csv(buf, lv[8][0], lv[8][1], lv[8][2], lv[8][3], lv[8][4],
+                lv[8][5], lv[8][6], lv[8][7], lv[8][8], lv[8][9],
+                EQ2_B);
         break;
 
     case 1:
         //Compressor
-        sscanf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
-                &lv[9][0], &lv[9][1], &lv[9][2], &lv[9][3], &lv[9][4],
-                &lv[9][5], &lv[9][6], &lv[9][7], &lv[9][8], &Compressor_B);
+        parse_csv(buf, lv[9][0], lv[9][1], lv[9][2], lv[9][3], lv[9][4],
+                lv[9][5], lv[9][6], lv[9][7], lv[9][8], Compressor_B);
         break;
 
     case 10:
         //WhaWha
-        sscanf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
-                &lv[11][0], &lv[11][1], &lv[11][2], &lv[11][3], &lv[11][4],
-                &lv[11][5], &lv[11][6], &lv[11][7], &lv[11][8], &lv[11][9],
-                &lv[11][10], &WhaWha_B);
+        parse_csv(buf, lv[11][0], lv[11][1], lv[11][2], lv[11][3], lv[11][4],
+                lv[11][5], lv[11][6], lv[11][7], lv[11][8], lv[11][9],
+                lv[11][10], WhaWha_B);
         break;
 
     case 11:
         //Alienwah
-        sscanf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
-                &lv[12][0], &lv[12][1], &lv[12][2], &lv[12][3], &lv[12][4],
-                &lv[12][5], &lv[12][6], &lv[12][7], &lv[12][8], &lv[12][9],
-                &lv[12][10], &Alienwah_B);
+        parse_csv(buf, lv[12][0], lv[12][1], lv[12][2], lv[12][3], lv[12][4],
+                lv[12][5], lv[12][6], lv[12][7], lv[12][8], lv[12][9],
+                lv[12][10], Alienwah_B);
         break;
 
     case 12:
         //Cabinet
-        sscanf (buf, "%d,%d,%d\n", &lv[13][0], &lv[13][1], &Cabinet_B);
+        parse_csv(buf, lv[13][0], lv[13][1], Cabinet_B);
         break;
 
     case 13:
         //Pan
-        sscanf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
-                &lv[14][0], &lv[14][1], &lv[14][2], &lv[14][3], &lv[14][4],
-                &lv[14][5], &lv[14][6], &lv[14][7], &lv[14][8],&Pan_B);
+        parse_csv(buf, lv[14][0], lv[14][1], lv[14][2], lv[14][3], lv[14][4],
+                lv[14][5], lv[14][6], lv[14][7], lv[14][8], Pan_B);
         break;
 
     case 14:
         //Harmonizer
-        sscanf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
-                &lv[15][0], &lv[15][1], &lv[15][2], &lv[15][3], &lv[15][4],
-                &lv[15][5], &lv[15][6], &lv[15][7], &lv[15][8], &lv[15][9],
-                &lv[15][10], &Harmonizer_B);
+        parse_csv(buf, lv[15][0], lv[15][1], lv[15][2], lv[15][3], lv[15][4],
+                lv[15][5], lv[15][6], lv[15][7], lv[15][8], lv[15][9],
+                lv[15][10], Harmonizer_B);
         break;
 
     case 15:
         //Musical Delay
-        sscanf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
-                &lv[16][0], &lv[16][1], &lv[16][2], &lv[16][3], &lv[16][4],
-                &lv[16][5], &lv[16][6], &lv[16][7], &lv[16][8], &lv[16][9],
-                &lv[16][10], &lv[16][11], &lv[16][12], &MusDelay_B);
+        parse_csv(buf, lv[16][0], lv[16][1], lv[16][2], lv[16][3], lv[16][4],
+                lv[16][5], lv[16][6], lv[16][7], lv[16][8], lv[16][9],
+                lv[16][10], lv[16][11], lv[16][12], MusDelay_B);
         break;
 
     case 16:
         //NoiseGate
-        sscanf (buf, "%d,%d,%d,%d,%d,%d,%d,%d\n",
-                &lv[17][0], &lv[17][1], &lv[17][2], &lv[17][3], &lv[17][4],
-                &lv[17][5], &lv[17][6], &Gate_B);
-
+        parse_csv(buf, lv[17][0], lv[17][1], lv[17][2], lv[17][3], lv[17][4],
+                lv[17][5], lv[17][6], Gate_B);
         break;
 
     case 17:
         //NewDist
-        sscanf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
-                &lv[18][0], &lv[18][1], &lv[18][2], &lv[18][3], &lv[18][4],
-                &lv[18][5], &lv[18][6], &lv[18][7], &lv[18][8], &lv[18][9],
-                &lv[18][10], &lv[18][11], &NewDist_B);
+        parse_csv(buf, lv[18][0], lv[18][1], lv[18][2], lv[18][3], lv[18][4],
+                lv[18][5], lv[18][6], lv[18][7], lv[18][8], lv[18][9],
+                lv[18][10], lv[18][11], NewDist_B);
         break;
 
     case 18:
         //Analog Phaser
-        sscanf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
-                &lv[19][0], &lv[19][1], &lv[19][2], &lv[19][3], &lv[19][4],
-                &lv[19][5], &lv[19][6], &lv[19][7], &lv[19][8], &lv[19][9],
-                &lv[19][10], &lv[19][11], &APhaser_B);
+        parse_csv(buf, lv[19][0], lv[19][1], lv[19][2], lv[19][3], lv[19][4],
+                lv[19][5], lv[19][6], lv[19][7], lv[19][8], lv[19][9],
+                lv[19][10], lv[19][11], APhaser_B);
         break;
 
     case 19:
         //Valve
-        sscanf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
-                &lv[20][0], &lv[20][1], &lv[20][2], &lv[20][3], &lv[20][4],
-                &lv[20][5], &lv[20][6], &lv[20][7], &lv[20][8], &lv[20][9],
-                &lv[20][10],&lv[20][11],&lv[20][12], &Valve_B);
+        parse_csv(buf, lv[20][0], lv[20][1], lv[20][2], lv[20][3], lv[20][4],
+                lv[20][5], lv[20][6], lv[20][7], lv[20][8], lv[20][9],
+                lv[20][10], lv[20][11], lv[20][12], Valve_B);
         break;
 
     case 20:
-        //Dual Flnage
-        sscanf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
-                &lv[21][0], &lv[21][1], &lv[21][2], &lv[21][3], &lv[21][4],
-                &lv[21][5], &lv[21][6], &lv[21][7], &lv[21][8], &lv[21][9],
-                &lv[21][10], &lv[21][11], &lv[21][12], &lv[21][13], &lv[21][14],
-                &DFlange_B);
+        //Dual Flange
+        parse_csv(buf, lv[21][0], lv[21][1], lv[21][2], lv[21][3], lv[21][4],
+                lv[21][5], lv[21][6], lv[21][7], lv[21][8], lv[21][9],
+                lv[21][10], lv[21][11], lv[21][12], lv[21][13], lv[21][14],
+                DFlange_B);
         break;
 
     case 21:
         //Ring
-        sscanf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
-                &lv[22][0], &lv[22][1], &lv[22][2], &lv[22][3], &lv[22][4],
-                &lv[22][5], &lv[22][6], &lv[22][7], &lv[22][8], &lv[22][9],
-                &lv[22][10], &lv[22][11], &lv[22][12],&Ring_B);
+        parse_csv(buf, lv[22][0], lv[22][1], lv[22][2], lv[22][3], lv[22][4],
+                lv[22][5], lv[22][6], lv[22][7], lv[22][8], lv[22][9],
+                lv[22][10], lv[22][11], lv[22][12], Ring_B);
         break;
 
     case 22:
         //Exciter
-        sscanf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
-                &lv[23][0], &lv[23][1], &lv[23][2], &lv[23][3], &lv[23][4],
-                &lv[23][5], &lv[23][6], &lv[23][7], &lv[23][8], &lv[23][9],
-                &lv[23][10], &lv[23][11], &lv[23][12],&Exciter_B);
+        parse_csv(buf, lv[23][0], lv[23][1], lv[23][2], lv[23][3], lv[23][4],
+                lv[23][5], lv[23][6], lv[23][7], lv[23][8], lv[23][9],
+                lv[23][10], lv[23][11], lv[23][12], Exciter_B);
         break;
 
     case 23:
         //MBDist
-        sscanf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
-                &lv[24][0], &lv[24][1], &lv[24][2], &lv[24][3], &lv[24][4],
-                &lv[24][5], &lv[24][6], &lv[24][7], &lv[24][8], &lv[24][9],
-                &lv[24][10], &lv[24][11], &lv[24][12], &lv[24][13], &lv[24][14],
-                &MBDist_B);
+        parse_csv(buf, lv[24][0], lv[24][1], lv[24][2], lv[24][3], lv[24][4],
+                lv[24][5], lv[24][6], lv[24][7], lv[24][8], lv[24][9],
+                lv[24][10], lv[24][11], lv[24][12], lv[24][13], lv[24][14],
+                MBDist_B);
         break;
 
     case 24:
         //Arpie
-        sscanf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
-                &lv[25][0], &lv[25][1], &lv[25][2], &lv[25][3], &lv[25][4],
-                &lv[25][5], &lv[25][6], &lv[25][7], &lv[25][8], &lv[25][9],
-                &lv[25][10],&Arpie_B);
+        parse_csv(buf, lv[25][0], lv[25][1], lv[25][2], lv[25][3], lv[25][4],
+                lv[25][5], lv[25][6], lv[25][7], lv[25][8], lv[25][9],
+                lv[25][10], Arpie_B);
         break;
 
     case 25:
         //Expander
-        sscanf (buf, "%d,%d,%d,%d,%d,%d,%d,%d\n",
-                &lv[26][0], &lv[26][1], &lv[26][2], &lv[26][3], &lv[26][4],
-                &lv[26][5], &lv[26][6], &Expander_B);
-
+        parse_csv(buf, lv[26][0], lv[26][1], lv[26][2], lv[26][3], lv[26][4],
+                lv[26][5], lv[26][6], Expander_B);
         break;
 
     case 26:
         //Shuffle
-        sscanf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
-                &lv[27][0], &lv[27][1], &lv[27][2], &lv[27][3], &lv[27][4],
-                &lv[27][5], &lv[27][6], &lv[27][7], &lv[27][8], &lv[27][9],
-                &lv[27][10],&Shuffle_B);
+        parse_csv(buf, lv[27][0], lv[27][1], lv[27][2], lv[27][3], lv[27][4],
+                lv[27][5], lv[27][6], lv[27][7], lv[27][8], lv[27][9],
+                lv[27][10], Shuffle_B);
         break;
 
     case 27:
         //Synthfilter
-        sscanf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
-                &lv[28][0], &lv[28][1], &lv[28][2], &lv[28][3], &lv[28][4],
-                &lv[28][5], &lv[28][6], &lv[28][7], &lv[28][8], &lv[28][9],
-                &lv[28][10], &lv[28][11], &lv[28][12], &lv[28][13], &lv[28][14],
-                &lv[28][15],&Synthfilter_B);
+        parse_csv(buf, lv[28][0], lv[28][1], lv[28][2], lv[28][3], lv[28][4],
+                lv[28][5], lv[28][6], lv[28][7], lv[28][8], lv[28][9],
+                lv[28][10], lv[28][11], lv[28][12], lv[28][13], lv[28][14],
+                lv[28][15], Synthfilter_B);
         break;
 
     case 28:
         //MBVvol
-        sscanf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
-                &lv[29][0], &lv[29][1], &lv[29][2], &lv[29][3], &lv[29][4],
-                &lv[29][5], &lv[29][6], &lv[29][7], &lv[29][8], &lv[29][9],
-                &lv[29][10],&MBVvol_B);
+        parse_csv(buf, lv[29][0], lv[29][1], lv[29][2], lv[29][3], lv[29][4],
+                lv[29][5], lv[29][6], lv[29][7], lv[29][8], lv[29][9],
+                lv[29][10], MBVvol_B);
         break;
 
     case 29:
         //Convolotron
         efx_Convol->Filename.fill(0);
-        memset(cfilename,0, sizeof(cfilename));
-        sscanf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%s\n",
-                &lv[30][0], &lv[30][1], &lv[30][2], &lv[30][3], &lv[30][4],
-                &lv[30][5], &lv[30][6], &lv[30][7], &lv[30][8], &lv[30][9],
-                &lv[30][10],&Convol_B,cfilename);
-        strcpy(efx_Convol->Filename.data(),cfilename);
+        {
+            auto fname = parse_csv_then_str(buf, lv[30][0], lv[30][1], lv[30][2],
+                    lv[30][3], lv[30][4], lv[30][5], lv[30][6], lv[30][7],
+                    lv[30][8], lv[30][9], lv[30][10], Convol_B);
+            auto n = (std::min)(fname.size(), efx_Convol->Filename.size() - 1);
+            std::copy_n(fname.data(), n, efx_Convol->Filename.data());
+        }
         break;
 
     case 30:
         //Looper
-        sscanf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
-                &lv[31][0], &lv[31][1], &lv[31][2], &lv[31][3], &lv[31][4],
-                &lv[31][5], &lv[31][6], &lv[31][7], &lv[31][8], &lv[31][9],
-                &lv[31][10],&lv[31][11],&lv[31][12],&lv[31][13],&Looper_B);
+        parse_csv(buf, lv[31][0], lv[31][1], lv[31][2], lv[31][3], lv[31][4],
+                lv[31][5], lv[31][6], lv[31][7], lv[31][8], lv[31][9],
+                lv[31][10], lv[31][11], lv[31][12], lv[31][13], Looper_B);
         break;
 
     case 31:
         //RyanWah
-        sscanf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
-                &lv[32][0], &lv[32][1], &lv[32][2], &lv[32][3], &lv[32][4],
-                &lv[32][5], &lv[32][6], &lv[32][7], &lv[32][8], &lv[32][9],
-                &lv[32][10], &lv[32][11], &lv[32][12], &lv[32][13], &lv[32][14],
-                &lv[32][15], &lv[32][16], &lv[32][17],&RyanWah_B);
+        parse_csv(buf, lv[32][0], lv[32][1], lv[32][2], lv[32][3], lv[32][4],
+                lv[32][5], lv[32][6], lv[32][7], lv[32][8], lv[32][9],
+                lv[32][10], lv[32][11], lv[32][12], lv[32][13], lv[32][14],
+                lv[32][15], lv[32][16], lv[32][17], RyanWah_B);
         break;
 
     case 32:
         //Echoverse
-        sscanf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
-                &lv[33][0], &lv[33][1], &lv[33][2], &lv[33][3], &lv[33][4],
-                &lv[33][5], &lv[33][6], &lv[33][7], &lv[33][8], &lv[33][9], &RBEcho_B);
+        parse_csv(buf, lv[33][0], lv[33][1], lv[33][2], lv[33][3], lv[33][4],
+                lv[33][5], lv[33][6], lv[33][7], lv[33][8], lv[33][9], RBEcho_B);
         break;
 
 
     case 33:
         //CoilCrafter
-        sscanf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
-                &lv[34][0], &lv[34][1], &lv[34][2], &lv[34][3], &lv[34][4],
-                &lv[34][5], &lv[34][6], &lv[34][7], &lv[34][8],&CoilCrafter_B);
+        parse_csv(buf, lv[34][0], lv[34][1], lv[34][2], lv[34][3], lv[34][4],
+                lv[34][5], lv[34][6], lv[34][7], lv[34][8], CoilCrafter_B);
         break;
 
     case 34:
-        //CoilCrafter
-        sscanf (buf, "%d,%d,%d,%d,%d,%d\n",
-                &lv[35][0], &lv[35][1], &lv[35][2], &lv[35][3], &lv[35][4],
-                &ShelfBoost_B);
+        //ShelfBoost
+        parse_csv(buf, lv[35][0], lv[35][1], lv[35][2], lv[35][3], lv[35][4],
+                ShelfBoost_B);
         break;
 
     case 35:
         //Vocoder
-        sscanf (buf, "%d,%d,%d,%d,%d,%d,%d,%d\n",
-                &lv[36][0], &lv[36][1], &lv[36][2], &lv[36][3], &lv[36][4],
-                &lv[36][5], &lv[36][6], &Vocoder_B);
+        parse_csv(buf, lv[36][0], lv[36][1], lv[36][2], lv[36][3], lv[36][4],
+                lv[36][5], lv[36][6], Vocoder_B);
         break;
 
     case 36:
         //Sustainer
-        sscanf (buf, "%d,%d,%d\n",
-                &lv[37][0], &lv[37][1], &Sustainer_B);
+        parse_csv(buf, lv[37][0], lv[37][1], Sustainer_B);
         break;
 
     case 37:
         //Sequence
-        sscanf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
-                &lv[38][0], &lv[38][1], &lv[38][2], &lv[38][3], &lv[38][4],
-                &lv[38][5], &lv[38][6], &lv[38][7], &lv[38][8], &lv[38][9],
-                &lv[38][10],&lv[38][11],&lv[38][12],&lv[38][13],&lv[38][14],&Looper_B);
+        parse_csv(buf, lv[38][0], lv[38][1], lv[38][2], lv[38][3], lv[38][4],
+                lv[38][5], lv[38][6], lv[38][7], lv[38][8], lv[38][9],
+                lv[38][10], lv[38][11], lv[38][12], lv[38][13], lv[38][14], Looper_B);
         break;
 
     case 38:
         //Shifter
-        sscanf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
-                &lv[39][0], &lv[39][1], &lv[39][2], &lv[39][3], &lv[39][4],
-                &lv[39][5], &lv[39][6], &lv[39][7], &lv[39][8], &lv[39][9], &Shifter_B);
+        parse_csv(buf, lv[39][0], lv[39][1], lv[39][2], lv[39][3], lv[39][4],
+                lv[39][5], lv[39][6], lv[39][7], lv[39][8], lv[39][9], Shifter_B);
         break;
 
     case 39:
         //StompBox
-        sscanf (buf, "%d,%d,%d,%d,%d,%d,%d\n",
-                &lv[40][0], &lv[40][1], &lv[40][2], &lv[40][3], &lv[40][4],
-                &lv[40][5], &StompBox_B);
+        parse_csv(buf, lv[40][0], lv[40][1], lv[40][2], lv[40][3], lv[40][4],
+                lv[40][5], StompBox_B);
         break;
 
     case 40:
         //Reverbtron
         efx_Reverbtron->Filename.fill(0);
-        memset(cfilename,0, sizeof(cfilename));
-        sscanf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%s\n",
-                &lv[41][0], &lv[41][1], &lv[41][2], &lv[41][3], &lv[41][4],
-                &lv[41][5], &lv[41][6], &lv[41][7], &lv[41][8], &lv[41][9],
-                &lv[41][10],&lv[41][11],&lv[41][12], &lv[41][13], &lv[41][14],&lv[41][15],
-                &Reverbtron_B,
-                cfilename);
-        strcpy(efx_Reverbtron->Filename.data(),cfilename);
+        {
+            auto fname = parse_csv_then_str(buf, lv[41][0], lv[41][1], lv[41][2],
+                    lv[41][3], lv[41][4], lv[41][5], lv[41][6], lv[41][7],
+                    lv[41][8], lv[41][9], lv[41][10], lv[41][11], lv[41][12],
+                    lv[41][13], lv[41][14], lv[41][15], Reverbtron_B);
+            auto n = (std::min)(fname.size(), efx_Reverbtron->Filename.size() - 1);
+            std::copy_n(fname.data(), n, efx_Reverbtron->Filename.data());
+        }
         break;
 
     case 41:
         //Echotron
         efx_Echotron->Filename.fill(0);
-        memset(cfilename,0, sizeof(cfilename));
-        sscanf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%s\n",
-                &lv[42][0], &lv[42][1], &lv[42][2], &lv[42][3], &lv[42][4],
-                &lv[42][5], &lv[42][6], &lv[42][7], &lv[42][8], &lv[42][9],
-                &lv[42][10],&lv[42][11],&lv[42][12], &lv[42][13], &lv[42][14],&lv[42][15],
-                &Echotron_B,
-                cfilename);
-        strcpy(efx_Echotron->Filename.data(),cfilename);
+        {
+            auto fname = parse_csv_then_str(buf, lv[42][0], lv[42][1], lv[42][2],
+                    lv[42][3], lv[42][4], lv[42][5], lv[42][6], lv[42][7],
+                    lv[42][8], lv[42][9], lv[42][10], lv[42][11], lv[42][12],
+                    lv[42][13], lv[42][14], lv[42][15], Echotron_B);
+            auto n = (std::min)(fname.size(), efx_Echotron->Filename.size() - 1);
+            std::copy_n(fname.data(), n, efx_Echotron->Filename.data());
+        }
         break;
 
     case 42:
         //StereoHarm
-        sscanf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
-                &lv[43][0], &lv[43][1], &lv[43][2], &lv[43][3], &lv[43][4],
-                &lv[43][5], &lv[43][6], &lv[43][7], &lv[43][8], &lv[43][9],
-                &lv[43][10], &lv[43][11], &StereoHarm_B);
+        parse_csv(buf, lv[43][0], lv[43][1], lv[43][2], lv[43][3], lv[43][4],
+                lv[43][5], lv[43][6], lv[43][7], lv[43][8], lv[43][9],
+                lv[43][10], lv[43][11], StereoHarm_B);
         break;
 
     case 43:
         //CompBand
-        sscanf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
-                &lv[44][0], &lv[44][1], &lv[44][2], &lv[44][3], &lv[44][4],
-                &lv[44][5], &lv[44][6], &lv[44][7], &lv[44][8], &lv[44][9],
-                &lv[44][10], &lv[44][11], &lv[44][12], &CompBand_B);
+        parse_csv(buf, lv[44][0], lv[44][1], lv[44][2], lv[44][3], lv[44][4],
+                lv[44][5], lv[44][6], lv[44][7], lv[44][8], lv[44][9],
+                lv[44][10], lv[44][11], lv[44][12], CompBand_B);
         break;
 
     case 44:
         //Opticaltrem
-        sscanf (buf, "%d,%d,%d,%d,%d,%d,%d\n",
-                &lv[45][0], &lv[45][1], &lv[45][2], &lv[45][3], &lv[45][4],
-                &lv[45][5], &Opticaltrem_B);
+        parse_csv(buf, lv[45][0], lv[45][1], lv[45][2], lv[45][3], lv[45][4],
+                lv[45][5], Opticaltrem_B);
         break;
 
     case 45:
         //Vibe
-        sscanf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
-                &lv[46][0], &lv[46][1], &lv[46][2], &lv[46][3], &lv[46][4],
-                &lv[46][5], &lv[46][6], &lv[46][7], &lv[46][8], &lv[46][9], &lv[46][10],
-                &Vibe_B);
+        parse_csv(buf, lv[46][0], lv[46][1], lv[46][2], lv[46][3], lv[46][4],
+                lv[46][5], lv[46][6], lv[46][7], lv[46][8], lv[46][9], lv[46][10],
+                Vibe_B);
         break;
 
     case 46:
         //Infinity
-        sscanf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
-                &lv[47][0], &lv[47][1], &lv[47][2], &lv[47][3], &lv[47][4],
-                &lv[47][5], &lv[47][6], &lv[47][7], &lv[47][8], &lv[47][9],
-                &lv[47][10], &lv[47][11], &lv[47][12], &lv[47][13], &lv[47][14],
-                &lv[47][15], &lv[47][16], &lv[47][17], &Infinity_B);
+        parse_csv(buf, lv[47][0], lv[47][1], lv[47][2], lv[47][3], lv[47][4],
+                lv[47][5], lv[47][6], lv[47][7], lv[47][8], lv[47][9],
+                lv[47][10], lv[47][11], lv[47][12], lv[47][13], lv[47][14],
+                lv[47][15], lv[47][16], lv[47][17], Infinity_B);
         break;
 
 
@@ -428,7 +546,7 @@ void RKR::getbuf(char *buf, int j)
     switch (j) {
     case 8:
         //Reverb
-        sprintf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+        format_csv(buf, 256,
                  efx_Rev->getpar (0), efx_Rev->getpar (1),
                  efx_Rev->getpar (2), efx_Rev->getpar (3),
                  efx_Rev->getpar (4), efx_Rev->getpar (5),
@@ -439,7 +557,7 @@ void RKR::getbuf(char *buf, int j)
 
     case 4:
         //Echo
-        sprintf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+        format_csv(buf, 256,
                  efx_Echo->getpar (0), efx_Echo->getpar (1),
                  efx_Echo->getpar (2), efx_Echo->getpar (3),
                  efx_Echo->getpar (4), efx_Echo->getpar (5),
@@ -449,7 +567,7 @@ void RKR::getbuf(char *buf, int j)
 
     case 5:
         //Chorus
-        sprintf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+        format_csv(buf, 256,
                  efx_Chorus->getpar (0), efx_Chorus->getpar (1),
                  efx_Chorus->getpar (2), efx_Chorus->getpar (3),
                  efx_Chorus->getpar (4), efx_Chorus->getpar (5),
@@ -461,7 +579,7 @@ void RKR::getbuf(char *buf, int j)
 
     case 7:
         //Flanger
-        sprintf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+        format_csv(buf, 256,
                  efx_Flanger->getpar (0), efx_Flanger->getpar (1),
                  efx_Flanger->getpar (2), efx_Flanger->getpar (3),
                  efx_Flanger->getpar (4), efx_Flanger->getpar (5),
@@ -473,7 +591,7 @@ void RKR::getbuf(char *buf, int j)
 
     case 6:
         //Phaser
-        sprintf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+        format_csv(buf, 256,
                  efx_Phaser->getpar (0), efx_Phaser->getpar (1),
                  efx_Phaser->getpar (2), efx_Phaser->getpar (3),
                  efx_Phaser->getpar (4), efx_Phaser->getpar (5),
@@ -485,7 +603,7 @@ void RKR::getbuf(char *buf, int j)
 
     case 3:
         //Overdrive
-        sprintf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+        format_csv(buf, 256,
                  efx_Overdrive->getpar (0), efx_Overdrive->getpar (1),
                  efx_Overdrive->getpar (2), efx_Overdrive->getpar (3),
                  efx_Overdrive->getpar (4), efx_Overdrive->getpar (5),
@@ -497,7 +615,7 @@ void RKR::getbuf(char *buf, int j)
 
     case 2:
         //Distorsion
-        sprintf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+        format_csv(buf, 256,
                  efx_Distorsion->getpar (0), efx_Distorsion->getpar (1),
                  efx_Distorsion->getpar (2), efx_Distorsion->getpar (3),
                  efx_Distorsion->getpar (4), efx_Distorsion->getpar (5),
@@ -509,7 +627,7 @@ void RKR::getbuf(char *buf, int j)
 
     case 0:
         //EQ1
-        sprintf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+        format_csv(buf, 256,
                  efx_EQ1->getpar (12), efx_EQ1->getpar (5 + 12),
                  efx_EQ1->getpar (10 + 12), efx_EQ1->getpar (15 + 12),
                  efx_EQ1->getpar (20 + 12), efx_EQ1->getpar (25 + 12),
@@ -520,7 +638,7 @@ void RKR::getbuf(char *buf, int j)
 
     case 9:
         //EQ2
-        sprintf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+        format_csv(buf, 256,
                  efx_EQ2->getpar (11), efx_EQ2->getpar (12),
                  efx_EQ2->getpar (13), efx_EQ2->getpar (5 + 11),
                  efx_EQ2->getpar (5 + 12), efx_EQ2->getpar (5 + 13),
@@ -531,7 +649,7 @@ void RKR::getbuf(char *buf, int j)
 
     case 1:
         // Compressor
-        sprintf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+        format_csv(buf, 256,
                  efx_Compressor->getpar (1), efx_Compressor->getpar (2),
                  efx_Compressor->getpar (3), efx_Compressor->getpar (4),
                  efx_Compressor->getpar (5), efx_Compressor->getpar (6),
@@ -542,7 +660,7 @@ void RKR::getbuf(char *buf, int j)
 
     case 10:
         //WhaWha
-        sprintf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+        format_csv(buf, 256,
                  efx_WhaWha->getpar (0), efx_WhaWha->getpar (1),
                  efx_WhaWha->getpar (2), efx_WhaWha->getpar (3),
                  efx_WhaWha->getpar (4), efx_WhaWha->getpar (5),
@@ -553,7 +671,7 @@ void RKR::getbuf(char *buf, int j)
 
     case 11:
         //Alienwah
-        sprintf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+        format_csv(buf, 256,
                  efx_Alienwah->getpar (0), efx_Alienwah->getpar (1),
                  efx_Alienwah->getpar (2), efx_Alienwah->getpar (3),
                  efx_Alienwah->getpar (4), efx_Alienwah->getpar (5),
@@ -564,13 +682,13 @@ void RKR::getbuf(char *buf, int j)
 
     case 12:
         //Cabinet
-        sprintf (buf, "%d,%d,%d\n",
+        format_csv(buf, 256,
                  Cabinet_Preset, efx_Cabinet->getpar (0), Cabinet_Bypass);
         break;
 
     case 13:
         //Pan
-        sprintf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+        format_csv(buf, 256,
                  efx_Pan->getpar (0), efx_Pan->getpar (1),
                  efx_Pan->getpar (2), efx_Pan->getpar (3),
                  efx_Pan->getpar (4), efx_Pan->getpar (5),
@@ -580,7 +698,7 @@ void RKR::getbuf(char *buf, int j)
 
     case 14:
         //Harmonizer
-        sprintf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+        format_csv(buf, 256,
                  efx_Har->getpar (0), efx_Har->getpar (1),
                  efx_Har->getpar (2), efx_Har->getpar (3),
                  efx_Har->getpar (4), efx_Har->getpar (5),
@@ -591,7 +709,7 @@ void RKR::getbuf(char *buf, int j)
 
     case 15:
         //MusicalDelay
-        sprintf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+        format_csv(buf, 256,
                  efx_MusDelay->getpar (0), efx_MusDelay->getpar (1),
                  efx_MusDelay->getpar (2), efx_MusDelay->getpar (3),
                  efx_MusDelay->getpar (4), efx_MusDelay->getpar (5),
@@ -603,7 +721,7 @@ void RKR::getbuf(char *buf, int j)
 
     case 16:
         //NoiseGate
-        sprintf (buf, "%d,%d,%d,%d,%d,%d,%d,%d\n",
+        format_csv(buf, 256,
                  efx_Gate->getpar (1), efx_Gate->getpar (2),
                  efx_Gate->getpar (3), efx_Gate->getpar (4),
                  efx_Gate->getpar (5), efx_Gate->getpar (6),
@@ -612,7 +730,7 @@ void RKR::getbuf(char *buf, int j)
 
     case 17:
         //NewDist
-        sprintf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+        format_csv(buf, 256,
                  efx_NewDist->getpar (0), efx_NewDist->getpar (1),
                  efx_NewDist->getpar (2), efx_NewDist->getpar (3),
                  efx_NewDist->getpar (4), efx_NewDist->getpar (5),
@@ -624,7 +742,7 @@ void RKR::getbuf(char *buf, int j)
 
     case 18:
         //Analog Phaser
-        sprintf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+        format_csv(buf, 256,
                  efx_APhaser->getpar (0), efx_APhaser->getpar (1),
                  efx_APhaser->getpar (2), efx_APhaser->getpar (3),
                  efx_APhaser->getpar (4), efx_APhaser->getpar (5),
@@ -636,7 +754,7 @@ void RKR::getbuf(char *buf, int j)
 
     case 19:
         //Valve
-        sprintf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+        format_csv(buf, 256,
                  efx_Valve->getpar (0), efx_Valve->getpar (1),
                  efx_Valve->getpar (2), efx_Valve->getpar (3),
                  efx_Valve->getpar (4), efx_Valve->getpar (5),
@@ -648,7 +766,7 @@ void RKR::getbuf(char *buf, int j)
 
     case 20:
         //Dual_Flange
-        sprintf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+        format_csv(buf, 256,
                  efx_DFlange->getpar (0), efx_DFlange->getpar (1),
                  efx_DFlange->getpar (2), efx_DFlange->getpar (3),
                  efx_DFlange->getpar (4), efx_DFlange->getpar (5),
@@ -661,7 +779,7 @@ void RKR::getbuf(char *buf, int j)
 
     case 21:
         //Ring
-        sprintf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+        format_csv(buf, 256,
                  efx_Ring->getpar (0), efx_Ring->getpar (1),
                  efx_Ring->getpar (2), efx_Ring->getpar (3),
                  efx_Ring->getpar (4), efx_Ring->getpar (5),
@@ -673,7 +791,7 @@ void RKR::getbuf(char *buf, int j)
 
     case 22:
         //Exciter
-        sprintf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+        format_csv(buf, 256,
                  efx_Exciter->getpar (0), efx_Exciter->getpar (1),
                  efx_Exciter->getpar (2), efx_Exciter->getpar (3),
                  efx_Exciter->getpar (4), efx_Exciter->getpar (5),
@@ -685,7 +803,7 @@ void RKR::getbuf(char *buf, int j)
 
     case 23:
         //MBDist
-        sprintf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+        format_csv(buf, 256,
                  efx_MBDist->getpar (0), efx_MBDist->getpar (1),
                  efx_MBDist->getpar (2), efx_MBDist->getpar (3),
                  efx_MBDist->getpar (4), efx_MBDist->getpar (5),
@@ -698,7 +816,7 @@ void RKR::getbuf(char *buf, int j)
 
     case 24:
         //Arpie
-        sprintf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+        format_csv(buf, 256,
                  efx_Arpie->getpar (0), efx_Arpie->getpar (1),
                  efx_Arpie->getpar (2), efx_Arpie->getpar (3),
                  efx_Arpie->getpar (4), efx_Arpie->getpar (5),
@@ -709,7 +827,7 @@ void RKR::getbuf(char *buf, int j)
 
     case 25:
         //Expander
-        sprintf (buf, "%d,%d,%d,%d,%d,%d,%d,%d\n",
+        format_csv(buf, 256,
                  efx_Expander->getpar (1), efx_Expander->getpar (2),
                  efx_Expander->getpar (3), efx_Expander->getpar (4),
                  efx_Expander->getpar (5), efx_Expander->getpar (6),
@@ -718,7 +836,7 @@ void RKR::getbuf(char *buf, int j)
 
     case 26:
         //Shuffle
-        sprintf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+        format_csv(buf, 256,
                  efx_Shuffle->getpar (0), efx_Shuffle->getpar (1),
                  efx_Shuffle->getpar (2), efx_Shuffle->getpar (3),
                  efx_Shuffle->getpar (4), efx_Shuffle->getpar (5),
@@ -729,7 +847,7 @@ void RKR::getbuf(char *buf, int j)
 
     case 27:
         //Synthfilter
-        sprintf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+        format_csv(buf, 256,
                  efx_Synthfilter->getpar (0), efx_Synthfilter->getpar (1),
                  efx_Synthfilter->getpar (2), efx_Synthfilter->getpar (3),
                  efx_Synthfilter->getpar (4), efx_Synthfilter->getpar (5),
@@ -743,7 +861,7 @@ void RKR::getbuf(char *buf, int j)
 
     case 28:
         //MBVvol
-        sprintf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+        format_csv(buf, 256,
                  efx_MBVvol->getpar (0), efx_MBVvol->getpar (1),
                  efx_MBVvol->getpar (2), efx_MBVvol->getpar (3),
                  efx_MBVvol->getpar (4), efx_MBVvol->getpar (5),
@@ -754,18 +872,18 @@ void RKR::getbuf(char *buf, int j)
 
     case 29:
         //Convolotron
-        sprintf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%s\n",
+        format_csv_str(buf, 256, efx_Convol->Filename.data(),
                  efx_Convol->getpar (0), efx_Convol->getpar (1),
                  efx_Convol->getpar (2), efx_Convol->getpar (3),
                  efx_Convol->getpar (4), efx_Convol->getpar (5),
                  efx_Convol->getpar (6), efx_Convol->getpar (7),
                  efx_Convol->getpar (8), efx_Convol->getpar (9),
-                 efx_Convol->getpar (10), Convol_Bypass, efx_Convol->Filename.data());
+                 efx_Convol->getpar (10), Convol_Bypass);
         break;
 
     case 30:
         //Looper
-        sprintf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+        format_csv(buf, 256,
                  efx_Looper->getpar (0), efx_Looper->getpar (1),
                  efx_Looper->getpar (2), efx_Looper->getpar (3),
                  efx_Looper->getpar (4), efx_Looper->getpar (5),
@@ -777,7 +895,7 @@ void RKR::getbuf(char *buf, int j)
 
     case 31:
         //RyanWah
-        sprintf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+        format_csv(buf, 256,
                  efx_RyanWah->getpar (0), efx_RyanWah->getpar (1),
                  efx_RyanWah->getpar (2), efx_RyanWah->getpar (3),
                  efx_RyanWah->getpar (4), efx_RyanWah->getpar (5),
@@ -792,7 +910,7 @@ void RKR::getbuf(char *buf, int j)
         break;
     case 32:
         //Echoverse
-        sprintf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+        format_csv(buf, 256,
                  efx_RBEcho->getpar (0), efx_RBEcho->getpar (1),
                  efx_RBEcho->getpar (2), efx_RBEcho->getpar (3),
                  efx_RBEcho->getpar (4), efx_RBEcho->getpar (5),
@@ -804,7 +922,7 @@ void RKR::getbuf(char *buf, int j)
 
     case 33:
         //CoilCrafter
-        sprintf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+        format_csv(buf, 256,
                  efx_CoilCrafter->getpar (0), efx_CoilCrafter->getpar (1),
                  efx_CoilCrafter->getpar (2), efx_CoilCrafter->getpar (3),
                  efx_CoilCrafter->getpar (4), efx_CoilCrafter->getpar (5),
@@ -814,7 +932,7 @@ void RKR::getbuf(char *buf, int j)
 
     case 34:
         //ShelfBoost
-        sprintf (buf, "%d,%d,%d,%d,%d,%d\n",
+        format_csv(buf, 256,
                  efx_ShelfBoost->getpar (0), efx_ShelfBoost->getpar (1),
                  efx_ShelfBoost->getpar (2), efx_ShelfBoost->getpar (3),
                  efx_ShelfBoost->getpar (4), ShelfBoost_Bypass);
@@ -822,7 +940,7 @@ void RKR::getbuf(char *buf, int j)
 
     case 35:
         //Vocoder
-        sprintf (buf, "%d,%d,%d,%d,%d,%d,%d,%d\n",
+        format_csv(buf, 256,
                  efx_Vocoder->getpar (0), efx_Vocoder->getpar (1),
                  efx_Vocoder->getpar (2), efx_Vocoder->getpar (3),
                  efx_Vocoder->getpar (4), efx_Vocoder->getpar (5),
@@ -831,14 +949,14 @@ void RKR::getbuf(char *buf, int j)
 
     case 36:
         //Sustainer
-        sprintf (buf, "%d,%d,%d\n",
+        format_csv(buf, 256,
                  efx_Sustainer->getpar (0), efx_Sustainer->getpar (1),
                  Sustainer_Bypass);
         break;
 
     case 37:
         //Sequence
-        sprintf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+        format_csv(buf, 256,
                  efx_Sequence->getpar (0), efx_Sequence->getpar (1),
                  efx_Sequence->getpar (2), efx_Sequence->getpar (3),
                  efx_Sequence->getpar (4), efx_Sequence->getpar (5),
@@ -851,7 +969,7 @@ void RKR::getbuf(char *buf, int j)
 
     case 38:
         //Shifter
-        sprintf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+        format_csv(buf, 256,
                  efx_Shifter->getpar (0), efx_Shifter->getpar (1),
                  efx_Shifter->getpar (2), efx_Shifter->getpar (3),
                  efx_Shifter->getpar (4), efx_Shifter->getpar (5),
@@ -862,7 +980,7 @@ void RKR::getbuf(char *buf, int j)
 
     case 39:
         //StompBox
-        sprintf (buf, "%d,%d,%d,%d,%d,%d,%d\n",
+        format_csv(buf, 256,
                  efx_StompBox->getpar (0), efx_StompBox->getpar (1),
                  efx_StompBox->getpar (2), efx_StompBox->getpar (3),
                  efx_StompBox->getpar (4), efx_StompBox->getpar (5),
@@ -871,7 +989,7 @@ void RKR::getbuf(char *buf, int j)
 
     case 40:
         //Reverbtron
-        sprintf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%s\n",
+        format_csv_str(buf, 256, efx_Reverbtron->Filename.data(),
                  efx_Reverbtron->getpar (0), efx_Reverbtron->getpar (1),
                  efx_Reverbtron->getpar (2), efx_Reverbtron->getpar (3),
                  efx_Reverbtron->getpar (4), efx_Reverbtron->getpar (5),
@@ -880,12 +998,12 @@ void RKR::getbuf(char *buf, int j)
                  efx_Reverbtron->getpar (10), efx_Reverbtron->getpar (11),
                  efx_Reverbtron->getpar (12), efx_Reverbtron->getpar (13),
                  efx_Reverbtron->getpar (14), efx_Reverbtron->getpar (15),
-                 Reverbtron_Bypass, efx_Reverbtron->Filename.data());
+                 Reverbtron_Bypass);
         break;
 
     case 41:
         //Echotron
-        sprintf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%s\n",
+        format_csv_str(buf, 256, efx_Echotron->Filename.data(),
                  efx_Echotron->getpar (0), efx_Echotron->getpar (1),
                  efx_Echotron->getpar (2), efx_Echotron->getpar (3),
                  efx_Echotron->getpar (4), efx_Echotron->getpar (5),
@@ -894,11 +1012,11 @@ void RKR::getbuf(char *buf, int j)
                  efx_Echotron->getpar (10), efx_Echotron->getpar (11),
                  efx_Echotron->getpar (12), efx_Echotron->getpar (13),
                  efx_Echotron->getpar (14), efx_Echotron->getpar (15),
-                 Echotron_Bypass, efx_Echotron->Filename.data());
+                 Echotron_Bypass);
         break;
     case 42:
         //StereoHarm
-        sprintf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+        format_csv(buf, 256,
                  efx_StereoHarm->getpar (0), efx_StereoHarm->getpar (1),
                  efx_StereoHarm->getpar (2), efx_StereoHarm->getpar (3),
                  efx_StereoHarm->getpar (4), efx_StereoHarm->getpar (5),
@@ -910,7 +1028,7 @@ void RKR::getbuf(char *buf, int j)
 
     case 43:
         //CompBand
-        sprintf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+        format_csv(buf, 256,
                  efx_CompBand->getpar (0), efx_CompBand->getpar (1),
                  efx_CompBand->getpar (2), efx_CompBand->getpar (3),
                  efx_CompBand->getpar (4), efx_CompBand->getpar (5),
@@ -922,7 +1040,7 @@ void RKR::getbuf(char *buf, int j)
 
     case 44:
         //Opticaltrem
-        sprintf (buf, "%d,%d,%d,%d,%d,%d,%d,%d\n",
+        format_csv(buf, 256,
                  efx_Opticaltrem->getpar (0), efx_Opticaltrem->getpar (1),
                  efx_Opticaltrem->getpar (2), efx_Opticaltrem->getpar (3),
                  efx_Opticaltrem->getpar (4), efx_Opticaltrem->getpar (5),
@@ -932,7 +1050,7 @@ void RKR::getbuf(char *buf, int j)
 
     case 45:
         //Vibe
-        sprintf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+        format_csv(buf, 256,
                  efx_Vibe->getpar (0), efx_Vibe->getpar (1),
                  efx_Vibe->getpar (2), efx_Vibe->getpar (3),
                  efx_Vibe->getpar (4), efx_Vibe->getpar (5),
@@ -943,7 +1061,7 @@ void RKR::getbuf(char *buf, int j)
 
     case 46:
         //Infinity
-        sprintf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+        format_csv(buf, 256,
                  efx_Infinity->getpar (0), efx_Infinity->getpar (1),
                  efx_Infinity->getpar (2), efx_Infinity->getpar (3),
                  efx_Infinity->getpar (4), efx_Infinity->getpar (5),
@@ -969,7 +1087,7 @@ RKR::savefile (char *filename)
     int i, j;
     FILE *fn;
     char buf[256];
-    fn = fopen (filename, "w");
+    fn = portable_fopen (filename, "w");
     if(fn == nullptr) {
         if(errno == EACCES)
             Error_Handle(3);
@@ -977,7 +1095,7 @@ RKR::savefile (char *filename)
     }
 
     memset (buf, 0, sizeof (buf));
-    sprintf (buf, "%s\n", VERSION);
+    copy_line(buf, sizeof(buf), VERSION);
     fputs (buf, fn);
 
 
@@ -991,7 +1109,7 @@ RKR::savefile (char *filename)
         if (presets.UserRealName[0] != 0)
             snprintf (buf, sizeof(buf), "%s\n", presets.UserRealName.data());
         else
-            sprintf (buf, "%s\n", getenv ("USER"));
+            snprintf (buf, sizeof(buf), "%s\n", portable_getenv("USER").c_str());
     }
     fputs (buf, fn);
 
@@ -1004,7 +1122,7 @@ RKR::savefile (char *filename)
 
     //General
     memset (buf, 0, sizeof (buf));
-    sprintf (buf, "%f,%f,%f,%d\n", Input_Gain, Master_Volume, Fraction_Bypass, Bypass);
+    format_csv(buf, sizeof(buf), Input_Gain, Master_Volume, Fraction_Bypass, Bypass);
     fputs (buf, fn);
 
 
@@ -1020,7 +1138,7 @@ RKR::savefile (char *filename)
 
     // Order
     memset (buf, 0, sizeof (buf));
-    sprintf (buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+    format_csv(buf, sizeof(buf),
              efx_order[0], efx_order[1], efx_order[2], efx_order[3],
              efx_order[4], efx_order[5], efx_order[6], efx_order[7],
              efx_order[8], efx_order[9]);
@@ -1030,7 +1148,7 @@ RKR::savefile (char *filename)
 
     for(i=0; i<128; i++) {
         memset(buf,0, sizeof(buf));
-        sprintf(buf,"%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+        format_csv(buf, sizeof(buf),
                 XUserMIDI[i][0], XUserMIDI[i][1], XUserMIDI[i][2], XUserMIDI[i][3], XUserMIDI[i][4],
                 XUserMIDI[i][5], XUserMIDI[i][6], XUserMIDI[i][7], XUserMIDI[i][8], XUserMIDI[i][9],
                 XUserMIDI[i][10], XUserMIDI[i][10], XUserMIDI[i][12], XUserMIDI[i][13], XUserMIDI[i][14],
@@ -1069,9 +1187,8 @@ RKR::loadfile (char *filename)
 
     // Order (line 15) — read once to get the effect ordering
     std::getline(file, line);
-    std::sscanf(line.c_str(), "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",
-                &l[0], &l[1], &l[2], &l[3], &l[4], &l[5], &l[6], &l[7],
-                &l[8], &l[9]);
+    parse_csv(line, l[0], l[1], l[2], l[3], l[4], l[5], l[6], l[7],
+              l[8], l[9]);
 
     // Re-open to read from the beginning with the ordering known
     file.clear();
@@ -1097,7 +1214,7 @@ RKR::loadfile (char *filename)
     // General (line 4)
     float in_vol{}, out_vol{}, balance{1.0f};
     std::getline(file, line);
-    std::sscanf(line.c_str(), "%f,%f,%f,%d", &in_vol, &out_vol, &balance, &Bypass_B);
+    parse_csv(line, in_vol, out_vol, balance, Bypass_B);
 
     if ((actuvol == 0) || (needtoloadstate)) {
         Fraction_Bypass = balance;
@@ -1110,28 +1227,26 @@ RKR::loadfile (char *filename)
         std::getline(file, line);
         // putbuf expects a mutable char buffer
         char buf[256]{};
-        std::strncpy(buf, line.c_str(), sizeof(buf) - 1);
+        snprintf(buf, sizeof(buf), "%s", line.c_str());
         putbuf(buf, l[i]);
     }
 
     // Order (again)
     std::getline(file, line);
-    std::sscanf(line.c_str(), "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",
-                &lv[10][0], &lv[10][1], &lv[10][2], &lv[10][3], &lv[10][4],
-                &lv[10][5], &lv[10][6], &lv[10][7], &lv[10][8], &lv[10][9]);
+    parse_csv(line, lv[10][0], lv[10][1], lv[10][2], lv[10][3], lv[10][4],
+              lv[10][5], lv[10][6], lv[10][7], lv[10][8], lv[10][9]);
 
     // User MIDI table (128 lines)
     for (int i = 0; i < 128; i++) {
         std::getline(file, line);
-        std::sscanf(line.c_str(),
-                    "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",
-                    &XUserMIDI[i][0], &XUserMIDI[i][1], &XUserMIDI[i][2],
-                    &XUserMIDI[i][3], &XUserMIDI[i][4], &XUserMIDI[i][5],
-                    &XUserMIDI[i][6], &XUserMIDI[i][7], &XUserMIDI[i][8],
-                    &XUserMIDI[i][9], &XUserMIDI[i][10], &XUserMIDI[i][10],
-                    &XUserMIDI[i][12], &XUserMIDI[i][13], &XUserMIDI[i][14],
-                    &XUserMIDI[i][15], &XUserMIDI[i][16], &XUserMIDI[i][17],
-                    &XUserMIDI[i][18], &XUserMIDI[i][19]);
+        parse_csv(line,
+                  XUserMIDI[i][0], XUserMIDI[i][1], XUserMIDI[i][2],
+                  XUserMIDI[i][3], XUserMIDI[i][4], XUserMIDI[i][5],
+                  XUserMIDI[i][6], XUserMIDI[i][7], XUserMIDI[i][8],
+                  XUserMIDI[i][9], XUserMIDI[i][10], XUserMIDI[i][10],
+                  XUserMIDI[i][12], XUserMIDI[i][13], XUserMIDI[i][14],
+                  XUserMIDI[i][15], XUserMIDI[i][16], XUserMIDI[i][17],
+                  XUserMIDI[i][18], XUserMIDI[i][19]);
     }
 
     Actualizar_Audio();
@@ -1635,7 +1750,7 @@ RKR::loadnames()
 
         case 3:
             memset (temp, 0, sizeof (temp));
-            sprintf (temp, "%s",presets.BankFilename.data());
+            snprintf (temp, sizeof(temp), "%s",presets.BankFilename.data());
             break;
 
         }
@@ -1645,13 +1760,13 @@ RKR::loadnames()
             if(bank_len >= sizeof(presets.Bank)) {
                 memcpy(&presets.Bank, bank_data, sizeof(presets.Bank));
             }
-            for(j=1; j<=60; j++) strcpy(presets.B_Names[k][j].Preset_Name.data(),presets.Bank[j].Preset_Name.data());
+            for(j=1; j<=60; j++) safe_copy(presets.B_Names[k][j].Preset_Name, presets.Bank[j].Preset_Name);
         } else {
-            if ((fn = fopen (temp, "rb")) != nullptr) {
+            if ((fn = portable_fopen (temp, "rb")) != nullptr) {
                 New_Bank();
                 while (!feof (fn)) {
                     if (fread (&presets.Bank, sizeof(presets.Bank), 1, fn) == 0) {break;}
-                    for(j=1; j<=60; j++) {strcpy(presets.B_Names[k][j].Preset_Name.data(),presets.Bank[j].Preset_Name.data());}
+                    for(j=1; j<=60; j++) {safe_copy(presets.B_Names[k][j].Preset_Name, presets.Bank[j].Preset_Name);}
                 }
                 fclose (fn);
             }
@@ -1697,7 +1812,7 @@ RKR::loadbank (char *filename)
 
     }
 
-    if ((fn = fopen (filename, "rb")) != nullptr) {
+    if ((fn = portable_fopen (filename, "rb")) != nullptr) {
         New_Bank();
         while (!feof (fn)) {
             if(fread (&presets.Bank, sizeof(presets.Bank), 1, fn) == 0) {break;}
@@ -1732,7 +1847,7 @@ RKR::savebank (char *filename)
 
     FILE *fn;
 
-    if ((fn = fopen (filename, "wb")) != nullptr) {
+    if ((fn = portable_fopen (filename, "wb")) != nullptr) {
         copy_IO();
         if(BigEndian()) fix_endianess();
         fwrite (&presets.Bank, sizeof(presets.Bank), 1, fn);
@@ -1866,7 +1981,7 @@ RKR::New ()
     efx_Reverbtron->Filename.fill(0);
     efx_Echotron->Filename.fill(0);
     memset (presets.Author.data(), 0, presets.Author.size());
-    strcpy(presets.Author.data(),presets.UserRealName.data());
+    safe_copy(presets.Author, presets.UserRealName);
     Input_Gain = .5f;
     Master_Volume = .5f;
     Fraction_Bypass = 1.0f;
@@ -2072,7 +2187,7 @@ RKR::New_Bank ()
     for (i = 0; i < 62; i++) {
         memset(presets.Bank[i].Preset_Name.data(), 0, presets.Bank[i].Preset_Name.size());
         memset(presets.Bank[i].Author.data(), 0, presets.Bank[i].Author.size());
-        strcpy(presets.Bank[i].Author.data(),presets.UserRealName.data());
+        safe_copy(presets.Bank[i].Author, presets.UserRealName);
         memset(presets.Bank[i].ConvoFiname.data(), 0, presets.Bank[i].ConvoFiname.size());
         memset(presets.Bank[i].RevFiname.data(), 0, presets.Bank[i].RevFiname.size());
         memset(presets.Bank[i].EchoFiname.data(), 0, presets.Bank[i].EchoFiname.size());
@@ -2109,15 +2224,15 @@ RKR::Bank_to_Preset (int i)
 
 
     memset(presets.Preset_Name.data(), 0, presets.Preset_Name.size());
-    strcpy (presets.Preset_Name.data(), presets.Bank[i].Preset_Name.data());
+    safe_copy(presets.Preset_Name, presets.Bank[i].Preset_Name);
     memset(presets.Author.data(), 0, presets.Author.size());
-    strcpy (presets.Author.data(), presets.Bank[i].Author.data());
+    safe_copy(presets.Author, presets.Bank[i].Author);
     efx_Convol->Filename.fill(0);
-    strcpy (efx_Convol->Filename.data(),presets.Bank[i].ConvoFiname.data());
+    safe_copy(efx_Convol->Filename, presets.Bank[i].ConvoFiname);
     efx_Reverbtron->Filename.fill(0);
-    strcpy (efx_Reverbtron->Filename.data(),presets.Bank[i].RevFiname.data());
+    safe_copy(efx_Reverbtron->Filename, presets.Bank[i].RevFiname);
     efx_Echotron->Filename.fill(0);
-    strcpy (efx_Echotron->Filename.data(),presets.Bank[i].EchoFiname.data());
+    safe_copy(efx_Echotron->Filename, presets.Bank[i].EchoFiname);
 
 
     for (j = 0; j <=NumEffects; j++) {
@@ -2207,15 +2322,15 @@ RKR::Preset_to_Bank (int i)
 
     int j, k;
     memset(presets.Bank[i].Preset_Name.data(), 0, presets.Bank[i].Preset_Name.size());
-    strcpy (presets.Bank[i].Preset_Name.data(), presets.Preset_Name.data());
+    safe_copy(presets.Bank[i].Preset_Name, presets.Preset_Name);
     memset(presets.Bank[i].Author.data(), 0, presets.Bank[i].Author.size());
-    strcpy (presets.Bank[i].Author.data(), presets.Author.data());
+    safe_copy(presets.Bank[i].Author, presets.Author);
     memset(presets.Bank[i].ConvoFiname.data(), 0, presets.Bank[i].ConvoFiname.size());
-    strcpy(presets.Bank[i].ConvoFiname.data(), efx_Convol->Filename.data());
+    safe_copy(presets.Bank[i].ConvoFiname, efx_Convol->Filename);
     memset(presets.Bank[i].RevFiname.data(), 0, presets.Bank[i].RevFiname.size());
-    strcpy(presets.Bank[i].RevFiname.data(), efx_Reverbtron->Filename.data());
+    safe_copy(presets.Bank[i].RevFiname, efx_Reverbtron->Filename);
     memset(presets.Bank[i].EchoFiname.data(), 0, presets.Bank[i].EchoFiname.size());
-    strcpy(presets.Bank[i].EchoFiname.data(), efx_Echotron->Filename.data());
+    safe_copy(presets.Bank[i].EchoFiname, efx_Echotron->Filename);
 
 
     presets.Bank[i].Input_Gain = Input_Gain;
@@ -2434,13 +2549,13 @@ RKR::convert_IO()
     int i;
 
     for(i=0; i<62; i++) {
-        sscanf(presets.Bank[i].cInput_Gain.data(), "%f", &presets.Bank[i].Input_Gain);
+        parse_csv(presets.Bank[i].cInput_Gain.data(), presets.Bank[i].Input_Gain);
         if(presets.Bank[i].Input_Gain == 0.0) presets.Bank[i].Input_Gain=0.5f;
 
-        sscanf(presets.Bank[i].cMaster_Volume.data(), "%f", &presets.Bank[i].Master_Volume);
+        parse_csv(presets.Bank[i].cMaster_Volume.data(), presets.Bank[i].Master_Volume);
         if(presets.Bank[i].Master_Volume == 0.0) presets.Bank[i].Master_Volume=0.5f;
 
-        sscanf(presets.Bank[i].cBalance.data(), "%f", &presets.Bank[i].Balance);
+        parse_csv(presets.Bank[i].cBalance.data(), presets.Bank[i].Balance);
         if(presets.Bank[i].Balance == 0.0) presets.Bank[i].Balance=1.0f;
 
 
@@ -2502,7 +2617,7 @@ RKR::saveskin (char *filename)
 
     FILE *fn;
     char buf[256];
-    fn = fopen (filename, "w");
+    fn = portable_fopen (filename, "w");
     if(fn == nullptr) {
         if(errno == EACCES)
             Error_Handle(3);
@@ -2511,25 +2626,25 @@ RKR::saveskin (char *filename)
 
 
     memset (buf, 0, sizeof (buf));
-    sprintf (buf, "%d,%d\n", config.resolution,sh);
+    format_csv(buf, sizeof(buf), config.resolution,sh);
     fputs (buf, fn);
 
     memset (buf, 0, sizeof (buf));
-    sprintf (buf, "%d,%d,%d,%d\n", config.sback_color,config.sfore_color,config.slabel_color,config.sleds_color);
+    format_csv(buf, sizeof(buf), config.sback_color,config.sfore_color,config.slabel_color,config.sleds_color);
     fputs (buf, fn);
 
 
     memset (buf, 0, sizeof (buf));
-    sprintf (buf, "%s", config.BackgroundImage.data());
+    snprintf (buf, sizeof(buf), "%s", config.BackgroundImage.data());
     fputs (buf, fn);
     fputs ("\n",fn);
 
     memset(buf, 0, sizeof (buf));
-    sprintf (buf, "%d,%d\n", config.relfontsize,config.font);
+    format_csv(buf, sizeof(buf), config.relfontsize,config.font);
     fputs (buf, fn);
 
     memset(buf, 0, sizeof (buf));
-    sprintf (buf, "%d\n", config.sschema);
+    format_csv(buf, sizeof(buf), config.sschema);
     fputs (buf, fn);
 
     fclose (fn);
@@ -2549,13 +2664,12 @@ RKR::loadskin (char *filename)
 
     // Resolution
     std::getline(file, line);
-    std::sscanf(line.c_str(), "%d,%d", &config.resolution, &sh);
+    parse_csv(line, config.resolution, sh);
 
     // Colors
     std::getline(file, line);
-    std::sscanf(line.c_str(), "%d,%d,%d,%d",
-                &config.sback_color, &config.sfore_color,
-                &config.slabel_color, &config.sleds_color);
+    parse_csv(line, config.sback_color, config.sfore_color,
+              config.slabel_color, config.sleds_color);
 
     // Background image path
     std::fill(config.BackgroundImage.begin(), config.BackgroundImage.end(), '\0');
@@ -2566,11 +2680,11 @@ RKR::loadskin (char *filename)
 
     // Font
     std::getline(file, line);
-    std::sscanf(line.c_str(), "%d,%d", &config.relfontsize, &config.font);
+    parse_csv(line, config.relfontsize, config.font);
 
     // Schema
     std::getline(file, line);
-    std::sscanf(line.c_str(), "%d", &config.sschema);
+    parse_csv(line, config.sschema);
 }
 
 void
@@ -2595,7 +2709,7 @@ RKR::CheckOldBank(char *filename)
     long Length;
     FILE *fs;
 
-    if ((fs = fopen (filename, "r")) != nullptr) {
+    if ((fs = portable_fopen (filename, "r")) != nullptr) {
         fseek(fs, 0L, SEEK_END);
         Length = ftell(fs);
         fclose(fs);
@@ -2629,13 +2743,13 @@ RKR::SaveIntPreset(int num,char *name)
     char buf[256];
     char sbuf[512];
     memset(tempfile,0,sizeof(tempfile));
-    sprintf (tempfile, "%s%s", getenv ("HOME"), "/.rkrintpreset");
+    snprintf (tempfile, sizeof(tempfile), "%s%s", portable_getenv("HOME").c_str(), "/.rkrintpreset");
 
-    if (( fn = fopen (tempfile, "a")) != nullptr) {
+    if (( fn = portable_fopen (tempfile, "a")) != nullptr) {
         memset(buf,0,sizeof(buf));
         getbuf(buf,num);
         memset(sbuf,0,sizeof(sbuf));
-        sprintf(sbuf,"%d,%s,%s",num,name,buf);
+        snprintf(sbuf,sizeof(sbuf),"%d,%s,%s",num,name,buf);
         fputs(sbuf,fn);
         fclose(fn);
     }
@@ -2650,7 +2764,6 @@ RKR::DelIntPreset(int num, char *name)
 {
     FILE *fn;
     FILE *fs;
-    char *rname;
     int eff=0;
     char orden[1024];
     char tempfile[256];
@@ -2663,19 +2776,28 @@ RKR::DelIntPreset(int num, char *name)
     memset(orden,0,sizeof(orden));
 
 
-    sprintf (tempfile, "%s%s", getenv ("HOME"), "/.rkrintpreset");
-    if (( fs = fopen (tempfile, "r")) == nullptr) return;
+    snprintf (tempfile, sizeof(tempfile), "%s%s", portable_getenv("HOME").c_str(), "/.rkrintpreset");
+    if (( fs = portable_fopen (tempfile, "r")) == nullptr) return;
 
-    sprintf (tempfile2, "%s%s", getenv ("HOME"), "/.rkrtemp");
-    if (( fn = fopen (tempfile2, "w")) != nullptr) {
+    snprintf (tempfile2, sizeof(tempfile2), "%s%s", portable_getenv("HOME").c_str(), "/.rkrtemp");
+    if (( fn = portable_fopen (tempfile2, "w")) != nullptr) {
         memset(buf,0,sizeof(buf));
         while (fgets (buf, sizeof buf, fs) != nullptr) {
             memset(rbuf,0,sizeof(rbuf));
-            sprintf(rbuf,"%s",buf);
-            sscanf(buf,"%d",&eff);
-            rname = strtok(buf,",");
-            rname = strtok(nullptr,",");
-            if((eff==num)&&(strcmp(rname,name)==0)) {
+            snprintf(rbuf,sizeof(rbuf),"%s",buf);
+            parse_csv(buf, eff);
+            // Extract the name field (second comma-separated token)
+            std::string_view sv(buf);
+            auto first_comma = sv.find(',');
+            std::string_view rname;
+            if (first_comma != std::string_view::npos) {
+                auto rest = sv.substr(first_comma + 1);
+                auto second_comma = rest.find(',');
+                rname = (second_comma != std::string_view::npos)
+                    ? rest.substr(0, second_comma)
+                    : rest;
+            }
+            if((eff==num)&&(rname == name)) {
                 continue;
             } else fputs(rbuf,fn);
             memset(buf,0,sizeof(buf));
@@ -2697,8 +2819,8 @@ RKR::MergeIntPreset(char *filename)
     memset(tempfile, 0, sizeof(tempfile));
     memset(tempfile2, 0, sizeof(tempfile2));
 
-    sprintf(tempfile, "%s%s", getenv("HOME"), "/.rkrintpreset");
-    sprintf(tempfile2, "%s%s", getenv("HOME"), "/.rkrtemp");
+    snprintf(tempfile, sizeof(tempfile), "%s%s", portable_getenv("HOME").c_str(), "/.rkrintpreset");
+    snprintf(tempfile2, sizeof(tempfile2), "%s%s", portable_getenv("HOME").c_str(), "/.rkrtemp");
 
     // Concatenate tempfile and filename into tempfile2
     {
@@ -2727,7 +2849,7 @@ RKR::savemiditable(char *filename)
     int i;
     FILE *fn;
     char buf[256];
-    fn = fopen (filename, "w");
+    fn = portable_fopen (filename, "w");
     if(fn == nullptr) {
         if(errno == EACCES)
             Error_Handle(3);
@@ -2736,7 +2858,7 @@ RKR::savemiditable(char *filename)
 
     for(i=0; i<128; i++) {
         memset (buf, 0, sizeof (buf));
-        sprintf (buf, "%d,%d\n", presets.M_table[i].bank,presets.M_table[i].preset);
+        format_csv(buf, sizeof(buf), presets.M_table[i].bank,presets.M_table[i].preset);
         fputs (buf, fn);
     }
 
@@ -2754,8 +2876,7 @@ RKR::loadmiditable (char *filename)
     std::string line;
     for (int i = 0; i < 128; i++) {
         std::getline(file, line);
-        std::sscanf(line.c_str(), "%d,%d",
-                    &presets.M_table[i].bank, &presets.M_table[i].preset);
+        parse_csv(line, presets.M_table[i].bank, presets.M_table[i].preset);
     }
 }
 

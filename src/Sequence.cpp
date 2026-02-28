@@ -70,8 +70,8 @@ Sequence::Sequence (float * efxoutl_, float * efxoutr_, long int Quality, int DS
     peakpulse = peak = envrms = 0.0f;
     peakdecay = 10.0f/fSAMPLE_RATE;
     targatk = 12.0f/fSAMPLE_RATE;   ///for smoothing filter transition
-    atk = 200.0f/fSAMPLE_RATE;
-    trigtime = SAMPLE_RATE/12; //time to take next peak
+    atk = static_cast<int>(200.0f/fSAMPLE_RATE);
+    trigtime = static_cast<int>(SAMPLE_RATE/12); //time to take next peak
     onset = 0;
     trigthresh = 0.15f;
 
@@ -146,7 +146,7 @@ Sequence::out (float * smpsl, float * smpsr)
 
 
     if ((rndflag) && (tcount < hPERIOD + 1)) { //This is an Easter Egg
-        srand(time(nullptr));
+        srand(static_cast<unsigned int>(time(nullptr)));
         for (i = 0; i<8; i++) {
             fsequence[i] = RND1();
         }
@@ -228,7 +228,7 @@ Sequence::out (float * smpsl, float * smpsr)
                 dscount = (scount + Pstdiff) % 8;
             }
 
-            ftcount = M_PI * ifperiod * (float)(tcount);
+            ftcount = static_cast<float>(M_PI) * ifperiod * (float)(tcount);
 
             lmod = sinf(ftcount)*fsequence[scount];
             rmod = sinf(ftcount)*fsequence[dscount];
@@ -331,7 +331,7 @@ Sequence::out (float * smpsl, float * smpsr)
 
             if (Pamplitude) lmod = 1.0f - (lfol + ldiff * ftcount) * .5f;
 
-            outi[i] = (smpsl[i] + smpsr[i])*.5;
+            outi[i] = (smpsl[i] + smpsr[i])*.5f;
             if (outi[i] > 1.0)
                 outi[i] = 1.0f;
             if (outi[i] < -1.0)
@@ -442,7 +442,7 @@ Sequence::out (float * smpsl, float * smpsr)
 
             if (Pamplitude) lmod = powf (2.0f, -lfol / 12.0f);
 
-            outi[i] = (smpsl[i] + smpsr[i])*.5;
+            outi[i] = (smpsl[i] + smpsr[i])*.5f;
             if (outi[i] > 1.0)
                 outi[i] = 1.0f;
             if (outi[i] < -1.0)
@@ -501,7 +501,7 @@ Sequence::out (float * smpsl, float * smpsr)
             lmod = 1.0f + (lfol + ldiff * ftcount)*.03f;
             if (Pamplitude) lmod = 1.0f - (lfol + ldiff * ftcount)*.03f;
 
-            outi[i] = (smpsl[i] + smpsr[i])*.5;
+            outi[i] = (smpsl[i] + smpsr[i])*.5f;
             if (outi[i] > 1.0)
                 outi[i] = 1.0f;
             if (outi[i] < -1.0)
@@ -626,7 +626,7 @@ Sequence::out (float * smpsl, float * smpsr)
             }
 
             if (Pamplitude) {
-                ftcount = M_PI * ifperiod * (float)(tcount);
+                ftcount = static_cast<float>(M_PI) * ifperiod * (float)(tcount);
 
                 lmod = f_sin(ftcount)*fsequence[scount];
                 rmod = f_sin(ftcount)*fsequence[dscount];
