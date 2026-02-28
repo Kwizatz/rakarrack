@@ -43,7 +43,7 @@ Dflange::Dflange (float * efxoutl_, float * efxoutr_)
     //default values
     Ppreset = 0;
 
-    maxx_delay = (int) SAMPLE_RATE * 0.055f;
+    maxx_delay = static_cast<int>(SAMPLE_RATE * 0.055f);
     ldelay.resize(maxx_delay);
     rdelay.resize(maxx_delay);
     zldelay.resize(maxx_delay);
@@ -66,7 +66,7 @@ Dflange::Dflange (float * efxoutl_, float * efxoutr_)
     fhidamp = 1.0f;
     fwidth = 800;
     fdepth = 50;
-    zcenter = (int) fSAMPLE_RATE/floorf(0.5f * (fdepth + fwidth));
+    zcenter = static_cast<int>(fSAMPLE_RATE/floorf(0.5f * (fdepth + fwidth)));
     base = 7.0f;		//sets curve of modulation to frequency relationship
     ibase = 1.0f/base;
     //default values
@@ -391,33 +391,33 @@ Dflange::changepar (int npar, int value)
     case 1:
         Ppanning = value;
         if (value < 0) {
-            rpan = 1.0f + (float) Ppanning/64.0;
+            rpan = 1.0f + (float) Ppanning/64.0f;
             lpan = 1.0f;
         } else {
-            lpan = 1.0f - (float) Ppanning/64.0;
+            lpan = 1.0f - (float) Ppanning/64.0f;
             rpan = 1.0f;
         };
         break;
     case 2:
         Plrcross = value;
-        flrcross = (float) Plrcross/127.0;
+        flrcross = (float) Plrcross/127.0f;
         frlcross = 1.0f - flrcross;	//keep this out of the DSP loop
         break;
     case 3:
         Pdepth = value;
         fdepth =  (float) Pdepth;
-        zcenter = (int) fSAMPLE_RATE/floor(0.5f * (fdepth + fwidth));
+        zcenter = static_cast<int>(fSAMPLE_RATE/floorf(0.5f * (fdepth + fwidth)));
         logmax = logf( (fdepth + fwidth)/fdepth )/LOG_2;
         break;
     case 4:
         Pwidth = value;
         fwidth = (float) Pwidth;
-        zcenter = (int) fSAMPLE_RATE/floor(0.5f * (fdepth + fwidth));
+        zcenter = static_cast<int>(fSAMPLE_RATE/floorf(0.5f * (fdepth + fwidth)));
         logmax = logf( (fdepth + fwidth)/fdepth )/LOG_2;
         break;
     case 5:
         Poffset = value;
-        foffset = 0.5f + (float) Poffset/255.0;
+        foffset = 0.5f + (float) Poffset/255.0f;
         break;
     case 6:
         Pfb = value;

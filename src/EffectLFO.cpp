@@ -48,7 +48,7 @@ EffectLFO::EffectLFO ()
     scale = 1.0f/36.0f;
     ratediv = 0.1f;
     holdflag = 0;
-    tca = iperiod/(iperiod + 0.02);  //20ms default
+    tca = iperiod/(iperiod + 0.02f);  //20ms default
     tcb = 1.0f - tca;
     rreg = lreg = oldrreg = oldlreg = 0.0f;
     updateparams ();
@@ -86,7 +86,7 @@ EffectLFO::updateparams ()
 
     xr = fmodf (xl + ((float)Pstereo - 64.0f) / 127.0f + 1.0f, 1.0f);
 
-    if ((h = incx*ratediv) > 0.02) h = 0.02;  //keeps it stable
+    if ((h = incx*ratediv) > 0.02f) h = 0.02f;  //keeps it stable
 
     a = 10.0f + (((float) RND()) - 0.5f)*8.0f;
     b = 28.0f + (((float) RND()) - 0.5f)*12.0f;
@@ -186,18 +186,18 @@ float EffectLFO::getlfoshape (float x)
     case 10:   //Tri-top
         if(x<=0.5f) out = -f_sin(x*D_PI);
         else if ((x > 0.5f) && (x < 0.75f))
-        out = 6 * (x-0.5);
+        out = 6.0f * (x-0.5f);
         else
-        out = 1.5 - 6.0f *( x - 0.75f);
+        out = 1.5f - 6.0f *( x - 0.75f);
         out-=0.25f;
         out*=0.88888889f;
     break;
     case 11:  //Tri-Bottom
         if(x<=0.5f) out = -f_sin(x*D_PI);
         else if ((x > 0.5f) && (x < 0.75f))
-        out = 6 * (x-0.5);
+        out = 6.0f * (x-0.5f);
         else
-        out = 1.5 - 6.0f *( x - 0.75f);
+        out = 1.5f - 6.0f *( x - 0.75f);
         out-=0.25f;
         out*=-0.88888889f;
     break; 

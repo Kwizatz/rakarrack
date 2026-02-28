@@ -24,6 +24,7 @@
 
 #include "global.hpp"
 #include "AllEffects.hpp"
+#include "portable_crt.hpp"
 #ifdef ENABLE_MIDI
 #include "MIDIConverter.hpp"
 #endif
@@ -671,7 +672,7 @@ RKR::Conecta ()
         disconectaaconnect ();
 
 
-    if ((fp = fopen ("/proc/asound/seq/clients", "r")) != nullptr) {
+    if ((fp = rkr::portable_fopen ("/proc/asound/seq/clients", "r")) != nullptr) {
         memset (temp, 0, sizeof (temp));
 
         while (fgets (temp, sizeof temp, fp) != nullptr) {
@@ -680,18 +681,20 @@ RKR::Conecta ()
 
             {
 
-                strcpy (temp1, temp);
-                strtok (temp1, " ");
-                nume = strtok (nullptr, "\"");
-                sscanf (nume, "%d", &client);
+                snprintf (temp1, sizeof(temp1), "%s", temp);
+                char *strtok_ctx1 = nullptr;
+                rkr::portable_strtok (temp1, " ", &strtok_ctx1);
+                nume = rkr::portable_strtok (nullptr, "\"", &strtok_ctx1);
+                RKR_SSCANF (nume, "%d", &client);
 
             }
 
             if (strstr (temp, "Port") != nullptr) {
-                strcpy (temp2, temp);
-                strtok (temp2, " ");
-                nume = strtok (nullptr, "  ");
-                sscanf (nume, "%d", &puerto);
+                snprintf (temp2, sizeof(temp2), "%s", temp);
+                char *strtok_ctx2 = nullptr;
+                rkr::portable_strtok (temp2, " ", &strtok_ctx2);
+                nume = rkr::portable_strtok (nullptr, "  ", &strtok_ctx2);
+                RKR_SSCANF (nume, "%d", &puerto);
                 if (strstr (temp, "rakarrack IN") != 0) {
                     jack.Cyoin = client;
                     jack.Pyoin = puerto;

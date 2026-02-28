@@ -31,6 +31,7 @@
 #include "global.hpp"
 #include "AllEffects.hpp"
 #include "EmbeddedResource.hpp"
+#include "portable_crt.hpp"
 #ifdef ENABLE_MIDI
 #include "MIDIConverter.hpp"
 #endif
@@ -101,7 +102,7 @@ RKR::RKR ()
     OnCounter=0;
 
 
-    sprintf (temp, "rakarrack");
+    snprintf (temp, sizeof(temp), "rakarrack");
 
     jack.client = jack_client_open (temp, jack.options, &jack.status, nullptr);
 
@@ -113,7 +114,7 @@ RKR::RKR ()
 
     }
 
-    strcpy (jack.name.data(), jack_get_client_name (jack.client));
+    snprintf (jack.name.data(), jack.name.size(), "%s", jack_get_client_name (jack.client));
 
 
 
@@ -198,11 +199,11 @@ RKR::RKR ()
 
     for (i = 0; i < jack.cuan_jack; i++) {
         memset (temp, 0, sizeof (temp));
-        sprintf (temp, "Jack Port %d", i + 1);
+        snprintf (temp, sizeof(temp), "Jack Port %d", i + 1);
         if (i < 2)
-            strcpy (j_names, jack_names[i]);
+            snprintf (j_names, sizeof(j_names), "%s", jack_names[i]);
         else
-            strcpy (j_names, "");
+            snprintf (j_names, sizeof(j_names), "%s", "");
         rakarrack.get (PrefNom (temp), jack.output_ports[i].name.data(), j_names, 128);
 
     }
@@ -214,11 +215,11 @@ RKR::RKR ()
 
     for (i = 0; i < jack.cuan_ijack; i++) {
         memset (temp, 0, sizeof (temp));
-        sprintf (temp, "Jack Port In %d", i + 1);
+        snprintf (temp, sizeof(temp), "Jack Port In %d", i + 1);
         if (i < 1)
-            strcpy (j_names, jack_inames[i]);
+            snprintf (j_names, sizeof(j_names), "%s", jack_inames[i]);
         else
-            strcpy (j_names, "");
+            snprintf (j_names, sizeof(j_names), "%s", "");
         rakarrack.get (PrefNom (temp), jack.input_ports[i].name.data(), j_names, 128);
     }
 
@@ -244,8 +245,8 @@ RKR::RKR ()
 
 
 
-    DC_Offsetl = std::make_unique<AnalogFilter>(1, 20, 1, 0);
-    DC_Offsetr = std::make_unique<AnalogFilter>(1, 20, 1, 0);
+    DC_Offsetl = std::make_unique<AnalogFilter>(1, 20.0f, 1.0f, 0);
+    DC_Offsetr = std::make_unique<AnalogFilter>(1, 20.0f, 1.0f, 0);
     M_Metronome = std::make_unique<metronome>();
     efx_Chorus = std::make_unique<Chorus>(efxoutl.data(), efxoutr.data());
     efx_Flanger = std::make_unique<Chorus>(efxoutl.data(), efxoutr.data());
@@ -378,9 +379,9 @@ RKR::RKR ()
         };
 
         for (i = 0; i < NumEffects*3; i+=3) {
-            strcpy (efx_names[i/3].Nom.data(), los_names[i]);
-            sscanf(los_names[i+1],"%d",&efx_names[i/3].Pos);
-            sscanf(los_names[i+2],"%d",&efx_names[i/3].Type);
+            snprintf (efx_names[i/3].Nom.data(), efx_names[i/3].Nom.size(), "%s", los_names[i]);
+            RKR_SSCANF(los_names[i+1],"%d",&efx_names[i/3].Pos);
+            RKR_SSCANF(los_names[i+2],"%d",&efx_names[i/3].Type);
 
 
         }
@@ -771,9 +772,9 @@ RKR::RKR ()
             "WahWah WD","28","10"
         };
         for(i=0; i<NumParams; i++) {
-            strcpy (efx_params[i].Nom.data(), los_params[i*3]);
-            sscanf(los_params[i*3+1],"%d",&efx_params[i].Ato);
-            sscanf(los_params[i*3+2],"%d",&efx_params[i].Effect);
+            snprintf (efx_params[i].Nom.data(), efx_params[i].Nom.size(), "%s", los_params[i*3]);
+            RKR_SSCANF(los_params[i*3+1],"%d",&efx_params[i].Ato);
+            RKR_SSCANF(los_params[i*3+2],"%d",&efx_params[i].Effect);
 
         }
     }
@@ -871,7 +872,7 @@ RKR::init_rkr ()
 
     char temp[128];
     memset (temp, 0, sizeof (temp));
-    sprintf (temp, "%s/Default.rkrb", DATA_DIR);
+    snprintf (temp, sizeof(temp), "%s/Default.rkrb", DATA_DIR);
     rakarrack.get (PrefNom ("Bank Filename"), presets.BankFilename.data(), temp, 127);
     loadnames();
 

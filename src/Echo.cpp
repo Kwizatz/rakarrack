@@ -172,7 +172,7 @@ void
 Echo::Tempo2Delay(int value)
 {
 
-    Pdelay = 60.0f/(float)value * 1000.0f;
+    Pdelay = static_cast<int>(60.0f/(float)value * 1000.0f);
     delay = (float)Pdelay / 1000.0f;
     if ((unsigned int) delay > (MAX_DELAY)) delay = MAX_DELAY;
     ldelay->set_averaging(10.0f);

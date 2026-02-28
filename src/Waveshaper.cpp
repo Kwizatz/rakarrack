@@ -87,7 +87,7 @@ Waveshaper::Waveshaper()
     Vlv2out = 0.0f;
     V2dyno = 0.0f;
 
-    Vmin = Vsupp - 2.5;  //Approximate cathode voltage when tube is saturated.
+    Vmin = Vsupp - 2.5f;  //Approximate cathode voltage when tube is saturated.
     Vfactor = 1.5f;
     Vdyno = 0.0f;
 
@@ -335,7 +335,7 @@ Waveshaper::waveshapesmps (int n, float * smps, int type,
         };
         break;
     case 18:
-        ws = ws*D_PI+.00001;
+        ws = ws*D_PI+.00001f;
         if (ws < 1.57f)
             tmpv = f_sin (ws);
         else
@@ -417,7 +417,7 @@ Waveshaper::waveshapesmps (int n, float * smps, int type,
         break;
 
     case 24:  // Hard Compression (used by stompboxes)
-        cratio = 0.05;
+        cratio = 0.05f;
         if (eff) {
             ws =  1.5f*ws*CRUNCH_GAIN + 1.0f;
         } else {
@@ -448,7 +448,7 @@ Waveshaper::waveshapesmps (int n, float * smps, int type,
         break;
 
     case 25:  // Op Amp limiting (used by stompboxes), needs to get a large signal to do something
-        cratio = 0.05;
+        cratio = 0.05f;
         for (i = 0; i < nn; i++) {  //apply compression
             tmpv = fabs(temps[i]);
 

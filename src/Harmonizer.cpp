@@ -54,7 +54,7 @@ Harmonizer::Harmonizer (float *efxoutl_, float *efxoutr_, long int Quality, int 
     D_Resample = std::make_unique<Resample>(uq);
 
 
-    pl = std::make_unique<AnalogFilter>(6, 22000, 1, 0);
+    pl = std::make_unique<AnalogFilter>(6, 22000.0f, 1.0f, 0);
 
     PS = std::make_unique<PitchShifter>(window, hq, nfSAMPLE_RATE);
     PS->ratio = 1.0f;
@@ -104,7 +104,7 @@ Harmonizer::out (float *smpsl, float *smpsr)
 
 
     for (i = 0; i < nPERIOD; i++) {
-        outi[i] = (smpsl[i] + smpsr[i])*.5;
+        outi[i] = (smpsl[i] + smpsr[i]) * .5f;
         if (outi[i] > 1.0)
             outi[i] = 1.0f;
         if (outi[i] < -1.0)

@@ -24,6 +24,26 @@
 
 namespace {
 
+// Portable fopen wrapper — uses fopen_s on MSVC, fopen elsewhere.
+inline FILE* portable_fopen(const char* filename, const char* mode)
+{
+#ifdef _MSC_VER
+    FILE* fp = nullptr;
+    if (fopen_s(&fp, filename, mode) != 0)
+        fp = nullptr;
+    return fp;
+#else
+    return std::fopen(filename, mode);
+#endif
+}
+
+// Portable sscanf for numeric-only format strings.
+#ifdef _MSC_VER
+#define LOCAL_SSCANF sscanf_s
+#else
+#define LOCAL_SSCANF sscanf
+#endif
+
 // ---- Data structures for old bank format ----
 
 struct ML
@@ -87,21 +107,21 @@ void copy_IO()
 {
     for (int i = 0; i < 62; i++) {
         memset(NewBank[i].cInput_Gain, 0, sizeof(NewBank[i].cInput_Gain));
-        sprintf(NewBank[i].cInput_Gain, "%f", NewBank[i].Input_Gain);
+        snprintf(NewBank[i].cInput_Gain, sizeof(NewBank[i].cInput_Gain), "%f", NewBank[i].Input_Gain);
         memset(NewBank[i].cMaster_Volume, 0, sizeof(NewBank[i].cMaster_Volume));
-        sprintf(NewBank[i].cMaster_Volume, "%f", NewBank[i].Master_Volume);
+        snprintf(NewBank[i].cMaster_Volume, sizeof(NewBank[i].cMaster_Volume), "%f", NewBank[i].Master_Volume);
         memset(NewBank[i].cBalance, 0, sizeof(NewBank[i].cBalance));
-        sprintf(NewBank[i].cBalance, "%f", NewBank[i].Balance);
+        snprintf(NewBank[i].cBalance, sizeof(NewBank[i].cBalance), "%f", NewBank[i].Balance);
     }
 }
 
 void convert_IO()
 {
     for (int i = 0; i < 82; i++) {
-        sscanf(Bank[i].Reserva, "%f", &Bank[i].Input_Gain);
+        LOCAL_SSCANF(Bank[i].Reserva, "%f", &Bank[i].Input_Gain);
         if (Bank[i].Input_Gain == 0.0) Bank[i].Input_Gain = 0.5f;
 
-        sscanf(Bank[i].Reserva1, "%f", &Bank[i].Master_Volume);
+        LOCAL_SSCANF(Bank[i].Reserva1, "%f", &Bank[i].Master_Volume);
         if (Bank[i].Master_Volume == 0.0) Bank[i].Master_Volume = 0.5f;
     }
 }
@@ -267,7 +287,7 @@ int loadbank(const char* filename)
     char buf[256];
     char nfilename[256];
     FILE* fn;
-    if ((fn = fopen(filename, "rb")) != nullptr) {
+    if ((fn = portable_fopen(filename, "rb")) != nullptr) {
         while (!feof(fn)) {
             if (fread(&Bank, sizeof(Bank), 1, fn) < 1) break;
         }
@@ -275,23 +295,23 @@ int loadbank(const char* filename)
         if (BigEndian()) old_fix_endianess();
         convert_IO();
 
-        sprintf(nfilename, "%s.ml", filename);
-        if ((fn = fopen(nfilename, "r")) == nullptr)
+        snprintf(nfilename, sizeof(nfilename), "%s.ml", filename);
+        if ((fn = portable_fopen(nfilename, "r")) == nullptr)
             return 1;
 
         for (j = 0; j < 80; j++) {
             memset(buf, 0, sizeof(buf));
             if (!fgets(buf, sizeof buf, fn)) {break;}
-            sscanf(buf, "%d\n", &k);
+            LOCAL_SSCANF(buf, "%d\n", &k);
             if (k) {
                 for (i = 0; i < 128; i++) {
                     memset(buf, 0, sizeof(buf));
                     if (!fgets(buf, sizeof buf, fn)) {break;}
-                    sscanf(buf, "%d\n", &t);
+                    LOCAL_SSCANF(buf, "%d\n", &t);
                     if (t) {
                         memset(buf, 0, sizeof(buf));
                         if (!fgets(buf, sizeof buf, fn)) {break;}
-                        sscanf(buf,
+                        LOCAL_SSCANF(buf,
                             "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
                             &PML[j].XUserMIDI[i][0], &PML[j].XUserMIDI[i][1],
                             &PML[j].XUserMIDI[i][2], &PML[j].XUserMIDI[i][3],
@@ -317,7 +337,7 @@ int loadbank(const char* filename)
 int savebank(const char* filename)
 {
     FILE* fn;
-    if ((fn = fopen(filename, "wb")) != nullptr) {
+    if ((fn = portable_fopen(filename, "wb")) != nullptr) {
         copy_IO();
         if (BigEndian()) fix_endianess();
         fwrite(&NewBank, sizeof(NewBank), 1, fn);
@@ -337,10 +357,10 @@ int setTempo(int old)
 {
     float p_diff = 100000.0;
     float lfofreq = (powf(2.0f, (float)old / 127.0f * 10.0f) - 1.0f) * 0.03f;
-    float old_incx = fabsf(lfofreq) * 256.0 / 48000.0;
+    float old_incx = fabsf(lfofreq) * 256.0f / 48000.0f;
 
     for (int i = 1; i <= 600; i++) {
-        float incx = (float)i * 256.0 / (48000.0 * 60.0f);
+        float incx = (float)i * 256.0f / (48000.0f * 60.0f);
         if (incx == old_incx) return i;
         float diff = fabsf(incx - old_incx);
         if (diff < p_diff) p_diff = diff;
@@ -375,11 +395,11 @@ void convert_bank_entries_1_60()
         NewBank[i].Balance = 1.0f;
         NewBank[i].Bypass = Bank[i].Bypass;
 
-        sprintf(NewBank[i].Preset_Name, "%s", Bank[i].Preset_Name);
-        sprintf(NewBank[i].Author, "%s", Bank[i].Author);
-        sprintf(NewBank[i].cInput_Gain, "%s", Bank[i].Reserva);
-        sprintf(NewBank[i].cMaster_Volume, "%s", Bank[i].Reserva1);
-        sprintf(NewBank[i].cBalance, "%s", "1.000000");
+        snprintf(NewBank[i].Preset_Name, sizeof(NewBank[i].Preset_Name), "%s", Bank[i].Preset_Name);
+        snprintf(NewBank[i].Author, sizeof(NewBank[i].Author), "%s", Bank[i].Author);
+        snprintf(NewBank[i].cInput_Gain, sizeof(NewBank[i].cInput_Gain), "%s", Bank[i].Reserva);
+        snprintf(NewBank[i].cMaster_Volume, sizeof(NewBank[i].cMaster_Volume), "%s", Bank[i].Reserva1);
+        snprintf(NewBank[i].cBalance, sizeof(NewBank[i].cBalance), "%s", "1.000000");
 
         for (int j = 0; j < 20; j++) {
             for (int k = 0; k < 20; k++) {
@@ -444,11 +464,11 @@ void convert_bank_entries_61_80()
         NewBank[i - 60].Balance = 1.0f;
         NewBank[i - 60].Bypass = Bank[i].Bypass;
 
-        sprintf(NewBank[i - 60].Preset_Name, "%s", Bank[i].Preset_Name);
-        sprintf(NewBank[i - 60].Author, "%s", Bank[i].Author);
-        sprintf(NewBank[i - 60].cInput_Gain, "%s", Bank[i].Reserva);
-        sprintf(NewBank[i - 60].cMaster_Volume, "%s", Bank[i].Reserva1);
-        sprintf(NewBank[i - 60].cBalance, "%s", "1.000000");
+        snprintf(NewBank[i - 60].Preset_Name, sizeof(NewBank[i - 60].Preset_Name), "%s", Bank[i].Preset_Name);
+        snprintf(NewBank[i - 60].Author, sizeof(NewBank[i - 60].Author), "%s", Bank[i].Author);
+        snprintf(NewBank[i - 60].cInput_Gain, sizeof(NewBank[i - 60].cInput_Gain), "%s", Bank[i].Reserva);
+        snprintf(NewBank[i - 60].cMaster_Volume, sizeof(NewBank[i - 60].cMaster_Volume), "%s", Bank[i].Reserva1);
+        snprintf(NewBank[i - 60].cBalance, sizeof(NewBank[i - 60].cBalance), "%s", "1.000000");
 
         for (int j = 0; j < 20; j++) {
             for (int k = 0; k < 20; k++) {

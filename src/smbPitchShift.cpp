@@ -166,7 +166,7 @@ PitchShifter::smbPitchShift (float pitchShift, long numSampsToProcess,
 
                 /* compute phase difference */
                 tmp = phase - gLastPhase[k];
-                gLastPhase[k] = phase;
+                gLastPhase[k] = static_cast<float>(phase);
 
                 /* subtract expected phase difference */
                 tmp -= dk *expct;
@@ -187,10 +187,10 @@ PitchShifter::smbPitchShift (float pitchShift, long numSampsToProcess,
                 tmp = dk *freqPerBin + tmp * freqPerBin;
 
                 /* store magnitude and true frequency in analysis arrays */
-                gAnaMagn[k] = magn;
-                gAnaFreq[k] = tmp;
+                gAnaMagn[k] = static_cast<float>(magn);
+                gAnaFreq[k] = static_cast<float>(tmp);
                 if(magn>maxmag) {
-                    maxmag = magn;
+                    maxmag = static_cast<float>(magn);
                 }
             }
 
@@ -227,7 +227,7 @@ PitchShifter::smbPitchShift (float pitchShift, long numSampsToProcess,
                 tmp += dk *expct;
 
                 /* accumulate delta phase to get bin phase */
-                gSumPhase[k] += tmp;
+                gSumPhase[k] += static_cast<float>(tmp);
                 phase = gSumPhase[k];
 
                 /* get real and imag part and re-interleave */
@@ -254,7 +254,7 @@ PitchShifter::smbPitchShift (float pitchShift, long numSampsToProcess,
                 //window =
                 //	-.5 * cos (dpi_coef * (double) k) +
                 //	.5;
-                gOutputAccum[k] += 2. * window[k] * fftw_out[k][0] / FS_osamp;
+                gOutputAccum[k] += static_cast<float>(2. * window[k] * fftw_out[k][0] / FS_osamp);
                 //gOutputAccum[k] +=
 //		2. * window * gFFTworksp[2 * k] / FS_osamp;
             }
@@ -313,7 +313,7 @@ PitchShifter::smbFft (float *fftBuffer, long fftFrameSize, long sign)
         le2 = le >> 1;
         ur = 1.0;
         ui = 0.0;
-        arg = M_PI / (le2 >> 1);
+        arg = static_cast<float>(M_PI / (le2 >> 1));
         wr = cosf (arg);
         wi = sign * sinf (arg);
         for (j = 0; j < le2; j += 2) {

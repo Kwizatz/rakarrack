@@ -23,6 +23,19 @@ namespace {
 
 constexpr int LIB_PERIOD = 128;
 
+// Portable fopen wrapper — uses fopen_s on MSVC, fopen elsewhere.
+inline FILE* portable_fopen(const char* filename, const char* mode)
+{
+#ifdef _MSC_VER
+    FILE* fp = nullptr;
+    if (fopen_s(&fp, filename, mode) != 0)
+        fp = nullptr;
+    return fp;
+#else
+    return std::fopen(filename, mode);
+#endif
+}
+
 #define RND (rand() / ((RAND_MAX) + 1.0f))
 
 } // anonymous namespace
@@ -63,8 +76,7 @@ int rakverb_convert(const char* input_file, const char* output_file)
     if (output_file && output_file[0] != '\0') {
         snprintf(Outputfile, sizeof(Outputfile), "%s", output_file);
     } else {
-        strncpy(tempfile, input_file, sizeof(tempfile) - 1);
-        tempfile[sizeof(tempfile) - 1] = '\0';
+        snprintf(tempfile, sizeof(tempfile), "%s", input_file);
         // Strip last 4 chars (e.g. ".wav") and add .rvb
         size_t len = strlen(tempfile);
         if (len > 4) tempfile[len - 4] = 0;
@@ -86,7 +98,7 @@ int rakverb_convert(const char* input_file, const char* output_file)
     }
 
     // Open output and write header
-    if ((fn = fopen(Outputfile, "w")) == nullptr) {
+    if ((fn = portable_fopen(Outputfile, "w")) == nullptr) {
         fprintf(stderr, "rakverb: failed to open output file: %s\n", Outputfile);
         sf_close(infile);
         free(buf);
@@ -96,11 +108,11 @@ int rakverb_convert(const char* input_file, const char* output_file)
     }
 
     memset(wbuf, 0, sizeof(wbuf));
-    sprintf(wbuf, "%s\n", input_file);
+    snprintf(wbuf, sizeof(wbuf), "%s\n", input_file);
     fputs(wbuf, fn);
 
     // Process audio data
-    readcount = sf_seek(infile, 0, SEEK_SET);
+    readcount = static_cast<int>(sf_seek(infile, 0, SEEK_SET));
     readcount = 1;
     time = 0.0f;
     tmp = 0.0f;
@@ -110,11 +122,11 @@ int rakverb_convert(const char* input_file, const char* output_file)
     if (sfinfo.channels == 2) step = 2;
 
     while (readcount > 0) {
-        readcount = sf_readf_float(infile, buf, LIB_PERIOD);
+        readcount = static_cast<int>(sf_readf_float(infile, buf, LIB_PERIOD));
 
         for (i = 0; i < (LIB_PERIOD * sfinfo.channels); i += step) {
             if (step == 1) sample = buf[i];
-            if (step == 2) sample = (buf[i] + buf[i + 1]) * .5;
+            if (step == 2) sample = (buf[i] + buf[i + 1]) * .5f;
 
             tmp += sample;
             testzero = sample * lastbuf;
@@ -140,7 +152,7 @@ int rakverb_convert(const char* input_file, const char* output_file)
     sf_close(infile);
 
     memset(wbuf, 0, sizeof(wbuf));
-    sprintf(wbuf, "%f,%f\n", compress, quality);
+    snprintf(wbuf, sizeof(wbuf), "%f,%f\n", compress, quality);
     fputs(wbuf, fn);
 
     skip = 0.0f;
@@ -148,7 +160,7 @@ int rakverb_convert(const char* input_file, const char* output_file)
     chunk = 11;
 
     memset(wbuf, 0, sizeof(wbuf));
-    sprintf(wbuf, "%d\n", indexx);
+    snprintf(wbuf, sizeof(wbuf), "%d\n", indexx);
     fputs(wbuf, fn);
 
     skip = 0.0f;
@@ -163,12 +175,12 @@ int rakverb_convert(const char* input_file, const char* output_file)
             for (j = 0; j <= chunk; j++) {
                 if (indexx < 1500) {
                     memset(wbuf, 0, sizeof(wbuf));
-                    sprintf(wbuf, "%f,%f\n", index[i + j], data[i + j]);
+                    snprintf(wbuf, sizeof(wbuf), "%f,%f\n", index[i + j], data[i + j]);
                     fputs(wbuf, fn);
                     indexx++;
                 }
             }
-            chunk = (int)(dchunk * RND);
+            chunk = static_cast<float>(static_cast<int>(dchunk * RND));
             dchunk *= 0.99;
         }
     }

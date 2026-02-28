@@ -66,7 +66,7 @@ MBVvol::MBVvol (float * efxoutl_, float * efxoutr_)
     //default values
     Ppreset = 0;
     Pvolume = 50;
-    coeff = 1.0 / (float) PERIOD;
+    coeff = 1.0f / (float) PERIOD;
     volL=volLr=volML=volMLr=volMH=volMHr=volH=volHr=2.0f;
 
     setpreset (Ppreset);

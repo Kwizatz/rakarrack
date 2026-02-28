@@ -199,11 +199,11 @@ delayline::delay(float smps, float time_, int tap_, int touch,
     int dlytime = 0;
     int bufptr = 0;
 
-    tap = fabs(tap_);
+    tap = static_cast<int>(fabs(tap_));
     if (tap >= maxtaps)
         tap = 0;
 
-    if (reverse)  avgtime[tap] = alpha * 2.0*time_ + beta * avgtime[tap];	//smoothing the rate of time change
+    if (reverse)  avgtime[tap] = alpha * 2.0f*time_ + beta * avgtime[tap];	//smoothing the rate of time change
     else avgtime[tap] = alpha * time_ + beta * avgtime[tap];	//smoothing the rate of time change
     time[tap] = 1.0f + fSAMPLE_RATE * avgtime[tap];	//convert to something that can be used as a delay line index
 
@@ -406,7 +406,7 @@ float delayline::envelope()
 
     if (fdist <= 0.125f) {
         fdist =
-            1.0f - f_sin(M_PI * fdist * 4.0f + 1.5707963267949f);
+            1.0f - f_sin(PI * fdist * 4.0f + 1.5707963267949f);
     } else
         fdist = 1.0f;
     return fdist;

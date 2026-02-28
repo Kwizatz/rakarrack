@@ -24,6 +24,7 @@
 #include <iostream>
 #include "global.hpp"
 #include "AllEffects.hpp"
+#include "portable_crt.hpp"
 
 int
 RKR::Message (int prio, const char *labelwin, const char *message_text)
@@ -54,43 +55,43 @@ RKR::Error_Handle(int num)
 
     switch(num) {
     case 1:
-        sprintf(error_msg,"%s","Convolotron is unable to open the audio .wav file");
+        snprintf(error_msg,sizeof(error_msg),"%s","Convolotron is unable to open the audio .wav file");
         break;
     case 2:
-        sprintf(error_msg,"%s","Reverbtron is unable to open the IR .rvb file");
+        snprintf(error_msg,sizeof(error_msg),"%s","Reverbtron is unable to open the IR .rvb file");
         break;
     case 3:
-        sprintf(error_msg,"%s","Error writing the file probably you dont have permission to write in this directory");
+        snprintf(error_msg,sizeof(error_msg),"%s","Error writing the file probably you dont have permission to write in this directory");
         break;
     case 4:
-        sprintf(error_msg,"%s","Echotron is unable to open the .dly file");
+        snprintf(error_msg,sizeof(error_msg),"%s","Echotron is unable to open the .dly file");
         break;
     case 5:
-        sprintf(error_msg,"%s","Some Pan parameter is bad in the .dly file");
+        snprintf(error_msg,sizeof(error_msg),"%s","Some Pan parameter is bad in the .dly file");
         break;
     case 6:
-        sprintf(error_msg,"%s","Some Time parameter is bad in the .dly file");
+        snprintf(error_msg,sizeof(error_msg),"%s","Some Time parameter is bad in the .dly file");
         break;
     case 7:
-        sprintf(error_msg,"%s","Some Level parameter is bad in the .dly file");
+        snprintf(error_msg,sizeof(error_msg),"%s","Some Level parameter is bad in the .dly file");
         break;
     case 8:
-        sprintf(error_msg,"%s","Some LP parameter is bad in the .dly file");
+        snprintf(error_msg,sizeof(error_msg),"%s","Some LP parameter is bad in the .dly file");
         break;
     case 9:
-        sprintf(error_msg,"%s","Some BP parameter is bad in the .dly file");
+        snprintf(error_msg,sizeof(error_msg),"%s","Some BP parameter is bad in the .dly file");
         break;
     case 10:
-        sprintf(error_msg,"%s","Some HP parameter is bad in the .dly file");
+        snprintf(error_msg,sizeof(error_msg),"%s","Some HP parameter is bad in the .dly file");
         break;
     case 11:
-        sprintf(error_msg,"%s","Some Freq parameter is bad in the .dly file");
+        snprintf(error_msg,sizeof(error_msg),"%s","Some Freq parameter is bad in the .dly file");
         break;
     case 12:
-        sprintf(error_msg,"%s","Some Q parameter bad in the .dly file");
+        snprintf(error_msg,sizeof(error_msg),"%s","Some Q parameter bad in the .dly file");
         break;
     case 13:
-        sprintf(error_msg,"%s","Some Stages parameter bad in the .dly file");
+        snprintf(error_msg,sizeof(error_msg),"%s","Some Stages parameter bad in the .dly file");
         break;
 
 
@@ -120,7 +121,7 @@ RKR::Get_Bogomips()
     char *tmp;
     FILE *fp;
 
-    if ((fp = fopen ("/proc/cpuinfo", "r")) != nullptr) {
+    if ((fp = rkr::portable_fopen ("/proc/cpuinfo", "r")) != nullptr) {
         memset (temp, 0, sizeof (temp));
 
         while (fgets (temp, sizeof temp, fp) != nullptr) {
@@ -128,10 +129,11 @@ RKR::Get_Bogomips()
             if (strstr (temp, "bogomips") != nullptr)
 
             {
-                tmp = strtok(temp,":");
-                tmp = strtok(nullptr,":");
+                char *strtok_ctx = nullptr;
+                tmp = rkr::portable_strtok(temp,":", &strtok_ctx);
+                tmp = rkr::portable_strtok(nullptr,":", &strtok_ctx);
                 if (tmp != nullptr)
-                    sscanf (tmp, "%f", &bogomips);
+                    RKR_SSCANF (tmp, "%f", &bogomips);
                 break;
             }
 

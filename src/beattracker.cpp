@@ -16,7 +16,7 @@ beattracker:: beattracker ()
     peakpulse = peak = envrms = 0.0f;
     peakdecay = 10.0f/fSAMPLE_RATE;
     targatk = 12.0f/fSAMPLE_RATE;   ///for smoothing filter transition
-    atk = 200.0f/fSAMPLE_RATE;
+    atk = static_cast<int>(200.0f/fSAMPLE_RATE);
     trigtime = SAMPLE_RATE/12; //time to take next peak
     onset = 0;
     trigthresh = 0.15f;
@@ -40,7 +40,7 @@ beattracker::cleanup ()
     peakpulse = peak = envrms = 0.0f;
     peakdecay = 10.0f/fSAMPLE_RATE;
     targatk = 12.0f/fSAMPLE_RATE;   ///for smoothing filter transition
-    atk = 200.0f/fSAMPLE_RATE;
+    atk = static_cast<int>(200.0f/fSAMPLE_RATE);
     trigtime = SAMPLE_RATE/20; //time to take next peak
     onset = 0;
     trigthresh = 0.15f;

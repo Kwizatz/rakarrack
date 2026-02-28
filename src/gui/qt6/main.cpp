@@ -100,12 +100,20 @@ int main(int argc, char* argv[])
     {
         commandline    = 1;
         needtoloadfile = 1;
+#ifdef _MSC_VER
+        filetoload     = _strdup(parser.value(loadOpt).toLocal8Bit().constData());
+#else
         filetoload     = strdup(parser.value(loadOpt).toLocal8Bit().constData());
+#endif
     }
     if (parser.isSet(bankOpt))
     {
         needtoloadbank = 1;
+#ifdef _MSC_VER
+        banktoload     = _strdup(parser.value(bankOpt).toLocal8Bit().constData());
+#else
         banktoload     = strdup(parser.value(bankOpt).toLocal8Bit().constData());
+#endif
     }
     if (parser.isSet(presetOpt))
     {

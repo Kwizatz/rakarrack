@@ -44,7 +44,7 @@ Exciter::Exciter (float * efxoutl_, float * efxoutr_)
         rm[i]=0.0f;
     }
 
-    harm = std::make_unique<HarmEnhancer> (rm, 2500.0f,8000.0,1.0f);
+    harm = std::make_unique<HarmEnhancer> (rm, 2500.0f, 8000.0f, 1.0f);
 
     cleanup ();
 

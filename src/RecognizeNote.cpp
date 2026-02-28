@@ -57,10 +57,10 @@ Recognize::Recognize (float *efxoutl_, float *efxoutr_, float trig)
     Sus->changepar(2,127);
 
 
-    lpfl = std::make_unique<AnalogFilter>(2, 3000, 1, 0);
-    lpfr = std::make_unique<AnalogFilter>(2, 3000, 1, 0);
-    hpfl = std::make_unique<AnalogFilter>(3, 300, 1, 0);
-    hpfr = std::make_unique<AnalogFilter>(3, 300, 1, 0);
+    lpfl = std::make_unique<AnalogFilter>(2, 3000.0f, 1.0f, 0);
+    lpfr = std::make_unique<AnalogFilter>(2, 3000.0f, 1.0f, 0);
+    hpfl = std::make_unique<AnalogFilter>(3, 300.0f, 1.0f, 0);
+    hpfr = std::make_unique<AnalogFilter>(3, 300.0f, 1.0f, 0);
 
 
     schmittInit (24);
@@ -225,7 +225,7 @@ Recognize::displayFrequency (float freq)
 
     if (!noteoff) {
 //    reconota = 24 + (octave * 12) + note - 3;
-        offset = lrintf(nfreq / 20.0);
+        offset = lrintf(nfreq / 20.0f);
         if (fabsf(lafreq-freq)>offset) {
             lafreq = nfreq;
             reconota = 24 + (octave * 12) + note - 3;

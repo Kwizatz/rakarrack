@@ -68,8 +68,8 @@ Reverb::Reverb (float * efxoutl_, float * efxoutr_)
         apk[i] = 0;
     };
 
-    lpf = std::make_unique<AnalogFilter>(2, 22000, 1, 0);
-    hpf = std::make_unique<AnalogFilter>(3, 20, 1, 0);
+    lpf = std::make_unique<AnalogFilter>(2, 22000.0f, 1.0f, 0);
+    hpf = std::make_unique<AnalogFilter>(3, 20.0f, 1.0f, 0);
 
     setpreset (Ppreset);
     cleanup ();			//do not call this before the comb initialisation
