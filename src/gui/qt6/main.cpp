@@ -153,6 +153,12 @@ int main(int argc, char* argv[])
     // ── GUI or headless ────────────────────────────────────────────
     if (gui)
     {
+        // Enable effect processing — Bypass=1 means "route through effect chain".
+        // Without this, Alg() skips all processing and audio passes through dry.
+        rkr.Bypass = 1;
+        rkr.calculavol(1);
+        rkr.calculavol(2);
+
         MainWindow window(controller);
         window.show();
 

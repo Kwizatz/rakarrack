@@ -55,6 +55,13 @@ MainWindow::MainWindow(EngineController& engine, QWidget* parent)
     // System tray icon (optional — no-op if desktop has no tray)
     m_tray = new SystemTray(m_engine, this, this);
 
+    // Initial sync of GUI from engine state (FX On, sliders, preset info)
+    m_topBar->syncFromEngine();
+    m_slotBar->syncFromEngine();
+    for (auto* panel : m_effectPanels)
+        if (panel)
+            panel->syncFromEngine();
+
     // 25 ms → 40 Hz GUI refresh, matching the FLTK tick() rate
     m_guiTimer = new QTimer(this);
     connect(m_guiTimer, &QTimer::timeout, this, &MainWindow::onGuiTick);
@@ -207,6 +214,13 @@ void MainWindow::createEffectPanels()
         int effectType = order[static_cast<std::size_t>(i)];
         auto panel = EffectPanel::create(effectType, m_engine);
 
+        // When user toggles an effect on/off, refresh the slot bar LEDs
+        connect(panel.get(), &EffectPanel::bypassChanged, this,
+                [this](int /*effectIndex*/, bool /*active*/)
+                {
+                    m_slotBar->syncFromEngine();
+                });
+
         m_effectPanels[static_cast<std::size_t>(i)] = panel.get();
         m_panelStack->addWidget(panel.release());  // stack takes ownership
     }
@@ -262,6 +276,19 @@ void MainWindow::connectTopBarSignals()
             this, &MainWindow::loadPreset);
     connect(m_topBar, &TopBar::savePresetRequested,
             this, &MainWindow::savePreset);
+
+    // Preset counter changed → load the selected bank slot
+    connect(m_topBar, &TopBar::presetChanged, this,
+            [this](int index)
+            {
+                auto& rkr = m_engine.engine();
+                rkr.Bank_to_Preset(index - 1);  // spinbox is 1-based, engine is 0-based
+                m_slotBar->syncFromEngine();
+                m_topBar->syncFromEngine();
+                for (auto* panel : m_effectPanels)
+                    if (panel)
+                        panel->syncFromEngine();
+            });
 }
 
 // ---------------------------------------------------------------------------

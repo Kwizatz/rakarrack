@@ -19,6 +19,10 @@ static constexpr auto kActiveStyle =
 static constexpr auto kBypassedStyle =
     "QPushButton { background-color: #555; color: #aaa; }";
 
+/// Unicode "bullet" used as a small LED indicator on slot buttons.
+static constexpr auto kLedOn  = "\xE2\x97\x89";   // ◉
+static constexpr auto kLedOff = "\xE2\x97\x8B";   // ○
+
 // ---------------------------------------------------------------------------
 // Construction
 // ---------------------------------------------------------------------------
@@ -69,14 +73,23 @@ void EffectSlotBar::setSelectedSlot(int slot)
     for (int i = 0; i < kEffectSlots; ++i)
     {
         auto* btn = m_slotButtons[static_cast<std::size_t>(i)];
+        int effectType = order[static_cast<std::size_t>(i)];
+        bool active = m_engine.isEffectEnabled(effectType);
+        std::string name = m_engine.getEffectTypeName(effectType);
+
+        // Build label:  ◉ EffectName ON  or  ○ EffectName OFF
+        QString label = QStringLiteral("%1 %2 %3")
+            .arg(active ? QString::fromUtf8(kLedOn) : QString::fromUtf8(kLedOff))
+            .arg(QString::fromStdString(name))
+            .arg(active ? tr("ON") : tr("OFF"));
+        btn->setText(label);
+
         if (i == m_selectedSlot)
         {
             btn->setStyleSheet(QString::fromUtf8(kSelectedStyle));
         }
         else
         {
-            int effectType = order[static_cast<std::size_t>(i)];
-            bool active = m_engine.isEffectEnabled(effectType);
             btn->setStyleSheet(active ? QString::fromUtf8(kActiveStyle)
                                       : QString::fromUtf8(kBypassedStyle));
         }
@@ -89,17 +102,6 @@ void EffectSlotBar::setSelectedSlot(int slot)
 
 void EffectSlotBar::syncFromEngine()
 {
-    auto order = m_engine.getEffectOrder();
-
-    for (int i = 0; i < kEffectSlots; ++i)
-    {
-        int effectType = order[static_cast<std::size_t>(i)];
-        std::string name = m_engine.getEffectTypeName(effectType);
-
-        auto* btn = m_slotButtons[static_cast<std::size_t>(i)];
-        btn->setText(QString::fromStdString(name));
-    }
-
-    // Re-apply selection highlighting
+    // setSelectedSlot already updates labels, LEDs, and colors for all buttons.
     setSelectedSlot(m_selectedSlot);
 }

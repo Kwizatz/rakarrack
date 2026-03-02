@@ -63,6 +63,7 @@ protected:
 
 private:
     void setupHeader();
+    void updateOnButtonAppearance(bool active);
 
     QVBoxLayout* m_mainLayout  = nullptr;
     QVBoxLayout* m_bodyLayout  = nullptr;

@@ -24,6 +24,18 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 
+/// Unicode LED indicators for the On/Off button.
+static constexpr auto kLedOn  = "\xE2\x97\x89";   // ◉
+static constexpr auto kLedOff = "\xE2\x97\x8B";   // ○
+
+/// Styles for the on/off toggle button.
+static constexpr auto kOnButtonActiveStyle =
+    "QPushButton { background-color: #27ae60; color: white; font-weight: bold; "
+    "border: 1px solid #1e8449; border-radius: 3px; padding: 2px 6px; }";
+static constexpr auto kOnButtonBypassedStyle =
+    "QPushButton { background-color: #555; color: #aaa; "
+    "border: 1px solid #444; border-radius: 3px; padding: 2px 6px; }";
+
 // ---------------------------------------------------------------------------
 // Construction
 // ---------------------------------------------------------------------------
@@ -57,14 +69,16 @@ void EffectPanel::setupHeader()
     auto* header = new QHBoxLayout;
     header->setSpacing(4);
 
-    // On/Off toggle
-    m_onButton = new QPushButton(tr("On"), this);
+    // On/Off toggle with LED indicator
+    m_onButton = new QPushButton(QStringLiteral("%1 OFF").arg(QString::fromUtf8(kLedOff)), this);
     m_onButton->setCheckable(true);
-    m_onButton->setFixedWidth(40);
+    m_onButton->setFixedWidth(72);
+    m_onButton->setStyleSheet(QString::fromUtf8(kOnButtonBypassedStyle));
     connect(m_onButton, &QPushButton::toggled, this,
             [this](bool checked)
             {
                 m_engine.setEffectEnabled(m_effectIndex, checked);
+                updateOnButtonAppearance(checked);
                 emit bypassChanged(m_effectIndex, checked);
             });
 
@@ -102,11 +116,26 @@ QVBoxLayout* EffectPanel::bodyLayout()
 
 void EffectPanel::syncFromEngine()
 {
-    // Update on/off button
+    // Update on/off button with LED indicator and color
     const bool active = m_engine.isEffectEnabled(m_effectIndex);
     m_onButton->blockSignals(true);
     m_onButton->setChecked(active);
+    updateOnButtonAppearance(active);
     m_onButton->blockSignals(false);
+}
+
+void EffectPanel::updateOnButtonAppearance(bool active)
+{
+    if (active)
+    {
+        m_onButton->setText(QStringLiteral("%1 ON").arg(QString::fromUtf8(kLedOn)));
+        m_onButton->setStyleSheet(QString::fromUtf8(kOnButtonActiveStyle));
+    }
+    else
+    {
+        m_onButton->setText(QStringLiteral("%1 OFF").arg(QString::fromUtf8(kLedOff)));
+        m_onButton->setStyleSheet(QString::fromUtf8(kOnButtonBypassedStyle));
+    }
 }
 
 void EffectPanel::syncToEngine()

@@ -7,6 +7,7 @@
 
 #include "TopBar.hpp"
 #include "EngineController.hpp"
+#include "global.hpp"
 #include "widgets/MidiSlider.hpp"
 #include "widgets/VUMeter.hpp"
 #include "widgets/TunerDisplay.hpp"
@@ -18,6 +19,14 @@
 #include <QPushButton>
 #include <QSpinBox>
 #include <QVBoxLayout>
+
+/// Styles for the FX On toggle.
+static constexpr auto kFxOnActiveStyle =
+    "QPushButton { background-color: #27ae60; color: white; font-weight: bold; "
+    "border: 1px solid #1e8449; border-radius: 3px; padding: 4px 8px; }";
+static constexpr auto kFxOnBypassedStyle =
+    "QPushButton { background-color: #c0392b; color: white; font-weight: bold; "
+    "border: 1px solid #922b21; border-radius: 3px; padding: 4px 8px; }";
 
 // ---------------------------------------------------------------------------
 // Construction
@@ -69,12 +78,26 @@ void TopBar::setupInOutSection(QWidget* container)
     layout->setContentsMargins(4, 16, 4, 4);
 
     // FX On toggle
-    m_fxOnButton = new QPushButton(tr("FX On"), container);
+    m_fxOnButton = new QPushButton(QStringLiteral("\xE2\x97\x89 FX On"), container);
     m_fxOnButton->setCheckable(true);
     m_fxOnButton->setChecked(true);
+    m_fxOnButton->setStyleSheet(QString::fromUtf8(kFxOnActiveStyle));
     m_fxOnButton->setShortcut(QKeySequence(Qt::Key_R));
     connect(m_fxOnButton, &QPushButton::toggled, this,
-            [this](bool on) { m_engine.setBypass(!on); });
+            [this](bool on)
+            {
+                m_engine.setBypass(!on);
+                if (on)
+                {
+                    m_fxOnButton->setText(QStringLiteral("\xE2\x97\x89 FX On"));
+                    m_fxOnButton->setStyleSheet(QString::fromUtf8(kFxOnActiveStyle));
+                }
+                else
+                {
+                    m_fxOnButton->setText(QStringLiteral("\xE2\x97\x8B FX Off"));
+                    m_fxOnButton->setStyleSheet(QString::fromUtf8(kFxOnBypassedStyle));
+                }
+            });
     layout->addWidget(m_fxOnButton);
 
     // Balance (dry/wet)
@@ -284,6 +307,53 @@ void TopBar::updateFromEngine()
 
 void TopBar::syncFromEngine()
 {
-    // TODO Phase 5: sync preset name, author, counter, volume sliders
-    // from engine state
+    auto& rkr = m_engine.engine();
+
+    // FX On button — `Bypass == 1` means processing is active
+    bool fxOn = (rkr.Bypass != 0);
+    m_fxOnButton->blockSignals(true);
+    m_fxOnButton->setChecked(fxOn);
+    if (fxOn)
+    {
+        m_fxOnButton->setText(QStringLiteral("\xE2\x97\x89 FX On"));
+        m_fxOnButton->setStyleSheet(QString::fromUtf8(kFxOnActiveStyle));
+    }
+    else
+    {
+        m_fxOnButton->setText(QStringLiteral("\xE2\x97\x8B FX Off"));
+        m_fxOnButton->setStyleSheet(QString::fromUtf8(kFxOnBypassedStyle));
+    }
+    m_fxOnButton->blockSignals(false);
+
+    // Volume sliders
+    m_inputSlider->blockSignals(true);
+    m_inputSlider->setValue(static_cast<int>(rkr.Input_Gain));
+    m_inputSlider->blockSignals(false);
+
+    m_outputSlider->blockSignals(true);
+    m_outputSlider->setValue(static_cast<int>(rkr.Master_Volume));
+    m_outputSlider->blockSignals(false);
+
+    m_balanceSlider->blockSignals(true);
+    m_balanceSlider->setValue(static_cast<int>(rkr.Fraction_Bypass * 127.0f));
+    m_balanceSlider->blockSignals(false);
+
+    // Preset info
+    m_presetName->blockSignals(true);
+    m_presetName->setText(
+        QString::fromLatin1(rkr.presets.Preset_Name.data()));
+    m_presetName->blockSignals(false);
+
+    m_authorLabel->setText(
+        QString::fromLatin1(rkr.presets.Author.data()));
+
+    m_presetCounter->blockSignals(true);
+    m_presetCounter->setValue(
+        qBound(1, rkr.presets.Selected_Preset + 1, 60));
+    m_presetCounter->blockSignals(false);
+
+    // Tuner button
+    m_tunerOnButton->blockSignals(true);
+    m_tunerOnButton->setChecked(rkr.Tuner_Bypass != 0);
+    m_tunerOnButton->blockSignals(false);
 }
