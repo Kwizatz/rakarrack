@@ -37,6 +37,7 @@
 #endif
 
 // Forward declarations for types used via std::unique_ptr in RKR class.
+class EngineController;
 class Reverb;
 class Chorus;
 class Echo;
@@ -588,6 +589,9 @@ public:
     PresetBank presets;
     AppConfig config;
 
+    /// Set by main() after EngineController construction so that the
+    /// JACK RT callback can push telemetry into the lock-free ring buffers.
+    EngineController* m_controller{nullptr};
 
 #ifdef ENABLE_MIDI
     // Alsa MIDI

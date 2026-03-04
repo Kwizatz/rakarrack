@@ -26,6 +26,34 @@ ThemeManager::ThemeManager(QObject* parent)
 
 void ThemeManager::applyDarkTheme()
 {
+    // Set a dark palette so that Fusion-style widgets that are not
+    // explicitly targeted by the QSS still render with dark colours.
+    // Without this, Linux desktops typically supply a light palette
+    // which bleeds through on tooltips, highlights, and unstyled widgets.
+    QPalette dark;
+    dark.setColor(QPalette::Window,          QColor(0x2b, 0x2b, 0x2b));
+    dark.setColor(QPalette::WindowText,      QColor(0xdc, 0xdc, 0xdc));
+    dark.setColor(QPalette::Base,            QColor(0x1e, 0x1e, 0x1e));
+    dark.setColor(QPalette::AlternateBase,   QColor(0x33, 0x33, 0x33));
+    dark.setColor(QPalette::ToolTipBase,     QColor(0x2b, 0x2b, 0x2b));
+    dark.setColor(QPalette::ToolTipText,     QColor(0xdc, 0xdc, 0xdc));
+    dark.setColor(QPalette::Text,            QColor(0xdc, 0xdc, 0xdc));
+    dark.setColor(QPalette::Button,          QColor(0x3d, 0x3d, 0x3d));
+    dark.setColor(QPalette::ButtonText,      QColor(0xdc, 0xdc, 0xdc));
+    dark.setColor(QPalette::BrightText,      QColor(0xff, 0x00, 0x00));
+    dark.setColor(QPalette::Link,            QColor(0x3d, 0xae, 0xe9));
+    dark.setColor(QPalette::Highlight,       QColor(0x3d, 0xae, 0xe9));
+    dark.setColor(QPalette::HighlightedText, QColor(0xff, 0xff, 0xff));
+
+    // Disabled colours
+    dark.setColor(QPalette::Disabled, QPalette::WindowText, QColor(0x66, 0x66, 0x66));
+    dark.setColor(QPalette::Disabled, QPalette::Text,       QColor(0x66, 0x66, 0x66));
+    dark.setColor(QPalette::Disabled, QPalette::ButtonText, QColor(0x66, 0x66, 0x66));
+    dark.setColor(QPalette::Disabled, QPalette::Highlight,  QColor(0x44, 0x44, 0x44));
+
+    qApp->setPalette(dark);
+
+    // Layer the QSS on top of the palette for finer-grained overrides.
     QFile qss(QStringLiteral(":/styles/dark.qss"));
     if (qss.open(QIODevice::ReadOnly | QIODevice::Text))
     {

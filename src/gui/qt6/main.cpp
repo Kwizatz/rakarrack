@@ -149,6 +149,7 @@ int main(int argc, char* argv[])
 
     // ── EngineController bridge ────────────────────────────────────
     EngineController controller(rkr);
+    rkr.m_controller = &controller;
 
     // ── GUI or headless ────────────────────────────────────────────
     if (gui)
@@ -156,6 +157,7 @@ int main(int argc, char* argv[])
         // Enable effect processing — Bypass=1 means "route through effect chain".
         // Without this, Alg() skips all processing and audio passes through dry.
         rkr.Bypass = 1;
+        rkr.booster = 1.0f;
         rkr.calculavol(1);
         rkr.calculavol(2);
 

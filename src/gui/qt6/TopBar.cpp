@@ -12,6 +12,7 @@
 #include "widgets/VUMeter.hpp"
 #include "widgets/TunerDisplay.hpp"
 
+#include <QFont>
 #include <QGroupBox>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -78,23 +79,35 @@ void TopBar::setupInOutSection(QWidget* container)
     layout->setContentsMargins(4, 16, 4, 4);
 
     // FX On toggle
-    m_fxOnButton = new QPushButton(QStringLiteral("\xE2\x97\x89 FX On"), container);
+    //
+    // Use plain text labels instead of Unicode geometric shapes (U+25C9, U+25CB)
+    // which do not render correctly with many Linux fonts.
+    m_fxOnButton = new QPushButton(QStringLiteral("\u25CF FX On"), container);
     m_fxOnButton->setCheckable(true);
     m_fxOnButton->setChecked(true);
     m_fxOnButton->setStyleSheet(QString::fromUtf8(kFxOnActiveStyle));
     m_fxOnButton->setShortcut(QKeySequence(Qt::Key_R));
+    // Set a font family list that includes symbol-capable fonts so the
+    // bullet characters (● / ○) render on all Linux desktops.
+    QFont fxFont = m_fxOnButton->font();
+    fxFont.setFamilies({QStringLiteral("Noto Sans Symbols2"),
+                        QStringLiteral("Noto Sans Symbols"),
+                        QStringLiteral("Symbola"),
+                        QStringLiteral("DejaVu Sans"),
+                        QStringLiteral("sans-serif")});
+    m_fxOnButton->setFont(fxFont);
     connect(m_fxOnButton, &QPushButton::toggled, this,
             [this](bool on)
             {
                 m_engine.setBypass(!on);
                 if (on)
                 {
-                    m_fxOnButton->setText(QStringLiteral("\xE2\x97\x89 FX On"));
+                    m_fxOnButton->setText(QStringLiteral("\u25CF FX On"));
                     m_fxOnButton->setStyleSheet(QString::fromUtf8(kFxOnActiveStyle));
                 }
                 else
                 {
-                    m_fxOnButton->setText(QStringLiteral("\xE2\x97\x8B FX Off"));
+                    m_fxOnButton->setText(QStringLiteral("\u25CB FX Off"));
                     m_fxOnButton->setStyleSheet(QString::fromUtf8(kFxOnBypassedStyle));
                 }
             });
@@ -315,12 +328,12 @@ void TopBar::syncFromEngine()
     m_fxOnButton->setChecked(fxOn);
     if (fxOn)
     {
-        m_fxOnButton->setText(QStringLiteral("\xE2\x97\x89 FX On"));
+        m_fxOnButton->setText(QStringLiteral("\u25CF FX On"));
         m_fxOnButton->setStyleSheet(QString::fromUtf8(kFxOnActiveStyle));
     }
     else
     {
-        m_fxOnButton->setText(QStringLiteral("\xE2\x97\x8B FX Off"));
+        m_fxOnButton->setText(QStringLiteral("\u25CB FX Off"));
         m_fxOnButton->setStyleSheet(QString::fromUtf8(kFxOnBypassedStyle));
     }
     m_fxOnButton->blockSignals(false);

@@ -42,7 +42,7 @@ public:
     int bass;
     int ctipo;
 
-    char NombreAcorde[20];
+    char NombreAcorde[64];
 
     struct TipoCh {
         int tipo;
@@ -78,7 +78,7 @@ private:
         int fund;
         int di1;
         int di2;
-        char Nom[10];
+        char Nom[16];
     } Chord3[17];
 
     struct Ch4 {
@@ -87,7 +87,7 @@ private:
         int di1;
         int di2;
         int di3;
-        char Nom[10];
+        char Nom[16];
     } Chord4[62];
 
     struct Ch5 {

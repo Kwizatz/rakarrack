@@ -7,6 +7,18 @@
 
 #include "DistortionPanels.hpp"
 
+// ─── Waveshaper type names (30 entries, indices 0–29) ───────────────────────
+inline constexpr const char* kWaveshapeTypeNames[] = {
+    "Atan",          "Asymmetric",    "Power",         "Sine",
+    "Quantize",      "Zigzag",        "Limiter",       "Upper Lim",
+    "Lower Lim",     "Inverse Lim",   "Clip",          "Asym2",
+    "Pow2",          "Sigmoid",       "Sqrt Crunch",   "Sqrt Crunch2",
+    "Octave Up",     "Dbl Sine",      "Deep Sine",     "Compression",
+    "Overdrive",     "Soft",          "Super Soft",    "Hard Compress",
+    "Op Amp",        "JFET",          "Dyno JFET",     "Valve 1",
+    "Valve 2",       "Diode Clip",
+};
+
 // ═══════════════════════════════════════════════════════════════════════════
 // Distorsion (index 2) / Overdrive (index 3) — same Distorsion class
 // ═══════════════════════════════════════════════════════════════════════════
@@ -17,7 +29,7 @@ static constexpr ParamDesc kDistorsionParams[] = {
     { 2, "LR Cross",    0, 127},
     { 3, "Drive",       0, 127},
     { 4, "Level",       0, 127},
-    { 5, "Type",        0,  29, ParamDesc::Choice},  // 30 waveshape types
+    { 5, "Type",        0,  29, ParamDesc::Choice, kWaveshapeTypeNames},
     { 6, "Negate",      0,   1, ParamDesc::Toggle},
     { 7, "LPF",         0, 127},
     { 8, "HPF",         0, 127},
@@ -40,7 +52,7 @@ static constexpr ParamDesc kNewDistParams[] = {
     { 2, "LR Cross",    0, 127},
     { 3, "Drive",       0, 127},
     { 4, "Level",       0, 127},
-    { 5, "Type",        0,  29, ParamDesc::Choice},
+    { 5, "Type",        0,  29, ParamDesc::Choice, kWaveshapeTypeNames},
     { 6, "Negate",      0,   1, ParamDesc::Toggle},
     { 7, "LPF",         0, 127},
     { 8, "HPF",         0, 127},
@@ -64,7 +76,7 @@ static constexpr ParamDesc kValveParams[] = {
     { 2, "LR Cross",    0, 127},
     { 3, "Drive",       0, 127},
     { 4, "Level",       0, 127},
-    { 5, "Type",        0,  29, ParamDesc::Choice},
+    { 5, "Type",        0,  29, ParamDesc::Choice, kWaveshapeTypeNames},
     { 6, "Negate",      0,   1, ParamDesc::Toggle},
     { 7, "LPF",         0, 127},
     { 8, "HPF",         0, 127},
@@ -87,9 +99,9 @@ static constexpr ParamDesc kMBDistParams[] = {
     { 2, "LR Cross",     0, 127},
     { 3, "Drive",        0, 127},
     { 4, "Level",        0, 127},
-    { 5, "Type Low",     0,  29, ParamDesc::Choice},
-    { 6, "Type Mid",     0,  29, ParamDesc::Choice},
-    { 7, "Type High",    0,  29, ParamDesc::Choice},
+    { 5, "Type Low",     0,  29, ParamDesc::Choice, kWaveshapeTypeNames},
+    { 6, "Type Mid",     0,  29, ParamDesc::Choice, kWaveshapeTypeNames},
+    { 7, "Type High",    0,  29, ParamDesc::Choice, kWaveshapeTypeNames},
     { 8, "Vol Low",      0, 127},
     { 9, "Vol Mid",      0, 127},
     {10, "Vol High",     0, 127},

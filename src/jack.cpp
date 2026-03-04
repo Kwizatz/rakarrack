@@ -31,7 +31,9 @@
 #endif
 #include "jack.hpp"
 #include "global.hpp"
+#include "EngineController.hpp"
 #include "AllEffects.hpp"
+#include "Tuner.hpp"
 #ifdef ENABLE_MIDI
 #include "MIDIConverter.hpp"
 #endif
@@ -248,6 +250,46 @@ jackprocess (jack_nframes_t nframes, [[maybe_unused]] void *arg)
 
     JackOUT->Alg (JackOUT->efxoutl.data(), JackOUT->efxoutr.data(), inl, inr ,0);
 
+    // ── Push telemetry to GUI via lock-free ring buffers ───────────
+    if (JackOUT->m_controller)
+    {
+        // Audio levels
+        AudioLevels levels;
+        levels.input_left      = JackOUT->val_il_sum;
+        levels.input_right     = JackOUT->val_ir_sum;
+        levels.output_left     = JackOUT->val_vl_sum;
+        levels.output_right    = JackOUT->val_vr_sum;
+        levels.cpu_load        = JackOUT->cpuload;
+        levels.have_signal     = JackOUT->have_signal;
+        JackOUT->m_controller->pushLevels(levels);
+
+        // Tuner data (when active)
+        if (JackOUT->Tuner_Bypass && JackOUT->efx_Tuner)
+        {
+            TunerData tuner;
+            tuner.note_index  = JackOUT->efx_Tuner->note_actual;
+            tuner.nearest_freq = JackOUT->efx_Tuner->nfreq;
+            tuner.actual_freq  = JackOUT->efx_Tuner->afreq;
+            tuner.cents        = static_cast<float>(JackOUT->efx_Tuner->cents);
+            if (tuner.note_index >= 0 && tuner.note_index < 12
+                && JackOUT->efx_Tuner->notes)
+            {
+                snprintf(tuner.note_name, sizeof(tuner.note_name),
+                         "%s", JackOUT->efx_Tuner->notes[tuner.note_index]);
+            }
+            JackOUT->m_controller->pushTuner(tuner);
+        }
+
+        // Tap tempo display flag
+        if (JackOUT->Tap_Display)
+        {
+            TapTempoStatus tap;
+            tap.display_flag = JackOUT->Tap_Display;
+            tap.tempo_bpm    = static_cast<float>(JackOUT->Tap_TempoSet);
+            JackOUT->m_controller->pushTapTempo(tap);
+            JackOUT->Tap_Display = 0;
+        }
+    }
 
     memcpy (outl, JackOUT->efxoutl.data(),
             sizeof (jack_default_audio_sample_t) * nframes);

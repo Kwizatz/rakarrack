@@ -236,12 +236,15 @@ int EngineController::getInputGain() const
 
 void EngineController::setBypass(bool bypass)
 {
-    m_engine.Bypass = bypass ? 1 : 0;
+    // Engine convention: Bypass == 1 means "process effects" (active).
+    // Semantic wrapper: setBypass(true) means "skip effects" → Bypass = 0.
+    m_engine.Bypass = bypass ? 0 : 1;
 }
 
 bool EngineController::isBypassed() const
 {
-    return m_engine.Bypass != 0;
+    // Bypass == 0  → effects are skipped → semantically "bypassed".
+    return m_engine.Bypass == 0;
 }
 
 void EngineController::setBalance(int value)
