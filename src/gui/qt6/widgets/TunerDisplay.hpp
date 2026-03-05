@@ -2,7 +2,7 @@
   rakarrack - guitar multi-effects processor
   SPDX-License-Identifier: GPL-2.0-only
 
-  Qt6 GUI — TunerDisplay widget (replaces FLTK TunerLed)
+  Qt6 GUI — TunerDisplay widget
 
   Shows the pitch deviation in cents as a horizontal LED indicator bar.
   A small red/green marker moves left/right of centre.  When the pitch

@@ -4,7 +4,7 @@
 
   Qt6 GUI — TunerDisplay widget implementation
 
-  Replicates the FLTK TunerLed draw_rest() logic:
+  TunerDisplay rendering:
     - value normalised to 0.0–1.0 (0.5 = in tune)
     - hidden at extremes (< 0.1 or > 0.9)
     - 7 px wide indicator bar at the normalised position
@@ -68,7 +68,7 @@ void TunerDisplay::paintEvent(QPaintEvent* /*event*/)
         p.drawLine(cx, 0, cx, h);
     }
 
-    // Indicator bar — hide at extremes (matching FLTK TunerLed)
+    // Indicator bar — hide at extremes
     if (val > 0.1F && val < 0.9F)
     {
         constexpr int kIndicatorW = 7;

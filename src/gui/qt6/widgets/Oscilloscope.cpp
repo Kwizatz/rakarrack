@@ -4,7 +4,7 @@
 
   Qt6 GUI — Oscilloscope widget implementation
 
-  Replicates the FLTK Scope draw():
+  Oscilloscope rendering:
     - Widget split into two halves (right channel left, left channel right)
     - Each sample mapped to a horizontal pixel position
     - Amplitude clamped to [-1,+1], scaled to ±0.5*height
@@ -106,10 +106,10 @@ void Oscilloscope::paintEvent(QPaintEvent* /*event*/)
     p.setPen(QPen(bg.lighter(140), 1, Qt::DotLine));
     p.drawLine(0, h / 2, w, h / 2);
 
-    // Split into two halves with 5 px gap (matching FLTK Scope)
+    // Split into two halves with 5 px gap
     const int halfW = (w / 2) - 5;
 
-    // Left half: right channel; Right half: left channel (FLTK convention)
+    // Left half: right channel; Right half: left channel
     drawChannel(p, m_right, 0, 0, halfW, h, accent);
     drawChannel(p, m_left,  w / 2 + 5, 0, halfW, h, accent.lighter(130));
 }

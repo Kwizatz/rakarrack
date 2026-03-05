@@ -62,7 +62,7 @@ MainWindow::MainWindow(EngineController& engine, QWidget* parent)
         if (panel)
             panel->syncFromEngine();
 
-    // 25 ms → 40 Hz GUI refresh, matching the FLTK tick() rate
+    // 25 ms → 40 Hz GUI refresh
     m_guiTimer = new QTimer(this);
     connect(m_guiTimer, &QTimer::timeout, this, &MainWindow::onGuiTick);
     m_guiTimer->start(25);

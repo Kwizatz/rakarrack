@@ -6,8 +6,7 @@
 
   Horizontal toolbar composing: InOut panel (VU meters + volume sliders),
   Presets panel (bank/preset selector + buttons), Tuner panel, and
-  Tap Tempo panel.  Laid out left-to-right matching the FLTK Principal
-  top bar.
+  Tap Tempo panel.  Laid out left-to-right.
 */
 
 #pragma once

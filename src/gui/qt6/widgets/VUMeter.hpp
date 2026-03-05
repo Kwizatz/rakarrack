@@ -2,14 +2,13 @@
   rakarrack - guitar multi-effects processor
   SPDX-License-Identifier: GPL-2.0-only
 
-  Qt6 GUI — VUMeter widget (replaces FLTK NewVum)
+  Qt6 GUI — VUMeter widget
 
   Vertical bar-graph level meter with segmented LED look and four color
   zones (green → yellow → orange → red).  Display-only — ignores all
   mouse/keyboard input.
 
-  Value range: -48 dB (empty) to +15 dB (clipping), matching the FLTK
-  NewVum widget.
+  Value range: -48 dB (empty) to +15 dB (clipping).
 */
 
 #pragma once
@@ -29,7 +28,7 @@ public:
     [[nodiscard]] float level() const { return m_levelDB; }
     void setLevel(float dB);
 
-    /// dB range matching FLTK NewVum.
+    /// dB range.
     static constexpr float kMinDB =  -48.0F;
     static constexpr float kMaxDB =   15.0F;
 

@@ -179,14 +179,14 @@ void MidiSlider::paintEvent(QPaintEvent* /*event*/)
         else
             knob = QRect(tr.x() + 2, pos - knobH / 2, knobW, knobH);
 
-        // Gradient fill matching FLTK SliderW: blend accent with dark/light
+        // Gradient fill: blend accent with dark/light
         const double vval = static_cast<double>(value() - minimum()) /
                             std::max(1, maximum() - minimum());
         QColor dark  = accent.darker(200);
         QColor light = accent.lighter(160);
         QColor top   = dark;
         QColor bot   = light;
-        // Blend based on position (replicating FLTK fl_color_average)
+        // Blend based on position
         top.setRedF(dark.redF()   * (1.0 - vval) + light.redF()   * vval);
         top.setGreenF(dark.greenF() * (1.0 - vval) + light.greenF() * vval);
         top.setBlueF(dark.blueF()  * (1.0 - vval) + light.blueF()  * vval);

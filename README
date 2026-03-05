@@ -15,25 +15,21 @@ rakarrack is a JACK app.
 
 The dependencies are:
 
-libfltk1.1
-libxpm
+qt6-base
 libjack100.0
 libasound2
 libsamplerate0
 libsndfile1
 aconnect  (part of Debian Package alsa-utils, name may vary on other distributions)
 jackd
-libxft2
 
 If you want to compile you will also need the development packages:
 
-libxpm-dev 
-libfltk1.1-dev
+qt6-base-dev
 libjack-dev
 libsndfile1-dev
 libsamplerate0-dev
 libasound2-dev
-libxft-dev
 
 The name of the packages are typical of the naming convention for Debian-based distributions.
 These can be a little different for each distro. Use your package manager search function

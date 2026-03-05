@@ -4,7 +4,7 @@
 
   Qt6 GUI — VUMeter widget implementation
 
-  Replicates the FLTK NewVum draw_rest() rendering:
+  VUMeter rendering:
     - value normalised via  val = 1 - ((dB + 48) * 0.015873016)
     - four colour zones (green / yellow / orange / red) filled bottom-up
     - 3 px darker left + 2 px right for 3-D bevel

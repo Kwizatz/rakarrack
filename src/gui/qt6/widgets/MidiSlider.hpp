@@ -2,12 +2,11 @@
   rakarrack - guitar multi-effects processor
   SPDX-License-Identifier: GPL-2.0-only
 
-  Qt6 GUI — MidiSlider widget (replaces FLTK SliderW)
+  Qt6 GUI — MidiSlider widget
 
   A themed QSlider with integer value display, keyboard modifiers for
   step-size control, mouse-wheel support, and right-click MIDI learn.
-  Visually matches the FLTK SliderW: gradient knob, tiled background,
-  and value label area.
+  Gradient knob, tiled background, and value label area.
 */
 
 #pragma once

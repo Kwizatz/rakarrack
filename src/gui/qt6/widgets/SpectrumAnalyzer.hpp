@@ -2,11 +2,10 @@
   rakarrack - guitar multi-effects processor
   SPDX-License-Identifier: GPL-2.0-only
 
-  Qt6 GUI — SpectrumAnalyzer widget (replaces FLTK Analyzer)
+  Qt6 GUI — SpectrumAnalyzer widget
 
   28-band frequency display drawn as vertical bars.  Receives magnitude
-  data via setData() and paints with QPainter.  Click to dismiss
-  (matching FLTK behaviour).
+  data via setData() and paints with QPainter.  Click to dismiss.
 */
 
 #pragma once
@@ -20,7 +19,7 @@ class SpectrumAnalyzer : public QWidget
     Q_OBJECT
 
 public:
-    /// Number of frequency bands (matches FLTK Analyzer).
+    /// Number of frequency bands.
     static constexpr int kBandCount = 28;
 
     /// Center frequencies for the 28 bands (Hz).

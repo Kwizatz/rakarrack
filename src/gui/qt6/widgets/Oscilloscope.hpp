@@ -2,11 +2,10 @@
   rakarrack - guitar multi-effects processor
   SPDX-License-Identifier: GPL-2.0-only
 
-  Qt6 GUI — Oscilloscope widget (replaces FLTK Scope)
+  Qt6 GUI — Oscilloscope widget
 
   Dual-channel waveform display.  Left half shows the right channel,
-  right half shows the left channel (matching the FLTK layout).
-  Click to dismiss.
+  right half shows the left channel.  Click to dismiss.
 */
 
 #pragma once

@@ -5,7 +5,7 @@
   Qt6 GUI — Settings Dialog
 
   Tabbed dialog with: Appearance, Audio, MIDI, JACK, Misc, Bank tabs.
-  Replaces Fl_Preferences with QSettings-compatible approach.
+  Uses QSettings for persistent configuration.
 */
 
 #pragma once

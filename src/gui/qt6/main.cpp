@@ -2,7 +2,7 @@
   rakarrack - guitar multi-effects processor
   SPDX-License-Identifier: GPL-2.0-only
 
-  Qt6 GUI entry point.  Mirrors the FLTK main.cpp init sequence:
+  Qt6 GUI entry point.
     1. Parse command line
     2. Construct RKR engine
     3. Start JACK
