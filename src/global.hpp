@@ -402,7 +402,7 @@ public:
     std::array<int, 16> efx_order{};
     std::array<int, 16> new_order{};
     std::array<int, 60> availables{};
-    std::array<int, 12> active{};
+    std::array<int, MAX_EFFECT_SLOTS> active{};
     int MidiCh;
     int HarCh;
     int init_state;

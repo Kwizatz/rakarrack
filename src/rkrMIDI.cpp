@@ -240,14 +240,16 @@ RKR::ActiveUn(int value)
     int miraque=0;
 
 
-    if(value < 20) {
+    if(value < MAX_EFFECT_SLOTS * 2) {
         numef = value / 2;
+        if (numef >= MAX_EFFECT_SLOTS || efx_order[numef] == EMPTY_SLOT)
+            return;
         inoff = checkonoff(efx_order[numef]); // value % 2;
         miraque = efx_order[numef];
         ActOnOff();
         Mnumeff[OnOffC] = numef;
-    } else if(value < 121) {
-        numef = value-20;
+    } else if(value < MAX_EFFECT_SLOTS * 2 + 101) {
+        numef = value - MAX_EFFECT_SLOTS * 2;
         inoff = checkonoff(numef);
         miraque = numef;
         ActOnOff();

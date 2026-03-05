@@ -1126,7 +1126,9 @@ RKR::savefile (char *filename)
     fputs (buf, fn);
 
 
-    for (i = 0; i < 10; i++) {
+    for (i = 0; i < MAX_EFFECT_SLOTS; i++) {
+        if (efx_order[i] == EMPTY_SLOT)
+            continue;
         j = efx_order[i];
         memset (buf, 0, sizeof (buf));
         getbuf(buf,j);
@@ -1141,7 +1143,8 @@ RKR::savefile (char *filename)
     format_csv(buf, sizeof(buf),
              efx_order[0], efx_order[1], efx_order[2], efx_order[3],
              efx_order[4], efx_order[5], efx_order[6], efx_order[7],
-             efx_order[8], efx_order[9]);
+             efx_order[8], efx_order[9], efx_order[10], efx_order[11],
+             efx_order[12], efx_order[13], efx_order[14], efx_order[15]);
 
     fputs (buf, fn);
 
@@ -1179,7 +1182,8 @@ RKR::loadfile (char *filename)
     New();
 
     std::string line;
-    int l[10];
+    int l[MAX_EFFECT_SLOTS];
+    std::fill(std::begin(l), std::end(l), EMPTY_SLOT);
 
     // Skip first 14 header lines
     for (int i = 0; i < 14; i++)
@@ -1188,7 +1192,7 @@ RKR::loadfile (char *filename)
     // Order (line 15) — read once to get the effect ordering
     std::getline(file, line);
     parse_csv(line, l[0], l[1], l[2], l[3], l[4], l[5], l[6], l[7],
-              l[8], l[9]);
+              l[8], l[9], l[10], l[11], l[12], l[13], l[14], l[15]);
 
     // Re-open to read from the beginning with the ordering known
     file.clear();
@@ -1222,8 +1226,14 @@ RKR::loadfile (char *filename)
         Master_Volume = out_vol;
     }
 
-    // Effect slot data (10 lines)
-    for (int i = 0; i < 10; i++) {
+    // Count active (non-empty) effect slots for reading data lines
+    int activeSlots = 0;
+    for (int i = 0; i < MAX_EFFECT_SLOTS; i++)
+        if (l[i] != EMPTY_SLOT)
+            activeSlots++;
+
+    // Effect slot data (one line per active slot)
+    for (int i = 0; i < activeSlots; i++) {
         std::getline(file, line);
         // putbuf expects a mutable char buffer
         char buf[256]{};
@@ -1233,8 +1243,12 @@ RKR::loadfile (char *filename)
 
     // Order (again)
     std::getline(file, line);
+    // Initialise to EMPTY_SLOT so old files with <16 values are handled
+    std::fill(std::begin(lv[10]), std::begin(lv[10]) + MAX_EFFECT_SLOTS, EMPTY_SLOT);
     parse_csv(line, lv[10][0], lv[10][1], lv[10][2], lv[10][3], lv[10][4],
-              lv[10][5], lv[10][6], lv[10][7], lv[10][8], lv[10][9]);
+              lv[10][5], lv[10][6], lv[10][7], lv[10][8], lv[10][9],
+              lv[10][10], lv[10][11], lv[10][12], lv[10][13], lv[10][14],
+              lv[10][15]);
 
     // User MIDI table (128 lines)
     for (int i = 0; i < 128; i++) {
@@ -1260,14 +1274,16 @@ RKR::Actualizar_Audio ()
 
 
     Bypass = 0;
-    for (i = 0; i < 12; i++)
+    for (i = 0; i < MAX_EFFECT_SLOTS; i++)
         efx_order[i] = lv[10][i];
     Harmonizer_Bypass=0;
     Ring_Bypass = 0;
     StereoHarm_Bypass = 0;
 
 
-    for (j=0; j<10; j++) {
+    for (j=0; j<MAX_EFFECT_SLOTS; j++) {
+        if (efx_order[j] == EMPTY_SLOT)
+            continue;
         switch(efx_order[j]) {
         case 0: //EQ1
             EQ1_Bypass = 0;
@@ -1889,7 +1905,7 @@ RKR::New ()
 //Compressor
         {-13, 2, -6, 20, 120, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 //Order
-        {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},
+        {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, EMPTY_SLOT, EMPTY_SLOT, EMPTY_SLOT, EMPTY_SLOT, EMPTY_SLOT, EMPTY_SLOT},
 //WahWah
         {64, 64, 138, 0, 0, 64, 20, 90, 0, 60, 0, 0, 0, 0, 0, 0},
 //AlienWah1
@@ -1974,7 +1990,7 @@ RKR::New ()
     };
 
 
-    for (j=0; j<10; j++) active[j]=0;
+    for (j=0; j<MAX_EFFECT_SLOTS; j++) active[j]=0;
 
     memset(presets.Preset_Name.data(), 0, presets.Preset_Name.size());
     efx_Convol->Filename.fill(0);
@@ -1999,7 +2015,7 @@ RKR::New ()
     }
 
 
-    for (k = 0; k < 12; k++)
+    for (k = 0; k < MAX_EFFECT_SLOTS; k++)
         efx_order[k] = default_presets[10][k];
 
 
@@ -2096,7 +2112,7 @@ RKR::New_Bank ()
 //Compressor
         {-30, 2, -6, 20, 120, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 //Order
-        {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},
+        {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, EMPTY_SLOT, EMPTY_SLOT, EMPTY_SLOT, EMPTY_SLOT, EMPTY_SLOT, EMPTY_SLOT},
 //WahWah
         {64, 64, 138, 0, 0, 64, 20, 90, 0, 60, 0, 0, 0, 0, 0, 0},
 //AlienWah1
@@ -2242,7 +2258,7 @@ RKR::Bank_to_Preset (int i)
     }
 
 
-    for (k = 0; k < 12; k++)
+    for (k = 0; k < MAX_EFFECT_SLOTS; k++)
         efx_order[k] = presets.Bank[i].lv[10][k];
 
 
@@ -2428,7 +2444,7 @@ RKR::Preset_to_Bank (int i)
         lv[47][j] = efx_Infinity->getpar(j);
 
 
-    for (j = 0; j <= 12; j++)
+    for (j = 0; j < MAX_EFFECT_SLOTS; j++)
         lv[10][j] = efx_order[j];
 
     for (j = 0; j < 10; j++)

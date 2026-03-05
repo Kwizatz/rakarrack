@@ -7,6 +7,7 @@
 
 #include "EffectSlotBar.hpp"
 #include "EngineController.hpp"
+#include "dsp_constants.hpp"
 
 #include <QHBoxLayout>
 #include <QPushButton>
@@ -74,6 +75,15 @@ void EffectSlotBar::setSelectedSlot(int slot)
     {
         auto* btn = m_slotButtons[static_cast<std::size_t>(i)];
         int effectType = order[static_cast<std::size_t>(i)];
+
+        // Hide buttons for unused (empty) slots
+        if (effectType == EMPTY_SLOT)
+        {
+            btn->hide();
+            continue;
+        }
+        btn->show();
+
         bool active = m_engine.isEffectEnabled(effectType);
         std::string name = m_engine.getEffectTypeName(effectType);
 

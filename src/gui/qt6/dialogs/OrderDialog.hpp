@@ -4,7 +4,7 @@
 
   Qt6 GUI — Effect Order Dialog
 
-  Two-list interface: available effects on the left, current 10-slot chain
+  Two-list interface: available effects on the left, current 16-slot chain
   on the right, with move/swap controls and category filtering.
 */
 
@@ -12,13 +12,14 @@
 
 #include <QDialog>
 #include <array>
+#include "dsp_constants.hpp"
 
 class EngineController;
 class QListWidget;
 class QComboBox;
 
-/// Number of effect processing slots in the chain.
-inline constexpr int kOrderSlots = 10;
+/// Maximum number of effect processing slots in the chain.
+inline constexpr int kOrderSlots = 16;
 
 class OrderDialog : public QDialog
 {
@@ -32,6 +33,7 @@ private Q_SLOTS:
     void onMoveUp();
     void onMoveDown();
     void onReplaceEffect();
+    void onRemoveEffect();
     void onFilterChanged(int filterIndex);
     void onAccept();
     void onReject();

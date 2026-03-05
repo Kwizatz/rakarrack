@@ -8,6 +8,7 @@
 #include "OrderDialog.hpp"
 #include "EngineController.hpp"
 #include "global.hpp"
+#include "dsp_constants.hpp"
 
 #include <QComboBox>
 #include <QHBoxLayout>
@@ -106,6 +107,12 @@ void OrderDialog::setupUi()
     connect(replaceBtn, &QPushButton::clicked, this, &OrderDialog::onReplaceEffect);
     centerPanel->addWidget(replaceBtn, 0, Qt::AlignCenter);
 
+    auto* removeBtn = new QPushButton(QStringLiteral("\u2716"), this);  // ✖
+    removeBtn->setToolTip(tr("Remove effect from this slot"));
+    removeBtn->setFixedSize(40, 40);
+    connect(removeBtn, &QPushButton::clicked, this, &OrderDialog::onRemoveEffect);
+    centerPanel->addWidget(removeBtn, 0, Qt::AlignCenter);
+
     centerPanel->addSpacing(16);
 
     auto* upBtn = new QPushButton(QStringLiteral("\u2191"), this);  // ↑
@@ -125,7 +132,7 @@ void OrderDialog::setupUi()
 
     // ---- Current order list ----
     auto* rightPanel = new QVBoxLayout();
-    rightPanel->addWidget(new QLabel(tr("Current Chain (10 Slots)"), this));
+    rightPanel->addWidget(new QLabel(tr("Current Chain (up to 16 Slots)"), this));
     m_orderList = new QListWidget(this);
     rightPanel->addWidget(m_orderList, 1);
     panelLayout->addLayout(rightPanel, 1);
@@ -161,6 +168,13 @@ void OrderDialog::populateOrderList()
     {
         int effectPos = m_newOrder[static_cast<std::size_t>(i)];
 
+        if (effectPos == EMPTY_SLOT)
+        {
+            m_orderList->addItem(
+                QString::number(i + 1) + QStringLiteral(". (Empty)"));
+            continue;
+        }
+
         // Find the name for this effect position
         QString name = tr("Unknown");
         for (int e = 0; e < 70; ++e)
@@ -195,7 +209,8 @@ void OrderDialog::populateAvailableList()
         bool inChain = false;
         for (int s = 0; s < kOrderSlots; ++s)
         {
-            if (m_newOrder[static_cast<std::size_t>(s)] == rkr.efx_names[e].Pos)
+            if (m_newOrder[static_cast<std::size_t>(s)] != EMPTY_SLOT &&
+                m_newOrder[static_cast<std::size_t>(s)] == rkr.efx_names[e].Pos)
             {
                 inChain = true;
                 break;
@@ -251,6 +266,18 @@ void OrderDialog::onReplaceEffect()
     int newEffectPos = availItem->data(Qt::UserRole).toInt();
     m_newOrder[static_cast<std::size_t>(orderRow)] = newEffectPos;
 
+    populateOrderList();
+    populateAvailableList();
+    m_orderList->setCurrentRow(orderRow);
+}
+
+void OrderDialog::onRemoveEffect()
+{
+    int orderRow = m_orderList->currentRow();
+    if (orderRow < 0)
+        return;
+
+    m_newOrder[static_cast<std::size_t>(orderRow)] = EMPTY_SLOT;
     populateOrderList();
     populateAvailableList();
     m_orderList->setCurrentRow(orderRow);

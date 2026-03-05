@@ -1218,7 +1218,7 @@ RKR::checkforaux()
 {
     int i;
 
-    for(i=0; i<10; i++)
+    for(i=0; i<MAX_EFFECT_SLOTS; i++)
         if(efx_order[i]==35) {
             if (Vocoder_Bypass) return(1);
         }
@@ -1548,7 +1548,9 @@ RKR::Alg (float *inl1, float *inr1, float *origl, float *origr, void *)
 
         if(ponlast) last=reconota;
 
-        for (i = 0; i < 10; i++) {
+        for (i = 0; i < MAX_EFFECT_SLOTS; i++) {
+            if (efx_order[i] == EMPTY_SLOT)
+                continue;
             switch (efx_order[i]) {
             case 0:
                 if (EQ1_Bypass) {

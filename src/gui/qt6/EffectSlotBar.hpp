@@ -4,7 +4,7 @@
 
   Qt6 GUI — EffectSlotBar
 
-  Horizontal row of 10 toggle buttons, one per effect slot in the chain.
+  Horizontal row of up to 16 toggle buttons, one per effect slot in the chain.
   Each button shows the effect name and active/bypass state.  Clicking a
   slot selects it for detailed editing in the panel area below.
 */
@@ -19,7 +19,7 @@ class EngineController;
 class QPushButton;
 
 /// Number of effect processing slots.
-inline constexpr int kEffectSlots = 10;
+inline constexpr int kEffectSlots = 16;
 
 class EffectSlotBar : public QWidget
 {

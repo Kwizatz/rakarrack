@@ -30,7 +30,7 @@ class HelpBrowser;
 class TriggerDialog;
 
 /// Number of effect processing slots.
-inline constexpr int kMainEffectSlots = 10;
+inline constexpr int kMainEffectSlots = 16;
 
 class MainWindow : public QMainWindow
 {

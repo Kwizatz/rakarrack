@@ -10366,7 +10366,7 @@ void RKRGUI::cb_Order_DeacHide(Fl_Check_Button* o, void* v) {
 
 void RKRGUI::cb_ok_order_i(Fl_Button*, void*) {
   int i;
-  for (i=0;i<10;i++) rkr->efx_order[i]=rkr->new_order[i];
+  for (i=0;i<MAX_EFFECT_SLOTS;i++) rkr->efx_order[i]=rkr->new_order[i];
   reordena();
   Order->do_callback();
 }
@@ -10376,7 +10376,7 @@ void RKRGUI::cb_ok_order(Fl_Button* o, void* v) {
 
 void RKRGUI::cb_Cancel_order_i(Fl_Button*, void*) {
   int i;
-  for (i=0;i<10;i++) rkr->efx_order[i]=rkr->saved_order[i];
+  for (i=0;i<MAX_EFFECT_SLOTS;i++) rkr->efx_order[i]=rkr->saved_order[i];
   Order->do_callback();
 }
 void RKRGUI::cb_Cancel_order(Fl_Button* o, void* v) {
@@ -23287,8 +23287,9 @@ void RKRGUI::Put_Loaded() {
   }
 
 
-  for(i=0;i<10;i++)
+  for(i=0;i<MAX_EFFECT_SLOTS;i++)
    {
+     if(rkr->efx_order[i]==EMPTY_SLOT) continue;
      switch(rkr->efx_order[i])
       {
         
@@ -23774,9 +23775,10 @@ void RKRGUI::reordena() {
    // Show   
       
       
-  for (i=0; i<10; i++)
+  for (i=0; i<MAX_EFFECT_SLOTS; i++)
   {
 
+  if(rkr->efx_order[i]==EMPTY_SLOT) continue;
   switch (rkr->efx_order[i])
     {
     
@@ -26965,7 +26967,7 @@ void RKRGUI::findpos(int num, int value, Fl_Widget *w) {
   Fl_Color on = fl_lighter(fl_lighter(label_color));
   Fl_Color off= fl_darker(label_color);
 
-  for(i=0; i<10; i++)
+  for(i=0; i<MAX_EFFECT_SLOTS; i++)
    {
       if (rkr->efx_order[i]== num)
         {
@@ -27085,8 +27087,9 @@ void RKRGUI::FillML(int type) {
            }
         
         } 
-   for(j=0;j<10;j++)
+   for(j=0;j<MAX_EFFECT_SLOTS;j++)
     {
+      if(rkr->efx_order[j]==EMPTY_SLOT) continue;
       for(i=0;i<rkr->NumParams;i++)
         {
           if(rkr->efx_params[i].Effect==rkr->efx_order[j])
@@ -27376,11 +27379,12 @@ void RKRGUI::Prepare_Order() {
   Order_Bro->clear();
 
 
-  for (i=0; i<10;i++) 
+  for (i=0; i<MAX_EFFECT_SLOTS;i++) 
   {
   rkr->new_order[i]=rkr->efx_order[i];
   rkr->saved_order[i]=rkr->efx_order[i];
-  Order_Bro->add(rkr->efx_names[Busca_Eff(rkr->efx_order[i])].Nom.data());
+  if(rkr->efx_order[i]!=EMPTY_SLOT)
+    Order_Bro->add(rkr->efx_names[Busca_Eff(rkr->efx_order[i])].Nom.data());
   }
 
   Fill_Avail(rkr->eff_filter);

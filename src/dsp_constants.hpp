@@ -74,6 +74,13 @@ inline constexpr float LOG_FMAX = 10.0f;
 inline constexpr float MINDEPTH = 20.0f;
 inline constexpr float MAXDEPTH = 15000.0f;
 inline constexpr int MAX_EQ_BANDS = 16;
+
+/// Maximum number of effect processing slots in the chain (0–16 active).
+inline constexpr int MAX_EFFECT_SLOTS = 16;
+
+/// Sentinel value stored in efx_order[] for an unused/empty slot.
+inline constexpr int EMPTY_SLOT = -1;
+
 inline constexpr int CLOSED = 1;
 inline constexpr int OPENING = 2;
 inline constexpr int OPEN = 3;

@@ -78,7 +78,7 @@ struct ParamCommand
 };
 
 /// Number of effect slots in the processing chain.
-inline constexpr int kMaxEffectSlots = 10;
+inline constexpr int kMaxEffectSlots = 16;
 
 /// Total number of effect types.
 inline constexpr int kNumEffectTypes = 47;

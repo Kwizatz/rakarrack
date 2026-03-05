@@ -7,6 +7,7 @@
 
 #include "EffectPanel.hpp"
 #include "EngineController.hpp"
+#include "dsp_constants.hpp"
 
 // Panel subclass headers for the factory
 #include "EQPanel.hpp"
@@ -150,6 +151,17 @@ void EffectPanel::syncToEngine()
 std::unique_ptr<EffectPanel> EffectPanel::create(
     int effectType, EngineController& engine, QWidget* parent)
 {
+    // Empty slot — show a placeholder label
+    if (effectType == EMPTY_SLOT)
+    {
+        auto panel = std::make_unique<EffectPanel>(engine, effectType, parent);
+        auto* label = new QLabel(
+            QStringLiteral("(Empty Slot)"), panel.get());
+        label->setAlignment(Qt::AlignCenter);
+        panel->bodyLayout()->addWidget(label);
+        return panel;
+    }
+
     switch (effectType)
     {
     // ── EQ ──────────────────────────────────────────────────────────

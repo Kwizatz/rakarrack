@@ -92,7 +92,7 @@ void MainWindow::setupUi()
     m_topBar = new TopBar(m_engine, m_centralWidget);
     mainLayout->addWidget(m_topBar);
 
-    // --- Effect Slot Bar (10 buttons) ---
+    // --- Effect Slot Bar (up to 16 buttons) ---
     m_slotBar = new EffectSlotBar(m_engine, m_centralWidget);
     connect(m_slotBar, &EffectSlotBar::slotSelected,
             this, &MainWindow::onSlotSelected);
@@ -173,8 +173,10 @@ void MainWindow::setupMenuBar()
 
 void MainWindow::setupShortcuts()
 {
-    // Keys 1-9 select effect slots 0-8, key 0 selects slot 9
-    for (int i = 0; i < kMainEffectSlots; ++i)
+    // Keys 1-9 select effect slots 0-8, key 0 selects slot 9.
+    // Slots 10-15 have no keyboard shortcut (no natural key binding).
+    constexpr int kShortcutSlots = 10;
+    for (int i = 0; i < kShortcutSlots; ++i)
     {
         int key = (i < 9) ? (Qt::Key_1 + i) : Qt::Key_0;
         auto* sc = new QShortcut(QKeySequence(key), this);
