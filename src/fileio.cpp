@@ -30,6 +30,7 @@
 #include <string>
 #include <string_view>
 #include <cstring>
+#include <type_traits>
 #include "global.hpp"
 #include "AllEffects.hpp"
 #include "EmbeddedResource.hpp"
@@ -87,7 +88,7 @@ void safe_copy(std::array<char, Nd>& dst, const std::array<char, Ns>& src)
     safe_copy(dst, src.data());
 }
 
-// Advance past leading delimiters and parse one numeric value via std::from_chars.
+// Advance past leading delimiters and parse one numeric value.
 // Returns the remaining string_view, or empty on parse failure.
 template<typename T>
 std::string_view consume_value(std::string_view sv, T& out)
@@ -97,10 +98,34 @@ std::string_view consume_value(std::string_view sv, T& out)
         sv.remove_prefix(1);
     if (sv.empty())
         return sv;
-    auto [ptr, ec] = std::from_chars(sv.data(), sv.data() + sv.size(), out);
-    if (ec != std::errc{})
-        return {};
-    return {ptr, static_cast<std::size_t>(sv.data() + sv.size() - ptr)};
+
+    const char* begin = sv.data();
+    const char* end = sv.data() + sv.size();
+
+    if constexpr (std::is_floating_point_v<T>) {
+        const char* token_end = begin;
+        while (token_end < end && *token_end != ',' && *token_end != ' '
+               && *token_end != '\n' && *token_end != '\r') {
+            ++token_end;
+        }
+        if (token_end == begin)
+            return {};
+
+        std::string token(begin, static_cast<std::size_t>(token_end - begin));
+        char* parsed_end = nullptr;
+        errno = 0;
+        const double parsed = std::strtod(token.c_str(), &parsed_end);
+        if (parsed_end != token.c_str() + token.size() || errno == ERANGE)
+            return {};
+
+        out = static_cast<T>(parsed);
+        return {token_end, static_cast<std::size_t>(end - token_end)};
+    } else {
+        auto [ptr, ec] = std::from_chars(begin, end, out);
+        if (ec != std::errc{})
+            return {};
+        return {ptr, static_cast<std::size_t>(end - ptr)};
+    }
 }
 
 // Parse comma-separated numeric values (int or float) from a string_view.
