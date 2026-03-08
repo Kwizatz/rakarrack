@@ -37,6 +37,14 @@ pacman -S --needed --noconfirm mingw-w64-x86_64-qt6-base \
 
 Use the MSYS2 MinGW 64-bit shell for all build and compilation steps.
 
+**macOS (Homebrew):**
+macOS support is experimental. MIDI is automatically disabled (ALSA is Linux-only).
+
+Required Homebrew packages:
+```bash
+brew install fftw jack libsamplerate libsndfile nlohmann-json pkg-config qt@6
+```
+
 ## Project Architecture
 
 ### Core Components

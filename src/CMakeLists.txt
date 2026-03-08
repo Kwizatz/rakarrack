@@ -264,11 +264,11 @@ add_library(rakarrack_engine STATIC
 target_include_directories(rakarrack_engine PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}
-	${ALSA_INCLUDE_DIRS}
+	$<$<BOOL:${ENABLE_MIDI}>:${ALSA_INCLUDE_DIRS}>
 )
 
 target_link_libraries(rakarrack_engine PUBLIC
-	${ALSA_LIBRARIES}
+	$<$<BOOL:${ENABLE_MIDI}>:${ALSA_LIBRARIES}>
 	PkgConfig::FFTW
 	PkgConfig::JACK
 	PkgConfig::SAMPLERATE
@@ -280,6 +280,7 @@ target_link_libraries(rakarrack_engine PUBLIC
 
 target_precompile_headers(rakarrack_engine PRIVATE
 	dsp_constants.hpp
+	<algorithm>
 	<memory>
 	<array>
 	<vector>

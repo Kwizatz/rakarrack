@@ -41,3 +41,21 @@ This is the partial list of dependencies for building on MSYS:
 
 `pacman -S --needed --noconfirm mingw-w64-x86_64-qt6-base mingw-w64-x86_64-dlfcn mingw-w64-x86_64-jack2 mingw-w64-x86_64-qjackctl mingw-w64-x86_64-nlohmann-json`
 
+Building For macOS
+------------------
+
+macOS support is experimental. MIDI support (ALSA) is not available on macOS and is automatically disabled.
+
+Install dependencies via [Homebrew](https://brew.sh):
+
+```bash
+brew install fftw jack libsamplerate libsndfile nlohmann-json pkg-config qt@6
+```
+
+Then build with CMake:
+
+```bash
+cmake -B build -S .
+cmake --build build
+```
+

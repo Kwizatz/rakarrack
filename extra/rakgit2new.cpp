@@ -311,14 +311,14 @@ for (i=1; i<61; i++)
      NewBank[i].Balance = Bank[i].Balance;
      NewBank[i].Bypass = Bank[i].Bypass;
      
-     sprintf(NewBank[i].Preset_Name, "%s",Bank[i].Preset_Name);
-     sprintf(NewBank[i].Author, "%s",Bank[i].Author);
-     sprintf(NewBank[i].ConvoFiname, "%s",Bank[i].ConvoFiname);
-     sprintf(NewBank[i].RevFiname, "%s",Bank[i].RevFiname);
+     snprintf(NewBank[i].Preset_Name, sizeof(NewBank[i].Preset_Name), "%s",Bank[i].Preset_Name);
+     snprintf(NewBank[i].Author, sizeof(NewBank[i].Author), "%s",Bank[i].Author);
+     snprintf(NewBank[i].ConvoFiname, sizeof(NewBank[i].ConvoFiname), "%s",Bank[i].ConvoFiname);
+     snprintf(NewBank[i].RevFiname, sizeof(NewBank[i].RevFiname), "%s",Bank[i].RevFiname);
    
-     sprintf(NewBank[i].cInput_Gain, "%s",Bank[i].cInput_Gain);
-     sprintf(NewBank[i].cMaster_Volume, "%s",Bank[i].cMaster_Volume);
-     sprintf(NewBank[i].cBalance, "%s",Bank[i].cBalance);
+     snprintf(NewBank[i].cInput_Gain, sizeof(NewBank[i].cInput_Gain), "%s",Bank[i].cInput_Gain);
+     snprintf(NewBank[i].cMaster_Volume, sizeof(NewBank[i].cMaster_Volume), "%s",Bank[i].cMaster_Volume);
+     snprintf(NewBank[i].cBalance, sizeof(NewBank[i].cBalance), "%s",Bank[i].cBalance);
      
       
   for(j=0;j<50;j++)

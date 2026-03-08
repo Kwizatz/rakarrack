@@ -84,7 +84,7 @@ add_executable(rakarrack-qt6
 target_link_libraries(rakarrack-qt6 PRIVATE
     rakarrack_engine
     Qt6::Widgets
-    ${ALSA_LIBRARIES}
+    $<$<BOOL:${ENABLE_MIDI}>:${ALSA_LIBRARIES}>
     PkgConfig::FFTW
     PkgConfig::JACK
     PkgConfig::SAMPLERATE
@@ -95,7 +95,7 @@ target_link_libraries(rakarrack-qt6 PRIVATE
 target_include_directories(rakarrack-qt6 PRIVATE
     ${CMAKE_SOURCE_DIR}/src
     ${CMAKE_BINARY_DIR}/src
-    ${ALSA_INCLUDE_DIRS}
+    $<$<BOOL:${ENABLE_MIDI}>:${ALSA_INCLUDE_DIRS}>
 )
 
 install(TARGETS rakarrack-qt6 RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

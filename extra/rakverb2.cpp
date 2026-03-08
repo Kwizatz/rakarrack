@@ -138,7 +138,7 @@ if(!have_output)
 
   if ((fn = fopen (Outputfile, "w")) == NULL)  return(0);
   memset (wbuf, 0, sizeof (wbuf));
-  sprintf(wbuf,"%s\n",Inputfile);    
+  snprintf(wbuf, sizeof(wbuf), "%s\n",Inputfile);
   fputs (wbuf, fn);
 
 incr = 0.00001f;
@@ -218,17 +218,17 @@ sf_close(infile);
 
 
 memset(wbuf,0,sizeof(wbuf));
-sprintf(wbuf,"%f,%f\n", compress, incr);
+snprintf(wbuf, sizeof(wbuf), "%f,%f\n", compress, incr);
 fputs(wbuf,fn);
 
 memset(wbuf,0,sizeof(wbuf));
-sprintf(wbuf,"%d\n", x);
+snprintf(wbuf, sizeof(wbuf), "%d\n", x);
 fputs(wbuf,fn);
 
 for(i=0;i<x;i++)
 { 
   memset(wbuf,0,sizeof(wbuf));
-  sprintf(wbuf, "%f,%f\n",index[i],data[i]);
+  snprintf(wbuf, sizeof(wbuf), "%f,%f\n",index[i],data[i]);
   fputs(wbuf,fn);
 };
 

@@ -38,10 +38,16 @@ set(DATA_DIR ${CMAKE_INSTALL_FULL_DATADIR}/${PACKAGE})
 
 find_package(nlohmann_json REQUIRED)
 
-option(ENABLE_MIDI "Enable MIDI code (requires ALSA)" ON)
+# ALSA MIDI is only available on Linux; default OFF on other platforms.
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  option(ENABLE_MIDI "Enable MIDI code (requires ALSA)" ON)
+else()
+  option(ENABLE_MIDI "Enable MIDI code (requires ALSA)" OFF)
+endif()
 if(ENABLE_MIDI)
   find_package(ALSA)
   if(NOT ALSA_FOUND)
+    message(STATUS "ALSA not found — disabling MIDI support")
     set(ENABLE_MIDI OFF)
   endif()
 endif()
