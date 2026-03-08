@@ -101,7 +101,6 @@ RKR::RKR ()
     actuvol= 0;
     OnCounter=0;
 
-
     snprintf (temp, sizeof(temp), "rakarrack");
 
     jack.client = jack_client_open (temp, jack.options, &jack.status, nullptr);
@@ -116,9 +115,6 @@ RKR::RKR ()
 
     snprintf (jack.name.data(), jack.name.size(), "%s", jack_get_client_name (jack.client));
 
-
-
-
     jack.sample_rate = jack_get_sample_rate (jack.client);
     jack.period = jack_get_buffer_size (jack.client);
 
@@ -128,7 +124,6 @@ RKR::RKR ()
     rakarrack.get (PrefNom ("UpQuality"), UpQual, 4);
     rakarrack.get (PrefNom ("DownQuality"), DownQual, 4);
     rakarrack.get (PrefNom ("UpAmount"), UpAmo, 0);
-
 
     Adjust_Upsample();
 
@@ -173,13 +168,9 @@ RKR::RKR ()
     rakarrack.get (PrefNom("Vocoder Up Quality"),Voc_U_Q,4);
     rakarrack.get (PrefNom("Vocoder Down Quality"),Voc_D_Q,2);
 
-
     rakarrack.get (PrefNom("Waveshape Resampling"),Wave_res_amount,5);
     rakarrack.get (PrefNom("Waveshape Up Quality"),Wave_up_q,4);
     rakarrack.get (PrefNom("Waveshape Down Quality"),Wave_down_q,2);
-
-
-
 
     rakarrack.get (PrefNom ("Harmonizer Quality"), HarQual, 4);
     rakarrack.get (PrefNom ("StereoHarm Quality"), SteQual, 4);
@@ -227,8 +218,6 @@ RKR::RKR ()
     bogomips = 0.0f;
     i = Get_Bogomips();
 
-
-
     efxoutl.resize(PERIOD, 0.0f);
     efxoutr.resize(PERIOD, 0.0f);
 
@@ -242,8 +231,6 @@ RKR::RKR ()
     auxresampled.resize(PERIOD, 0.0f);
 
     m_ticks.resize(PERIOD, 0.0f);
-
-
 
     DC_Offsetl = std::make_unique<AnalogFilter>(1, 20.0f, 1.0f, 0);
     DC_Offsetr = std::make_unique<AnalogFilter>(1, 20.0f, 1.0f, 0);
@@ -325,7 +312,6 @@ RKR::RKR ()
     */
 
     NumEffects = 47;
-
     {
         static const char *los_names[] = {
             "AlienWah","11","16",
@@ -375,7 +361,6 @@ RKR::RKR ()
             "Vibe","45","2",
             "Vocoder","35","128",
             "WahWah","10","16"
-
         };
 
         for (i = 0; i < NumEffects*3; i+=3) {
@@ -387,9 +372,7 @@ RKR::RKR ()
         }
     }
 
-
     NumParams= 377;
-
     {
         static const char *los_params[] = {
 

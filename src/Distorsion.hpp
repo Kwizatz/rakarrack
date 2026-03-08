@@ -41,13 +41,12 @@ public:
     void changepar (int npar, int value);
     int getpar (int npar);
     void cleanup ();
-    void applyfilters (float * efxoutl, float * efxoutr);
-
     std::vector<float> octoutl;
     std::vector<float> octoutr;
 
 private:
-    //Parametrii
+    void applyfilters (float * efxoutl_, float * efxoutr_);
+    //Parameters
     int Pvolume;	//Volumul or E/R
     int Ppanning;	//Panning
     int Plrcross;	// L/R Mixing
@@ -57,7 +56,7 @@ private:
     int Pnegate;	//if the input is negated
     int Plpf;		//lowpass filter
     int Phpf;		//highpass filter
-    int Pstereo;	//0=mono,1=stereo
+    int Pstereo;	//0=mono, 1=stereo
     int Pprefiltering;	//if you want to do the filtering before the distorsion
     int Poctave;	//mix sub octave
 

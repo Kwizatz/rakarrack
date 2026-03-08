@@ -26,6 +26,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <cmath>
+#include <array>
 #include "Distorsion.hpp"
 #include "FPreset.hpp"
 
@@ -92,75 +93,78 @@ Distorsion::cleanup ()
     blockDCl->cleanup ();
     DCl->cleanup();
     DCr->cleanup();
-
 };
-
 
 /*
  * Apply the filters
  */
-
 void
-Distorsion::applyfilters (float * efxoutl, float * efxoutr)
+Distorsion::applyfilters (float * efxoutl_, float * efxoutr_)
 {
-    lpfl->filterout (efxoutl);
-    hpfl->filterout (efxoutl);
-
+    lpfl->filterout (efxoutl_);
+    hpfl->filterout (efxoutl_);
     if (Pstereo != 0) {
         //stereo
-        lpfr->filterout (efxoutr);
-        hpfr->filterout (efxoutr);
+        lpfr->filterout (efxoutr_);
+        hpfr->filterout (efxoutr_);
     };
-
 };
-
 
 /*
  * Effect output
  */
 void
-Distorsion::out (float * smpsl, float * smpsr)
+Distorsion::out(float * smpsl, float * smpsr)
 {
-    int i;
     float l, r, lout, rout;
-
-    float inputvol = powf (5.0f, ((float)Pdrive - 32.0f) / 127.0f);
+    float inputvol = powf (5.0f, (static_cast<float>(Pdrive) - 32.0f) / 127.0f);
     if (Pnegate != 0)
+    {
         inputvol *= -1.0f;
+    }
 
-    if (Pstereo != 0) {
+    // The following lines override efxoutl and efxoutr, So why are they pointers to a global buffer?
+    if (Pstereo != 0) 
+    {
         //Stereo
-        for (i = 0; i < PERIOD; i++) {
+        for (int i = 0; i < PERIOD; i++) {
             efxoutl[i] = smpsl[i] * inputvol * 2.0f;
             efxoutr[i] = smpsr[i] * inputvol * 2.0f;
-        };
-    } else {
-        for (i = 0; i < PERIOD; i++) {
-            efxoutl[i] =
-                (smpsl[i]  +  smpsr[i] ) * inputvol;
-        };
-    };
+        }
+    }
+    else
+    {
+        for (int i = 0; i < PERIOD; i++)
+        {
+            efxoutl[i] = (smpsl[i]  +  smpsr[i] ) * inputvol;
+        }
+    }
 
     if (Pprefiltering != 0)
+    {
         applyfilters (efxoutl, efxoutr);
+    }
 
     //no optimised, yet (no look table)
 
-
     dwshapel->waveshapesmps (PERIOD, efxoutl, Ptype, Pdrive, 1);
     if (Pstereo != 0)
-        dwshaper->waveshapesmps (PERIOD, efxoutr, Ptype, Pdrive, 1);
+       { dwshaper->waveshapesmps (PERIOD, efxoutr, Ptype, Pdrive, 1);}
 
     if (Pprefiltering == 0)
-        applyfilters (efxoutl, efxoutr);
+        {applyfilters (efxoutl, efxoutr);}
 
-    if (Pstereo == 0) memcpy (efxoutr , efxoutl, PERIOD * sizeof(float));
+    if (Pstereo == 0)
+    { 
+        memcpy (efxoutr , efxoutl, PERIOD * sizeof(float));
+    }
 
-    if (octmix > 0.01f) {
-        for (i = 0; i < PERIOD; i++) {
+    if (octmix > 0.01f) 
+    {
+        for (int i = 0; i < PERIOD; i++)
+        {
             lout = efxoutl[i];
             rout = efxoutr[i];
-
 
             if ( (octave_memoryl < 0.0f) && (lout > 0.0f) ) togglel *= -1.0f;
 
@@ -178,35 +182,33 @@ Distorsion::out (float * smpsl, float * smpsr)
         blockDCl->filterout (octoutl.data());
     }
 
+    float level = dB2rap (60.0f * (static_cast<float>(Plevel) / 127.0f) - 40.0f);
 
-
-    float level = dB2rap (60.0f * (float)Plevel / 127.0f - 40.0f);
-
-    for (i = 0; i < PERIOD; i++) {
+    for (int i = 0; i < PERIOD; i++) 
+    {
         lout = efxoutl[i];
         rout = efxoutr[i];
-
 
         l = lout * (1.0f - lrcross) + rout * lrcross;
         r = rout * (1.0f - lrcross) + lout * lrcross;
 
-        if (octmix > 0.01f) {
+        if (octmix > 0.01f) 
+        {
             lout = l * (1.0f - octmix) + octoutl[i] * octmix;
             rout = r * (1.0f - octmix) + octoutr[i] * octmix;
-        } else {
+        }
+        else
+        {
             lout = l;
             rout = r;
         }
 
         efxoutl[i] = lout * 2.0f * level * panning;
         efxoutr[i] = rout * 2.0f * level * (1.0f -panning);
-
-    };
-
+    }
     DCr->filterout (efxoutr);
     DCl->filterout (efxoutl);
-};
-
+}
 
 /*
  * Parameter control
@@ -215,61 +217,58 @@ void
 Distorsion::setvolume (int Pvolume)
 {
     this->Pvolume = Pvolume;
-
-    outvolume = (float)Pvolume / 127.0f;
+    outvolume = static_cast<float>(Pvolume) / 127.0f;
     if (Pvolume == 0)
-        cleanup ();
-
-};
+        {cleanup ();}
+}
 
 void
 Distorsion::setpanning (int Ppanning)
 {
     this->Ppanning = Ppanning;
-    panning = ((float)Ppanning + 0.5f) / 127.0f;
-};
-
+    panning = (static_cast<float>(Ppanning) + 0.5f) / 127.0f;
+}
 
 void
 Distorsion::setlrcross (int Plrcross)
 {
     this->Plrcross = Plrcross;
-    lrcross = (float)Plrcross / 127.0f * 1.0f;
-};
+    lrcross = static_cast<float>(Plrcross) / 127.0f * 1.0f;
+}
 
 void
 Distorsion::setlpf (int value)
 {
     Plpf = value;
-    float fr = (float)Plpf;
+    float fr = static_cast<float>(Plpf);
     lpfl->setfreq (fr);
     lpfr->setfreq (fr);
-};
+}
 
 void
 Distorsion::sethpf (int value)
 {
     Phpf = value;
-    float fr = (float)Phpf;
+    float fr = static_cast<float>(Phpf);
 
     hpfl->setfreq (fr);
     hpfr->setfreq (fr);
     //Prefiltering of 51 is approx 630 Hz. 50 - 60 generally good for OD pedal.
-};
+}
 
 void
 Distorsion::setoctave (int Poctave)
 {
     this->Poctave = Poctave;
-    octmix = (float) (Poctave) / 127.0f;
-};
+    octmix = static_cast<float>(Poctave) / 127.0f;
+}
 
 void
 Distorsion::setpreset (int dgui, int npreset)
 {
-    const int PRESET_SIZE = 11;
-    const int NUM_PRESETS = 6;
-    int presets[NUM_PRESETS][PRESET_SIZE] = {
+    const int PRESET_SIZE{11};
+    const int NUM_PRESETS{6};
+    std::array<std::array<int, PRESET_SIZE>, NUM_PRESETS> presets{{
         //Overdrive 1
         {84, 64, 35, 56, 40, 0, 0, 6703, 21, 0, 0},
         //Overdrive 2
@@ -281,31 +280,24 @@ Distorsion::setpreset (int dgui, int npreset)
         //Distorsion 3
         {0, 64, 127, 127, 12, 13, 0, 5078, 56, 0, 1},
         //Guitar Amp
-        {84, 64, 35, 63, 50, 2, 0, 824, 21, 0, 0}
-    };
-
+        {84, 64, 35,63 ,50 ,2 ,0 ,824 ,21 ,0 ,0}
+    }};
 
     if((dgui==0) && (npreset>5)) {
         FPreset::ReadPreset(2,npreset-5);
         for (int n = 0; n < PRESET_SIZE; n++)
-            changepar (n, pdata[n]);
+            {changepar (n, pdata[n]);}
     } else if((dgui==1) && (npreset>1)) {
         FPreset::ReadPreset(3,npreset-1);
         for (int n = 0; n < PRESET_SIZE; n++)
-            changepar (n, pdata[n]);
+            {changepar (n, pdata[n]);}
     } else {
         for (int n = 0; n < PRESET_SIZE; n++)
-            changepar (n, presets[npreset][n]);
+            {changepar (n, presets[npreset][n]);}
     }
     Ppreset = npreset;
     cleanup ();
-
-
-
-
-
-};
-
+}
 
 void
 Distorsion::changepar (int npar, int value)
@@ -353,8 +345,8 @@ Distorsion::changepar (int npar, int value)
     case 12:
         setoctave (value);
         break;
-    };
-};
+    }
+}
 
 int
 Distorsion::getpar (int npar)
@@ -402,6 +394,3 @@ Distorsion::getpar (int npar)
     };
     return (0);			//in case of bogus parameter number
 };
-
-
-

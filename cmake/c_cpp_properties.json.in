@@ -6,9 +6,10 @@
             "compilerPath": "@CMAKE_CXX_COMPILER@",
             "includePath": [
                 @INCLIST@,
-                "{workspaceFolder}/src",
-                "{workspaceFolder}/src/gui/qt6",
-                "{workspaceFolder}/extra"
+                "@CMAKE_SOURCE_DIR@/src",
+                "@CMAKE_SOURCE_DIR@/src/gui/qt6",
+                "@CMAKE_SOURCE_DIR@/extra",
+                "@CMAKE_BINARY_DIR@/src"
             ],
             "defines": [],
             "cStandard": "c11",

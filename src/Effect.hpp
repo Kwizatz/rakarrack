@@ -30,31 +30,35 @@
 class Effect
 {
 public:
-
-    virtual ~ Effect () {
-    };
-    virtual void setpreset ([[maybe_unused]] int npreset) {
-    };
-    virtual void changepar ([[maybe_unused]] int npar, [[maybe_unused]] int value) {
-    };
-    virtual int getpar ([[maybe_unused]] int npar) {
+    virtual ~Effect()
+    {
+    }
+    virtual void setpreset ([[maybe_unused]] int npreset)
+    {
+    }
+    virtual void changepar ([[maybe_unused]] int npar, [[maybe_unused]] int value)
+    {
+    }
+    virtual int getpar ([[maybe_unused]] int npar) 
+    {
         return (0);
-    };
-    virtual void out ([[maybe_unused]] float * smpsl, [[maybe_unused]] float * smpsr) {
-    };
-    virtual void cleanup () {
-    };
-    virtual float getfreqresponse ([[maybe_unused]] float freq) {
+    }
+    virtual void out ([[maybe_unused]] float * smpsl, [[maybe_unused]] float * smpsr)
+    {
+    }
+    virtual void cleanup ()
+    {
+    }
+    virtual float getfreqresponse ([[maybe_unused]] float freq)
+    {
         return (0);
-    };				//this is only used for EQ (for user interface)
+    }				//this is only used for EQ (for user interface)
 
     int Ppreset{};
 
     float *efxoutl{};
     float *efxoutr{};
-
     float outvolume{};
-
     FilterParams *filterpars{};
 };
 
