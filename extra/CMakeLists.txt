@@ -21,6 +21,8 @@ add_library(rakverb_lib STATIC rakverb_lib.cpp rakverb_lib.hpp)
 target_include_directories(rakverb_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(rakverb_lib PUBLIC PkgConfig::SNDFILE)
 
+add_subdirectory(rakplay)
+
 # --- Standalone command-line tools (POSIX only, require getopt.h) ---
 
 if(NOT MSVC)

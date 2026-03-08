@@ -2,6 +2,27 @@
 
 Command-line utilities for converting and generating rakarrack data files.
 
+## rakplay
+
+Simple Qt6+JACK WAV player intended for dry-guitar test playback into
+rakarrack without requiring a live guitar or audio interface input.
+
+It provides a minimal transport-style UI inspired by classic Sound Recorder
+tools: `Play`, `Pause`, `Stop`, `Rewind`, and a boolean `Loop` toggle,
+plus file and playback-position displays for the currently loaded WAV.
+
+A `Connect to rakarrack` button opens a small selector dialog where you choose
+the JACK target ports for `rakplay:out_l` and `rakplay:out_r` from ports that
+contain `rakarrack` in their names.
+
+**Usage:**
+```
+rakplay
+```
+
+Use `Load WAV...` in the window, then connect `rakplay:out_l` and
+`rakplay:out_r` to rakarrack inputs in your JACK patchbay.
+
 ## rakconvert
 
 Converts **old-format** rakarrack bank files (pre-0.5.0, 82-preset layout with

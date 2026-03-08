@@ -114,3 +114,22 @@ Then build with CMake:
 cmake -B build -S .
 cmake --build build
 ```
+
+Test Audio and Rakplay
+----------------------
+
+For repeatable effect-testing input material, see:
+
+- `test-audio/` (dry guitar WAV clips and licensing notes in `test-audio/README.md`)
+
+To play these files into JACK and feed Rakarrack inputs, use:
+
+- `rakplay` (built from `extra/rakplay/`)
+
+Typical quick test flow:
+
+1. Start JACK and Rakarrack.
+2. Run `rakplay`.
+3. Load a WAV from `test-audio/`.
+4. Use `Connect to rakarrack` in rakplay.
+5. Play/loop while adjusting effects in Rakarrack.
