@@ -31,11 +31,8 @@
 #include "EmbeddedResource.hpp"
 #include "portable_crt.hpp"
 
-Echotron::Echotron (float * efxoutl_, float * efxoutr_)
+Echotron::Echotron ()
 {
-    efxoutl = efxoutl_;
-    efxoutr = efxoutr_;
-
     initparams=0;
     //default values
     Ppreset = 0;
@@ -167,8 +164,8 @@ Echotron::out (float * smpsl, float * smpsr)
 
         lfeedback =  (lrcross*ryn + ilrcross*lyn) * lpanning;
         rfeedback = (lrcross*lyn + ilrcross*ryn) * rpanning;
-        efxoutl[i] = lfeedback;
-        efxoutr[i] = rfeedback;
+        smpsl[i] = lfeedback;
+        smpsr[i] = rfeedback;
         lfeedback *= fb;
         rfeedback *= fb;
 

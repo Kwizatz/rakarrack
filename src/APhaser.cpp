@@ -41,11 +41,8 @@
 #define ONE_  0.99999f        // To prevent LFO ever reaching 1.0 for filter stability purposes
 #define ZERO_ 0.00001f        // Same idea as above.
 
-Analog_Phaser::Analog_Phaser (float * efxoutl_, float * efxoutr_)
+Analog_Phaser::Analog_Phaser ()
 {
-    efxoutl = efxoutl_;
-    efxoutr = efxoutr_;
-
     lxn1.resize(MAX_PHASER_STAGES);
 
     lyn1.resize(MAX_PHASER_STAGES);
@@ -186,15 +183,15 @@ Analog_Phaser::out (float * smpsl, float * smpsr)
 
         fbl = lxn * fb;
         fbr = rxn * fb;
-        efxoutl[i] = lxn;
-        efxoutr[i] = rxn;
+        smpsl[i] = lxn;
+        smpsr[i] = rxn;
 
     };
 
     if (Poutsub != 0)
         for (i = 0; i < PERIOD; i++) {
-            efxoutl[i] *= -1.0f;
-            efxoutr[i] *= -1.0f;
+            smpsl[i] *= -1.0f;
+            smpsr[i] *= -1.0f;
         };
 
 };

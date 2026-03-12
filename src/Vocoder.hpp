@@ -32,7 +32,7 @@
 class Vocoder : public Effect
 {
 public:
-    Vocoder (float * efxoutl_, float * efxoutr_, float *auxresampled_,int bands, int DS, int uq, int dq);
+    Vocoder (float *auxresampled_,int bands, int DS, int uq, int dq);
     ~Vocoder ();
     void out (float * smpsl, float * smpr);
     void setpreset (int npreset);

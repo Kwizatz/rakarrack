@@ -35,7 +35,7 @@
 class MBVvol : public Effect
 {
 public:
-    MBVvol (float * efxoutl_, float * efxoutr_);
+    MBVvol ();
     ~MBVvol ();
     void out (float * smpsl, float * smpr);
     void setpreset (int npreset);

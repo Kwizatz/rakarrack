@@ -34,7 +34,7 @@
 class Echo : public Effect
 {
 public:
-    Echo (float * efxoutl_, float * efxoutr_);
+    Echo ();
     ~Echo ();
     void out (float * smpsl, float * smpr);
     void setpreset (int npreset);

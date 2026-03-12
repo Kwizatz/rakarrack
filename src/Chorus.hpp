@@ -34,7 +34,7 @@ class Chorus : public Effect
 {
 
 public:
-    Chorus (float * efxoutl_, float * efxoutr_);
+    Chorus ();
     ~Chorus ();
     void out (float * smpsl, float * smpsr);
     using Effect::setpreset;

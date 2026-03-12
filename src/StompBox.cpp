@@ -26,10 +26,8 @@
 
 
 
-StompBox::StompBox (float * efxoutl_, float * efxoutr_)
+StompBox::StompBox ()
 {
-    efxoutl = efxoutl_;
-    efxoutr = efxoutr_;
 
 
     //default values
@@ -141,14 +139,14 @@ StompBox::out (float * smpsl, float * smpsr)
             mfilter =  ltonemd->filterout_s(smpsl[i]);
             hfilter =  ltonehg->filterout_s(smpsl[i]);
 
-            efxoutl[i] = 0.5f * volume * (smpsl[i] + lowb*lfilter + midb*mfilter + highb*hfilter);
+            smpsl[i] = 0.5f * volume * (smpsl[i] + lowb*lfilter + midb*mfilter + highb*hfilter);
 
             //Right channel
             lfilter =  rtonelw->filterout_s(smpsr[i]);
             mfilter =  rtonemd->filterout_s(smpsr[i]);
             hfilter =  rtonehg->filterout_s(smpsr[i]);
 
-            efxoutr[i] = 0.5f * volume * (smpsr[i] + lowb*lfilter + midb*mfilter + highb*hfilter);
+            smpsr[i] = 0.5f * volume * (smpsr[i] + lowb*lfilter + midb*mfilter + highb*hfilter);
 
         }
 
@@ -187,14 +185,14 @@ StompBox::out (float * smpsl, float * smpsr)
             mfilter =  ltonemd->filterout_s(smpsl[i]);
             hfilter =  ltonehg->filterout_s(smpsl[i]);
 
-            efxoutl[i] = 0.1f * volume * (smpsl[i] + lowb*lfilter + midb*mfilter + highb*hfilter);
+            smpsl[i] = 0.1f * volume * (smpsl[i] + lowb*lfilter + midb*mfilter + highb*hfilter);
 
             //Right channel
             lfilter =  rtonelw->filterout_s(smpsr[i]);
             mfilter =  rtonemd->filterout_s(smpsr[i]);
             hfilter =  rtonehg->filterout_s(smpsr[i]);
 
-            efxoutr[i] = 0.1f * volume * (smpsr[i] + lowb*lfilter + midb*mfilter + highb*hfilter);
+            smpsr[i] = 0.1f * volume * (smpsr[i] + lowb*lfilter + midb*mfilter + highb*hfilter);
 
         }
 
@@ -233,13 +231,13 @@ StompBox::out (float * smpsl, float * smpsr)
             lfilter =  ltonelw->filterout_s(smpsl[i]);
             mfilter =  ltonemd->filterout_s(smpsl[i]);
 
-            efxoutl[i] = 0.5f * ltonehg->filterout_s(volume * (smpsl[i] + lowb*lfilter + midb*mfilter));
+            smpsl[i] = 0.5f * ltonehg->filterout_s(volume * (smpsl[i] + lowb*lfilter + midb*mfilter));
 
             //Right channel
             lfilter =  rtonelw->filterout_s(smpsr[i]);
             mfilter =  rtonemd->filterout_s(smpsr[i]);
 
-            efxoutr[i] = 0.5f * rtonehg->filterout_s(volume * (smpsr[i] + lowb*lfilter + midb*mfilter));
+            smpsr[i] = 0.5f * rtonehg->filterout_s(volume * (smpsr[i] + lowb*lfilter + midb*mfilter));
 
         }
 
@@ -272,13 +270,13 @@ StompBox::out (float * smpsl, float * smpsr)
             lfilter =  ltonelw->filterout_s(smpsl[i]);
             mfilter =  ltonemd->filterout_s(smpsl[i]);
 
-            efxoutl[i] = 0.5f * ltonehg->filterout_s(volume * (smpsl[i] + lowb*lfilter + midb*mfilter));
+            smpsl[i] = 0.5f * ltonehg->filterout_s(volume * (smpsl[i] + lowb*lfilter + midb*mfilter));
 
             //Right channel
             lfilter =  rtonelw->filterout_s(smpsr[i]);
             mfilter =  rtonemd->filterout_s(smpsr[i]);
 
-            efxoutr[i] = 0.5f * rtonehg->filterout_s(volume * (smpsr[i] + lowb*lfilter + midb*mfilter));
+            smpsr[i] = 0.5f * rtonehg->filterout_s(volume * (smpsr[i] + lowb*lfilter + midb*mfilter));
 
         }
 
@@ -321,13 +319,13 @@ StompBox::out (float * smpsl, float * smpsr)
             lfilter =  ltonelw->filterout_s(smpsl[i]);
             hfilter =  ltonehg->filterout_s(smpsl[i]);
 
-            efxoutl[i] = volume * ((1.0f - highb)*lfilter + highb*hfilter);  //classic BMP tone stack
+            smpsl[i] = volume * ((1.0f - highb)*lfilter + highb*hfilter);  //classic BMP tone stack
 
             //Right channel
             lfilter =  rtonelw->filterout_s(smpsr[i]);
             hfilter =  rtonehg->filterout_s(smpsr[i]);
 
-            efxoutr[i] = volume * ((1.0f - highb)*lfilter + highb*hfilter);
+            smpsr[i] = volume * ((1.0f - highb)*lfilter + highb*hfilter);
 
         }
         break;

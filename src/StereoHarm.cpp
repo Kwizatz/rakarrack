@@ -30,13 +30,11 @@
 
 
 
-StereoHarm::StereoHarm (float *efxoutl_, float *efxoutr_, long int Quality, int DS, int uq, int dq)
+StereoHarm::StereoHarm (long int Quality, int DS, int uq, int dq)
 {
 
 
 
-    efxoutl = efxoutl_;
-    efxoutr = efxoutr_;
     hq = Quality;
     adjust(DS);
 
@@ -149,8 +147,8 @@ StereoHarm::out (float *smpsl, float *smpsr)
 
 
     for (i = 0; i < PERIOD; i++) {
-        efxoutl[i] = (templ[i] * (1.0f - lrcross) + tempr[i] * lrcross)* gainl;
-        efxoutr[i] = (tempr[i] * (1.0f - lrcross) + templ[i] * lrcross)* gainr;
+        smpsl[i] = (templ[i] * (1.0f - lrcross) + tempr[i] * lrcross)* gainl;
+        smpsr[i] = (tempr[i] * (1.0f - lrcross) + templ[i] * lrcross)* gainr;
     }
 
 

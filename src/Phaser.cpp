@@ -28,11 +28,8 @@
 #include <cstdio>
 #define PHASER_LFO_SHAPE 2
 
-Phaser::Phaser (float * efxoutl_, float * efxoutr_)
+Phaser::Phaser ()
 {
-    efxoutl = efxoutl_;
-    efxoutr = efxoutr_;
-
     oldl.resize(MAX_PHASER_STAGES * 2);
     oldr.resize(MAX_PHASER_STAGES * 2);
 
@@ -104,8 +101,8 @@ Phaser::out (float * smpsl, float * smpsr)
 
         fbl = inl * fb;
         fbr = inr * fb;
-        efxoutl[i] = inl;
-        efxoutr[i] = inr;
+        smpsl[i] = inl;
+        smpsr[i] = inr;
 
     };
 
@@ -114,8 +111,8 @@ Phaser::out (float * smpsl, float * smpsr)
 
     if (Poutsub != 0)
         for (i = 0; i < PERIOD; i++) {
-            efxoutl[i] *= -1.0f;
-            efxoutr[i] *= -1.0f;
+            smpsl[i] *= -1.0f;
+            smpsr[i] *= -1.0f;
         };
 
 };

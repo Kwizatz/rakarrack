@@ -37,14 +37,14 @@ class Harmonizer : public Effect
 {
 
 public:
-    Harmonizer (float *efxoutl_, float *efxoutr_, long int Quality, int DS, int uq, int dq);
+    Harmonizer (long int Quality, int DS, int uq, int dq);
     ~Harmonizer ();
     void out (float *smpsl, float *smpsr);
     void setpreset (int npreset);
     void changepar (int npar, int value);
     int getpar (int npar);
     void cleanup ();
-    void applyfilters (float * efxoutl);
+    void applyfilters (float * smpsl);
     void adjust(int DS);
 
 

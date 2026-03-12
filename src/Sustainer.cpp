@@ -26,11 +26,8 @@
 #include "Sustainer.hpp"
 #include "FPreset.hpp"
 
-Sustainer::Sustainer (float * efxoutl_, float * efxoutr_)
+Sustainer::Sustainer ()
 {
-    efxoutl = efxoutl_;
-    efxoutr = efxoutr_;
-
     Pvolume = 64;
     Psustain = 64;
     fsustain = 0.5f;

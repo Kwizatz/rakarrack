@@ -30,7 +30,7 @@
 class StompBox : public Effect
 {
 public:
-    StompBox (float * efxoutl_, float * efxoutr_);
+    StompBox ();
     ~StompBox ();
     void out (float * smpsl, float * smpr);
     void setpreset (int npreset);

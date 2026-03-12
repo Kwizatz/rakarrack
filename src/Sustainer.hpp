@@ -29,7 +29,7 @@
 class Sustainer : public Effect
 {
 public:
-    Sustainer (float * efxoutl_, float * efxoutr_);
+    Sustainer ();
     ~Sustainer ();
     void cleanup ();
 

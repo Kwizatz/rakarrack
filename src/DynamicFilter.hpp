@@ -33,7 +33,7 @@
 class DynamicFilter : public Effect
 {
 public:
-    DynamicFilter (float * efxoutl_, float * efxoutr_);
+    DynamicFilter ();
     ~DynamicFilter ();
     void out (float * smpsl, float * smpsr);
 

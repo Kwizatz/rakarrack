@@ -27,11 +27,8 @@
 #include "Opticaltrem.hpp"
 #include "FPreset.hpp"
 
-Opticaltrem::Opticaltrem (float * efxoutl_, float * efxoutr_)
+Opticaltrem::Opticaltrem ()
 {
-    efxoutl = efxoutl_;
-    efxoutr = efxoutr_;
-
     R1 = 2700.0f;	   //tremolo circuit series resistance
     Ra = 1000000.0f;  //Cds cell dark resistance.
     Ra = logf(Ra);		//this is done for clarity
@@ -135,8 +132,8 @@ Opticaltrem::out (float *smpsl, float *smpsr)
         else fxr = R1/(fxr + R1);
 
         //Modulate input signal
-        efxoutl[i] = lpanning*fxl*smpsl[i];
-        efxoutr[i] = rpanning*fxr*smpsr[i];
+        smpsl[i] = lpanning*fxl*smpsl[i];
+        smpsr[i] = rpanning*fxr*smpsr[i];
 
         gl += ldiff;
         gr += rdiff;  //linear interpolation of LFO

@@ -29,11 +29,8 @@
 #include "Looper.hpp"
 #include "FPreset.hpp"
 
-Looper::Looper (float * efxoutl_, float * efxoutr_, float size)
+Looper::Looper (float size)
 {
-    efxoutl = efxoutl_;
-    efxoutr = efxoutr_;
-
     //default values
     Pclear = 1;
     Pplay = 0;
@@ -169,34 +166,34 @@ Looper::out (float * smpsl, float * smpsr)
                 lswell =	(float)(abs(kl - rvkl)) * Srate_Attack_Coeff;
                 if (lswell <= PI) {
                     lswell = 0.5f * (1.0f - cosf(lswell));  //Clickless transition
-                    efxoutl[i] = (fade1 * ldelay[rvkl] + fade2 * t2ldelay[rvkl2]) * lswell;   //Volume ducking near zero crossing.
+                    smpsl[i] = (fade1 * ldelay[rvkl] + fade2 * t2ldelay[rvkl2]) * lswell;   //Volume ducking near zero crossing.
                 } else {
-                    efxoutl[i] = fade1 * ldelay[rvkl] + fade2 * t2ldelay[rvkl2];
+                    smpsl[i] = fade1 * ldelay[rvkl] + fade2 * t2ldelay[rvkl2];
                 }
 
                 rswell = 	(float)(abs(kl - rvkl)) * Srate_Attack_Coeff;
                 if (rswell <= PI) {
                     rswell = 0.5f * (1.0f - cosf(rswell));   //Clickless transition
-                    efxoutr[i] = ( fade1 * rdelay[rvkl] + fade2 * t2rdelay[rvkl2] )* rswell;  //Volume ducking near zero crossing.
+                    smpsr[i] = ( fade1 * rdelay[rvkl] + fade2 * t2rdelay[rvkl2] )* rswell;  //Volume ducking near zero crossing.
                 } else {
-                    efxoutr[i] = fade1 * rdelay[rvkl] + fade2 * t2rdelay[rvkl2];
+                    smpsr[i] = fade1 * rdelay[rvkl] + fade2 * t2rdelay[rvkl2];
                 }
 
             } else {
 
-                efxoutl[i]= fade1*ldelay[kl] + fade2*t2ldelay[kl2];
-                efxoutr[i]= fade1*rdelay[kl] + fade2*t2rdelay[kl2];
+                smpsl[i]= fade1*ldelay[kl] + fade2*t2ldelay[kl2];
+                smpsr[i]= fade1*rdelay[kl] + fade2*t2rdelay[kl2];
 
             }
 
         } else {
-            efxoutl[i]= 0.0f;
-            efxoutr[i]= 0.0f;
+            smpsl[i]= 0.0f;
+            smpsr[i]= 0.0f;
         }
 
         if((Pmetro) && (Pplay) && (!Pstop)) {
-            efxoutl[i] += ticktock[i] * mvol;  //if you want to hear the metronome in Looper
-            efxoutr[i] += ticktock[i] * mvol;
+            smpsl[i] += ticktock[i] * mvol;  //if you want to hear the metronome in Looper
+            smpsr[i] += ticktock[i] * mvol;
         }
     }
 }

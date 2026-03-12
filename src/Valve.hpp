@@ -32,7 +32,7 @@
 class Valve : public Effect
 {
 public:
-    Valve (float * efxoutl_, float * efxoutr_);
+    Valve ();
     ~Valve ();
     void out (float * smpsl, float * smpr);
     void setpreset (int npreset);
@@ -40,7 +40,7 @@ public:
     int getpar (int npar);
     float Wshape(float x);
     void cleanup ();
-    void applyfilters (float * efxoutl, float * efxoutr);
+    void applyfilters (float * smpsl, float * smpsr);
 
 
 

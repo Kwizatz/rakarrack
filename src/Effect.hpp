@@ -56,8 +56,6 @@ public:
 
     int Ppreset{};
 
-    float *efxoutl{};
-    float *efxoutr{};
     float outvolume{};
     FilterParams *filterpars{};
 };

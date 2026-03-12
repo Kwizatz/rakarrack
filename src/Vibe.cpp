@@ -27,10 +27,8 @@
 #include "Vibe.hpp"
 #include "FPreset.hpp"
 
-Vibe::Vibe (float * efxoutl_, float * efxoutr_)
+Vibe::Vibe ()
 {
-    efxoutl = efxoutl_;
-    efxoutr = efxoutr_;
 
 //Swing was measured on operating device of: 10K to 250k.
 //400K is reported to sound better for the "low end" (high resistance)
@@ -283,11 +281,11 @@ Vibe::out (float *smpsl, float *smpsr)
             fbr = fb*ocvolt;
             outr = rpanning*input;
 
-            efxoutl[i] = outl*fcross + outr*flrcross;
-            efxoutr[i] = outr*fcross + outl*flrcross;
+            smpsl[i] = outl*fcross + outr*flrcross;
+            smpsr[i] = outr*fcross + outl*flrcross;
         }  else {  //if(Pstereo)
-            efxoutl[i] = outl;
-            efxoutr[i] = outl;
+            smpsl[i] = outl;
+            smpsr[i] = outl;
         }
 
     };

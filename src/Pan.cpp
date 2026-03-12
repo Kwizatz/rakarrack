@@ -27,11 +27,8 @@
 
 
 
-Pan::Pan (float *efxoutl_, float *efxoutr_)
+Pan::Pan ()
 {
-
-    efxoutl = efxoutl_;
-    efxoutr = efxoutr_;
 
 
     Ppreset = 0;

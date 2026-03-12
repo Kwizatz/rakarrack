@@ -31,7 +31,7 @@
 class Ring : public Effect
 {
 public:
-    Ring (float * efxoutl_, float * efxoutr_);
+    Ring ();
     ~Ring ();
     void out (float * smpsl, float * smpr);
     void setpreset (int npreset);

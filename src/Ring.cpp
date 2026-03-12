@@ -31,11 +31,8 @@
 
 
 
-Ring::Ring (float * efxoutl_, float * efxoutr_)
+Ring::Ring ()
 {
-
-    efxoutl = efxoutl_;
-    efxoutr = efxoutr_;
 
     sin_tbl.resize(SAMPLE_RATE);
     tri_tbl.resize(SAMPLE_RATE);
@@ -115,41 +112,41 @@ Ring::out (float * smpsl, float * smpsr)
     if (Pstereo != 0) {
         //Stereo
         for (i = 0; i < PERIOD; i++) {
-            efxoutl[i] = smpsl[i] * inputvol;
-            efxoutr[i] = smpsr[i] * inputvol;
+            smpsl[i] = smpsl[i] * inputvol;
+            smpsr[i] = smpsr[i] * inputvol;
             if(inputvol == 0.0) {
-                efxoutl[i]=1.0;
-                efxoutr[i]=1.0;
+                smpsl[i]=1.0;
+                smpsr[i]=1.0;
             }
         };
     } else {
         for (i = 0; i < PERIOD; i++) {
-            efxoutl[i] =
+            smpsl[i] =
                 (smpsl[i]  +  smpsr[i] ) * inputvol;
-            if (inputvol == 0.0) efxoutl[i]=1.0;
+            if (inputvol == 0.0) smpsl[i]=1.0;
         };
     };
 
 
     for (i=0; i < PERIOD; i++) {
         tmpfactor =  depth * (scale * ( sin * sin_tbl[offset] + tri * tri_tbl[offset] + saw * saw_tbl[offset] + squ * squ_tbl[offset] ) + idepth) ;    //This is now mathematically equivalent, but less computation
-        efxoutl[i] *= tmpfactor;
+        smpsl[i] *= tmpfactor;
 
         if (Pstereo != 0) {
-            efxoutr[i] *= tmpfactor;
+            smpsr[i] *= tmpfactor;
         }
         offset += Pfreq;
         if (offset > SAMPLE_RATE) offset -=SAMPLE_RATE;
     }
 
 
-    if (Pstereo == 0) memcpy (efxoutr , efxoutl, PERIOD * sizeof(float));
+    if (Pstereo == 0) memcpy (smpsr , smpsl, PERIOD * sizeof(float));
 
     float level = dB2rap (60.0f * (float)Plevel / 127.0f - 40.0f);
 
     for (i= 0; i<PERIOD; i++) {
-        lout = efxoutl[i];
-        rout = efxoutr[i];
+        lout = smpsl[i];
+        rout = smpsr[i];
 
 
         l = lout * (1.0f - lrcross) + rout * lrcross;
@@ -158,8 +155,8 @@ Ring::out (float * smpsl, float * smpsr)
         lout = l;
         rout = r;
 
-        efxoutl[i] = lout * level * panning;
-        efxoutr[i] = rout * level * (1.0f-panning);
+        smpsl[i] = lout * level * panning;
+        smpsr[i] = rout * level * (1.0f-panning);
 
     }
 

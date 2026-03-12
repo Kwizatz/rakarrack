@@ -27,10 +27,8 @@
 
 
 
-Exciter::Exciter (float * efxoutl_, float * efxoutr_)
+Exciter::Exciter ()
 {
-    efxoutl = efxoutl_;
-    efxoutr = efxoutr_;
 
 
     //default values

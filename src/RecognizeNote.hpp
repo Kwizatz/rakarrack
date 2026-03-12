@@ -22,7 +22,7 @@
 class Recognize
 {
 public:
-    Recognize (float * efxoutl_, float * efxoutr_, float trig);
+    Recognize (float trig);
     ~Recognize ();
 
     void schmittFloat (float *indatal, float *indatar);
@@ -36,8 +36,6 @@ public:
     float trigfact;
     float lafreq;
     float nfreq, afreq, freq;
-    float *efxoutl;
-    float *efxoutr;
 
 
 

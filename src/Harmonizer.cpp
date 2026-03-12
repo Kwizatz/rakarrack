@@ -30,13 +30,11 @@
 
 
 
-Harmonizer::Harmonizer (float *efxoutl_, float *efxoutr_, long int Quality, int DS, int uq, int dq)
+Harmonizer::Harmonizer (long int Quality, int DS, int uq, int dq)
 {
 
 
 
-    efxoutl = efxoutl_;
-    efxoutr = efxoutr_;
     hq = Quality;
     adjust(DS);
 
@@ -83,9 +81,9 @@ Harmonizer::cleanup ()
 
 
 void
-Harmonizer::applyfilters (float * efxoutl)
+Harmonizer::applyfilters (float * smpsl)
 {
-    pl->filterout (efxoutl);
+    pl->filterout (smpsl);
 };
 
 
@@ -129,8 +127,8 @@ Harmonizer::out (float *smpsl, float *smpsr)
         applyfilters (templ.data());
 
         for (i = 0; i < PERIOD; i++) {
-            efxoutl[i] = templ[i] * gain * panning;
-            efxoutr[i] = templ[i] * gain * (1.0f - panning);
+            smpsl[i] = templ[i] * gain * panning;
+            smpsr[i] = templ[i] * gain * (1.0f - panning);
         }
 
     }

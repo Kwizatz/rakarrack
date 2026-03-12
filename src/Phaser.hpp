@@ -31,7 +31,7 @@
 class Phaser : public Effect
 {
 public:
-    Phaser (float * efxoutl_, float * efxoutr_);
+    Phaser ();
     ~Phaser ();
     void out (float * smpsl, float * smpsr);
     void setpreset (int npreset);

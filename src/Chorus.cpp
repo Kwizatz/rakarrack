@@ -27,10 +27,8 @@
 #include "Chorus.hpp"
 #include "FPreset.hpp"
 
-Chorus::Chorus (float * efxoutl_, float * efxoutr_)
+Chorus::Chorus ()
 {
-    efxoutl = efxoutl_;
-    efxoutr = efxoutr_;
     dlk = 0;
     drk = 0;
     maxdelay = lrintf (MAX_CHORUS_DELAY / 1000.0f * SAMPLE_RATE);
@@ -103,14 +101,14 @@ Chorus::out (float * smpsl, float * smpsr)
             //Left
             mdel = (dl1 * (float)(PERIOD - i) + dl2 * (float)i) / fPERIOD;
             tmp = smpsl[i] + oldl*fb;
-            efxoutl[i] = tmpsub*ldelay.delay(tmp, mdel, 0, 1, 0);
-            oldl = efxoutl[i];
+            smpsl[i] = tmpsub*ldelay.delay(tmp, mdel, 0, 1, 0);
+            oldl = smpsl[i];
 
             //Right
             mdel = (dr1 * (float)(PERIOD - i) + dr2 * (float)i) / fPERIOD;
             tmp = smpsr[i] + oldr*fb;
-            efxoutr[i] = tmpsub*rdelay.delay(tmp, mdel, 0, 1, 0);
-            oldr =  efxoutr[i];
+            smpsr[i] = tmpsub*rdelay.delay(tmp, mdel, 0, 1, 0);
+            oldr =  smpsr[i];
         }
 
     } else {
@@ -139,8 +137,8 @@ Chorus::out (float * smpsl, float * smpsr)
 
             dlhi2 = (dlhi - 1 + maxdelay) % maxdelay;
             dllo = 1.0f - fmodf (tmp, 1.0f);
-            efxoutl[i] = delayl[dlhi2] * dllo + delayl[dlhi] * (1.0f - dllo);
-            delayl[dlk] = inl + efxoutl[i] * fb;
+            smpsl[i] = delayl[dlhi2] * dllo + delayl[dlhi] * (1.0f - dllo);
+            delayl[dlk] = inl + smpsl[i] * fb;
 
             //Right channel
 
@@ -155,22 +153,22 @@ Chorus::out (float * smpsl, float * smpsr)
 
             dlhi2 = (dlhi - 1 + maxdelay) % maxdelay;
             dllo = 1.0f - fmodf (tmp, 1.0f);
-            efxoutr[i] = delayr[dlhi2] * dllo + delayr[dlhi] * (1.0f - dllo);
-            delayr[dlk] = inr + efxoutr[i] * fb;
+            smpsr[i] = delayr[dlhi2] * dllo + delayr[dlhi] * (1.0f - dllo);
+            delayr[dlk] = inr + smpsr[i] * fb;
 
         };
 
 
         if (Poutsub != 0)
             for (i = 0; i < PERIOD; i++) {
-                efxoutl[i] *= -1.0f;
-                efxoutr[i] *= -1.0f;
+                smpsl[i] *= -1.0f;
+                smpsr[i] *= -1.0f;
             };
 
 
         for (int i = 0; i < PERIOD; i++) {
-            efxoutl[i] *= panning;
-            efxoutr[i] *= (1.0f - panning);
+            smpsl[i] *= panning;
+            smpsr[i] *= (1.0f - panning);
         };
 
     } //end awesome_mode test

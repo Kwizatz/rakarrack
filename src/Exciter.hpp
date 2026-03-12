@@ -30,7 +30,7 @@
 class Exciter : public Effect
 {
 public:
-    Exciter (float * efxoutl_, float * efxoutr_);
+    Exciter ();
     ~Exciter ();
     void out (float * smpsl, float * smpr);
     void setpreset (int npreset);

@@ -32,7 +32,7 @@
 class EQ : public Effect
 {
 public:
-    EQ (float * efxoutl_, float * efxoutr_);
+    EQ ();
     ~EQ ();
     void out (float * smpsl, float * smpr);
     void setpreset (int npreset);

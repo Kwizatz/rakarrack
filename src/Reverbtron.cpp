@@ -30,11 +30,8 @@
 #include "EmbeddedResource.hpp"
 #include "portable_crt.hpp"
 
-Reverbtron::Reverbtron (float * efxoutl_, float * efxoutr_,int DS, int uq, int dq)
+Reverbtron::Reverbtron (int DS, int uq, int dq)
 {
-    efxoutl = efxoutl_;
-    efxoutr = efxoutr_;
-
     //default values
     Ppreset = 0;
     Pvolume = 50;
@@ -200,11 +197,11 @@ Reverbtron::out (float * smpsl, float * smpsr)
     };
 
     if(DS_state != 0) {
-        D_Resample->out(templ.data(),tempr.data(),efxoutl,efxoutr,nPERIOD,u_down);
+        D_Resample->out(templ.data(),tempr.data(),smpsl,smpsr,nPERIOD,u_down);
 
     } else {
-        memcpy(efxoutl, templ.data(),sizeof(float)*PERIOD);
-        memcpy(efxoutr, tempr.data(),sizeof(float)*PERIOD);
+        memcpy(smpsl, templ.data(),sizeof(float)*PERIOD);
+        memcpy(smpsr, tempr.data(),sizeof(float)*PERIOD);
     }
 
 

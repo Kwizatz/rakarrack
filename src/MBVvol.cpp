@@ -34,11 +34,8 @@
 
 
 
-MBVvol::MBVvol (float * efxoutl_, float * efxoutr_)
+MBVvol::MBVvol ()
 {
-    efxoutl = efxoutl_;
-    efxoutr = efxoutr_;
-
     lowl.resize(PERIOD);
     lowr.resize(PERIOD);
     midll.resize(PERIOD);
@@ -140,8 +137,8 @@ MBVvol::out (float * smpsl, float * smpsr)
 
         setCombi(Pcombi);
 
-        efxoutl[i]=lowl[i]*volL+midll[i]*volML+midhl[i]*volMH+highl[i]*volH;
-        efxoutr[i]=lowr[i]*volLr+midlr[i]*volMLr+midhr[i]*volMHr+highr[i]*volHr;
+        smpsl[i]=lowl[i]*volL+midll[i]*volML+midhl[i]*volMH+highl[i]*volH;
+        smpsr[i]=lowr[i]*volLr+midlr[i]*volMLr+midhr[i]*volMHr+highr[i]*volHr;
     }
 
 };

@@ -31,11 +31,8 @@
 #include "FPreset.hpp"
 
 
-Gate::Gate (float * efxoutl_, float * efxoutr_)
+Gate::Gate ()
 {
-
-    efxoutl = efxoutl_;
-    efxoutr = efxoutr_;
 
 
     lpfl = std::make_unique<AnalogFilter>(2, 22000.0f, 1.0f, 0);
@@ -190,7 +187,7 @@ Gate::Gate_Change_Preset (int npreset)
 
 
 void
-Gate::out (float *efxoutl, float *efxoutr)
+Gate::out (float *smpsl, float *smpsr)
 {
 
 
@@ -198,15 +195,15 @@ Gate::out (float *efxoutl, float *efxoutr)
     float sum;
 
 
-    lpfl->filterout (efxoutl);
-    hpfl->filterout (efxoutl);
-    lpfr->filterout (efxoutr);
-    hpfr->filterout (efxoutr);
+    lpfl->filterout (smpsl);
+    hpfl->filterout (smpsl);
+    lpfr->filterout (smpsr);
+    hpfr->filterout (smpsr);
 
 
     for (i = 0; i < PERIOD; i++) {
 
-        sum = fabsf (efxoutl[i]) + fabsf (efxoutr[i]);
+        sum = fabsf (smpsl[i]) + fabsf (smpsr[i]);
 
 
         if (sum > env)
@@ -242,8 +239,8 @@ Gate::out (float *efxoutl, float *efxoutr)
             }
         }
 
-        efxoutl[i] *= (cut * (1.0f - gate) + gate);
-        efxoutr[i] *= (cut * (1.0f - gate) + gate);
+        smpsl[i] *= (cut * (1.0f - gate) + gate);
+        smpsr[i] *= (cut * (1.0f - gate) + gate);
 
     }
 

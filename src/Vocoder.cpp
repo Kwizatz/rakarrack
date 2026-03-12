@@ -28,14 +28,12 @@
 #include "Vocoder.hpp"
 #include "FPreset.hpp"
 
-Vocoder::Vocoder (float * efxoutl_, float * efxoutr_, float *auxresampled_,int bands, int DS, int uq, int dq)
+Vocoder::Vocoder (float *auxresampled_,int bands, int DS, int uq, int dq)
 {
 
     adjust(DS);
 
     VOC_BANDS = bands;
-    efxoutl = efxoutl_;
-    efxoutr = efxoutr_;
     auxresampled = auxresampled_;
     //default values
     Ppreset = 0;
@@ -308,10 +306,10 @@ Vocoder::out (float * smpsl, float * smpsr)
 
 
     if(DS_state != 0) {
-        D_Resample->out(tmpl.data(),tmpr.data(),efxoutl,efxoutr,nPERIOD,u_down);
+        D_Resample->out(tmpl.data(),tmpr.data(),smpsl,smpsr,nPERIOD,u_down);
     } else {
-        memcpy(efxoutl,tmpl.data(),sizeof(float)*nPERIOD);
-        memcpy(efxoutr,tmpr.data(),sizeof(float)*nPERIOD);
+        memcpy(smpsl,tmpl.data(),sizeof(float)*nPERIOD);
+        memcpy(smpsr,tmpr.data(),sizeof(float)*nPERIOD);
     }
 
     vulevel = (float)CLAMP(rap2dB(maxgain), -48.0, 15.0);

@@ -34,7 +34,7 @@
 class Sequence : public Effect
 {
 public:
-    Sequence (float * efxoutl_, float * efxoutr_, long int Quality, int DS, int uq, int dq);
+    Sequence (long int Quality, int DS, int uq, int dq);
     ~Sequence ();
     void cleanup ();
     void out (float * smpsl, float * smpr);

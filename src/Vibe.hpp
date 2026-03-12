@@ -35,7 +35,7 @@ class Vibe : public Effect
 
 public:
 
-    Vibe (float * efxoutl_, float * efxoutr_);
+    Vibe ();
     ~Vibe ();
 
     void out (float * smpsl, float * smpsr);

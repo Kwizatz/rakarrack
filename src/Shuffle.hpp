@@ -34,7 +34,7 @@
 class Shuffle : public Effect
 {
 public:
-    Shuffle (float * efxoutl_, float * efxoutr_);
+    Shuffle ();
     ~Shuffle ();
     void out (float * smpsl, float * smpr);
     void setpreset (int npreset);

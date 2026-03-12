@@ -33,11 +33,8 @@
 #include "Dual_Flange.hpp"
 #include "FPreset.hpp"
 
-Dflange::Dflange (float * efxoutl_, float * efxoutr_)
+Dflange::Dflange ()
 {
-    efxoutl = efxoutl_;
-    efxoutr = efxoutr_;
-
     period_const = 1.0f/fPERIOD;
 
     //default values
@@ -176,8 +173,8 @@ Dflange::out (float * smpsl, float * smpsr)
                 ldl = ldelayline0->delay(ldl,dlA, 0, 1, 0)  + ldelayline1->delay(ldl,drA, 0, 1, 0);
                 rdl = rdelayline0->delay(rdl,dlB, 0, 1, 0) + rdelayline1->delay(rdl,drB, 0, 1, 0);
 
-                efxoutl[i] = ldl = ldl * flrcross + rdl * frlcross;
-                efxoutr[i] = rdl = rdl * flrcross + ldl * frlcross;
+                smpsl[i] = ldl = ldl * flrcross + rdl * frlcross;
+                smpsr[i] = rdl = rdl * flrcross + ldl * frlcross;
 
 // Increment LFO
                 drA += rx0;
@@ -209,8 +206,8 @@ Dflange::out (float * smpsl, float * smpsr)
                 rdl = rdelayline0->delay(rdl,drA, 0, 1, 0);
                 rdl = rdelayline1->delay(rdl,drB, 0, 1, 0);
 
-                efxoutl[i] = ldl = ldl * flrcross + rdl * frlcross;
-                efxoutr[i] = rdl = rdl * flrcross + ldl * frlcross;
+                smpsl[i] = ldl = ldl * flrcross + rdl * frlcross;
+                smpsr[i] = rdl = rdl * flrcross + ldl * frlcross;
 
 // Increment LFO
                 drA += rx0;
@@ -331,11 +328,11 @@ Dflange::out (float * smpsl, float * smpsr)
             //End flanging, next process outputs
 
             if(Pzero) {
-                efxoutl[i]= dry * smpsl[i] +  fsubtract * wet * (fsubtract * (lsA + lsB)  + zdl);    // Make final FX out mix
-                efxoutr[i]= dry * smpsr[i] +  fsubtract * wet * (fsubtract * (rsA + rsB)  + zdr);
+                smpsl[i]= dry * smpsl[i] +  fsubtract * wet * (fsubtract * (lsA + lsB)  + zdl);    // Make final FX out mix
+                smpsr[i]= dry * smpsr[i] +  fsubtract * wet * (fsubtract * (rsA + rsB)  + zdr);
             } else {
-                efxoutl[i]= dry * smpsl[i] +  wet * fsubtract * (lsA + lsB);    // Make final FX out mix
-                efxoutr[i]= dry * smpsr[i] +  wet * fsubtract * (rsA + rsB);
+                smpsl[i]= dry * smpsl[i] +  wet * fsubtract * (lsA + lsB);    // Make final FX out mix
+                smpsr[i]= dry * smpsr[i] +  wet * fsubtract * (rsA + rsB);
             }
 
 

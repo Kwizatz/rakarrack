@@ -29,11 +29,8 @@
 #include "RBEcho.hpp"
 #include "FPreset.hpp"
 
-RBEcho::RBEcho (float * efxoutl_, float * efxoutr_)
+RBEcho::RBEcho ()
 {
-    efxoutl = efxoutl_;
-    efxoutr = efxoutr_;
-
     //default values
     Ppreset = 0;
     Pvolume = 50;
@@ -154,8 +151,8 @@ RBEcho::out (float * smpsl, float * smpsr)
 
 
         }
-        efxoutl[i] = (ipingpong*ldl + pingpong *ldelay->delay_simple(0.0f, ltime, 2, 0, 0)) * lpanning;
-        efxoutr[i] = (ipingpong*rdl + pingpong *rdelay->delay_simple(0.0f, rtime, 2, 0, 0)) * rpanning;
+        smpsl[i] = (ipingpong*ldl + pingpong *ldelay->delay_simple(0.0f, ltime, 2, 0, 0)) * lpanning;
+        smpsr[i] = (ipingpong*rdl + pingpong *rdelay->delay_simple(0.0f, rtime, 2, 0, 0)) * rpanning;
 
     };
 

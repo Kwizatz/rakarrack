@@ -31,7 +31,7 @@
 class CoilCrafter : public Effect
 {
 public:
-    CoilCrafter (float * efxoutl_, float * efxoutr_);
+    CoilCrafter ();
     ~CoilCrafter ();
     void out (float * smpsl, float * smpr);
     void setpreset (int npreset);

@@ -39,7 +39,7 @@ class Gate : public Effect
 
 public:
 
-    Gate (float * efxoutl_, float * efxoutr_);
+    Gate ();
     ~Gate ();
 
     void out (float * smps_l, float * smps_r);

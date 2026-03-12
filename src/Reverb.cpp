@@ -31,10 +31,8 @@
 
 /*TODO: EarlyReflections,Prdelay,Perbalance */
 
-Reverb::Reverb (float * efxoutl_, float * efxoutr_)
+Reverb::Reverb ()
 {
-    efxoutl = efxoutl_;
-    efxoutr = efxoutr_;
     inputbuf.resize(PERIOD);
 
 
@@ -176,8 +174,8 @@ Reverb::out (float * smps_l, float * smps_r)
     lpf->filterout (inputbuf.data());
     hpf->filterout (inputbuf.data());
 
-    processmono (0, efxoutl);	//left
-    processmono (1, efxoutr);	//right
+    processmono (0, smps_l);	//left
+    processmono (1, smps_r);	//right
 
 
 
@@ -185,8 +183,8 @@ Reverb::out (float * smps_l, float * smps_r)
     float rvol = rs_coeff * (1.0f - pan) * 2.0f;
 
     for (int i = 0; i < PERIOD; i++) {
-        efxoutl[i] *= lvol;
-        efxoutr[i] *= rvol;
+        smps_l[i] *= lvol;
+        smps_r[i] *= rvol;
 
     };
 };

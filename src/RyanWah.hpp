@@ -33,7 +33,7 @@
 class RyanWah : public Effect
 {
 public:
-    RyanWah (float * efxoutl_, float * efxoutr_);
+    RyanWah ();
     ~RyanWah ();
     void out (float * smpsl, float * smpsr);
 

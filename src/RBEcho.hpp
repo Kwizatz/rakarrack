@@ -34,7 +34,7 @@
 class RBEcho : public Effect
 {
 public:
-    RBEcho (float * efxoutl_, float * efxoutr_);
+    RBEcho ();
     ~RBEcho ();
     void out (float * smpsl, float * smpr);
     void setpreset (int npreset);

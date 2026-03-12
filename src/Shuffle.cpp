@@ -34,11 +34,8 @@
 
 
 
-Shuffle::Shuffle (float * efxoutl_, float * efxoutr_)
+Shuffle::Shuffle ()
 {
-    efxoutl = efxoutl_;
-    efxoutr = efxoutr_;
-
     inputl.resize(PERIOD);
     inputr.resize(PERIOD);
 
@@ -104,8 +101,8 @@ Shuffle::out (float * smpsl, float * smpsr)
 
 
     for (i = 0; i < PERIOD; i++) {
-        efxoutl[i]=(inputl[i]+inputr[i]-smpsl[i])*.333333f;
-        efxoutr[i]=(inputl[i]-inputr[i]-smpsr[i])*.333333f;
+        smpsl[i]=(inputl[i]+inputr[i]-smpsl[i])*.333333f;
+        smpsr[i]=(inputl[i]-inputr[i]-smpsr[i])*.333333f;
 
     }
 

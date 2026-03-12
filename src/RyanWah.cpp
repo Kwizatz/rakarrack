@@ -28,11 +28,8 @@
 #include "AnalogFilter.hpp"
 #include <cstdio>
 
-RyanWah::RyanWah (float * efxoutl_, float * efxoutr_)
+RyanWah::RyanWah ()
 {
-    efxoutl = efxoutl_;
-    efxoutr = efxoutr_;
-
     Ppreset = 0;
 
     base = 7.0f;		//sets curve of modulation to frequency relationship
@@ -87,8 +84,8 @@ RyanWah::out (float * smpsl, float * smpsr)
     }
 
     for (i = 0; i < PERIOD; i++) {
-        efxoutl[i] = smpsl[i];
-        efxoutr[i] = smpsr[i];
+        smpsl[i] = smpsl[i];
+        smpsr[i] = smpsr[i];
 
         float x = (fabsf ( sidechain_filter->filterout_s(smpsl[i] + smpsr[i]))) * 0.5f;
         ms1 = ms1 * ampsmooth + x * (1.0f - ampsmooth) + 1e-10f;
@@ -108,8 +105,8 @@ RyanWah::out (float * smpsl, float * smpsr)
             filterr->setq(q);
             filterl->directmod(rmod);
             filterr->directmod(lmod);
-            efxoutl[i] = filterl->filterout_s (smpsl[i]);
-            efxoutr[i] = filterr->filterout_s (smpsr[i]);
+            smpsl[i] = filterl->filterout_s (smpsl[i]);
+            smpsr[i] = filterr->filterout_s (smpsr[i]);
 
         }
     };
@@ -141,8 +138,8 @@ RyanWah::out (float * smpsl, float * smpsr)
         filterl->setfreq_and_q (frl, q);
         filterr->setfreq_and_q (frr, q);
 
-        filterl->filterout (efxoutl);
-        filterr->filterout (efxoutr);
+        filterl->filterout (smpsl);
+        filterr->filterout (smpsr);
     }
 
 };

@@ -27,11 +27,8 @@
 #include "FPreset.hpp"
 #include <cstdio>
 
-Alienwah::Alienwah (float * efxoutl_, float * efxoutr_)
+Alienwah::Alienwah ()
 {
-    efxoutl = efxoutl_;
-    efxoutr = efxoutr_;
-
     Ppreset = 0;
     setpreset (Ppreset);
     cleanup ();
@@ -92,8 +89,8 @@ Alienwah::out (float * smpsl, float * smpsr)
         if (++oldk >= Pdelay)
             oldk = 0;
         //LRcross
-        efxoutl[i] = l * (1.0f - lrcross) + r * lrcross;
-        efxoutr[i] = r * (1.0f - lrcross) + l * lrcross;
+        smpsl[i] = l * (1.0f - lrcross) + r * lrcross;
+        smpsr[i] = r * (1.0f - lrcross) + l * lrcross;
     };
 
     oldclfol.a = clfol.a;

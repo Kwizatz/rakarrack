@@ -28,11 +28,8 @@
 #include "MusicDelay.hpp"
 #include "FPreset.hpp"
 
-MusicDelay::MusicDelay (float * efxoutl_, float * efxoutr_)
+MusicDelay::MusicDelay ()
 {
-    efxoutl = efxoutl_;
-    efxoutr = efxoutr_;
-
     //default values
     Ppreset = 0;
     Pvolume = 50;
@@ -166,8 +163,8 @@ MusicDelay::out (float * smpsl, float * smpsr)
         ldl2 = smpsl[i] * gain2 * panning2 - ldl2 * fb2;
         rdl2 = smpsr[i] * gain2 * (1.0f - panning2) - rdl2 * fb2;
 
-        efxoutl[i] = (ldl1 + ldl2) * 2.0f;
-        efxoutr[i] = (rdl1 + rdl2) * 2.0f;
+        smpsl[i] = (ldl1 + ldl2) * 2.0f;
+        smpsr[i] = (rdl1 + rdl2) * 2.0f;
 
 
 

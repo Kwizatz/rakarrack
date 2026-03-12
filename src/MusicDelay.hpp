@@ -32,7 +32,7 @@
 class MusicDelay : public Effect
 {
 public:
-    MusicDelay (float * efxoutl_, float * efxoutr_);
+    MusicDelay ();
     ~MusicDelay ();
     void out (float * smpsl, float * smpr);
     void setpreset (int npreset);

@@ -34,11 +34,8 @@
 
 
 
-MBDist::MBDist (float * efxoutl_, float * efxoutr_)
+MBDist::MBDist ()
 {
-    efxoutl = efxoutl_;
-    efxoutr = efxoutr_;
-
     lowl.resize(PERIOD);
     lowr.resize(PERIOD);
     midl.resize(PERIOD);
@@ -124,20 +121,20 @@ MBDist::out (float * smpsl, float * smpsr)
 
     if (Pstereo) {
         for (i = 0; i < PERIOD; i++) {
-            efxoutl[i] = smpsl[i] * inputvol * 2.0f;
-            efxoutr[i] = smpsr[i] * inputvol * 2.0f;
+            smpsl[i] = smpsl[i] * inputvol * 2.0f;
+            smpsr[i] = smpsr[i] * inputvol * 2.0f;
         };
     } else {
         for (i = 0; i < PERIOD; i++) {
-            efxoutl[i] =
+            smpsl[i] =
                 (smpsl[i]  +  smpsr[i] ) * inputvol;
         };
     };
 
 
-    memcpy(lowl.data(),efxoutl,sizeof(float) * PERIOD);
-    memcpy(midl.data(),efxoutl,sizeof(float) * PERIOD);
-    memcpy(highl.data(),efxoutl,sizeof(float) * PERIOD);
+    memcpy(lowl.data(),smpsl,sizeof(float) * PERIOD);
+    memcpy(midl.data(),smpsl,sizeof(float) * PERIOD);
+    memcpy(highl.data(),smpsl,sizeof(float) * PERIOD);
 
     lpf1l->filterout(lowl.data());
     hpf1l->filterout(midl.data());
@@ -150,9 +147,9 @@ MBDist::out (float * smpsl, float * smpsr)
 
 
     if(Pstereo) {
-        memcpy(lowr.data(),efxoutr,sizeof(float) * PERIOD);
-        memcpy(midr.data(),efxoutr,sizeof(float) * PERIOD);
-        memcpy(highr.data(),efxoutr,sizeof(float) * PERIOD);
+        memcpy(lowr.data(),smpsr,sizeof(float) * PERIOD);
+        memcpy(midr.data(),smpsr,sizeof(float) * PERIOD);
+        memcpy(highr.data(),smpsr,sizeof(float) * PERIOD);
 
         lpf1r->filterout(lowr.data());
         hpf1r->filterout(midr.data());
@@ -167,29 +164,29 @@ MBDist::out (float * smpsl, float * smpsr)
     }
 
     for (i = 0; i < PERIOD; i++) {
-        efxoutl[i]=lowl[i]*volL+midl[i]*volM+highl[i]*volH;
-        if (Pstereo) efxoutr[i]=lowr[i]*volL+midr[i]*volM+highr[i]*volH;
+        smpsl[i]=lowl[i]*volL+midl[i]*volM+highl[i]*volH;
+        if (Pstereo) smpsr[i]=lowr[i]*volL+midr[i]*volM+highr[i]*volH;
     }
 
-    if (!Pstereo) memcpy(efxoutr, efxoutl, sizeof(float)* PERIOD);
+    if (!Pstereo) memcpy(smpsr, smpsl, sizeof(float)* PERIOD);
 
 
     float level = dB2rap (60.0f * (float)Plevel / 127.0f - 40.0f);
 
     for (i = 0; i < PERIOD; i++) {
-        lout = efxoutl[i];
-        rout = efxoutr[i];
+        lout = smpsl[i];
+        rout = smpsr[i];
 
         l = lout * (1.0f - lrcross) + rout * lrcross;
         r = rout * (1.0f - lrcross) + lout * lrcross;
 
-        efxoutl[i] = l * 2.0f * level * panning;
-        efxoutr[i] = r * 2.0f * level * (1.0f -panning);
+        smpsl[i] = l * 2.0f * level * panning;
+        smpsr[i] = r * 2.0f * level * (1.0f -panning);
 
     };
 
-    DCr->filterout (efxoutr);
-    DCl->filterout (efxoutl);
+    DCr->filterout (smpsr);
+    DCl->filterout (smpsl);
 
 
 

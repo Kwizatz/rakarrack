@@ -37,11 +37,8 @@
 
 
 
-Recognize::Recognize (float *efxoutl_, float *efxoutr_, float trig)
+Recognize::Recognize (float trig)
 {
-
-    efxoutl = efxoutl_;
-    efxoutr = efxoutr_;
 
     static const char *englishNotes[12] =
     { "A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#" };
@@ -52,7 +49,7 @@ Recognize::Recognize (float *efxoutl_, float *efxoutr_, float trig)
     afreq = 0;
     trigfact = trig;
 
-    Sus = std::make_unique<Sustainer>(efxoutl,efxoutr);
+    Sus = std::make_unique<Sustainer>();
     Sus->changepar(1,64);
     Sus->changepar(2,127);
 

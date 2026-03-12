@@ -41,14 +41,14 @@ class Shifter : public Effect
 {
 
 public:
-    Shifter (float *efxoutl_, float *efxoutr_, long int Quality, int DS, int uq, int dq);
+    Shifter (long int Quality, int DS, int uq, int dq);
     ~Shifter ();
     void out (float *smpsl, float *smpsr);
     void setpreset (int npreset);
     void changepar (int npar, int value);
     int getpar (int npar);
     void cleanup ();
-    void applyfilters (float * efxoutl);
+    void applyfilters (float * smpsl);
     void adjust(int DS);
 
     long int hq;

@@ -27,10 +27,8 @@
 #include "FPreset.hpp"
 #include <cstdio>
 
-DynamicFilter::DynamicFilter (float * efxoutl_, float * efxoutr_)
+DynamicFilter::DynamicFilter ()
 {
-    efxoutl = efxoutl_;
-    efxoutr = efxoutr_;
 
 
     Ppreset = 0;
@@ -63,8 +61,8 @@ DynamicFilter::out (float * smpsl, float * smpsr)
     float q = filterpars->getq ();
 
     for (i = 0; i < PERIOD; i++) {
-        efxoutl[i] = smpsl[i];
-        efxoutr[i] = smpsr[i];
+        smpsl[i] = smpsl[i];
+        smpsr[i] = smpsr[i];
 
         float x = (fabsf (smpsl[i]) + fabsf (smpsr[i])) * 0.5f;
         ms1 = ms1 * (1.0f - ampsmooth) + x * ampsmooth + 1e-10f;
@@ -84,13 +82,13 @@ DynamicFilter::out (float * smpsl, float * smpsr)
     filterr->setfreq_and_q (frr, q);
 
 
-    filterl->filterout (efxoutl);
-    filterr->filterout (efxoutr);
+    filterl->filterout (smpsl);
+    filterr->filterout (smpsr);
 
     //panning
     for (i = 0; i < PERIOD; i++) {
-        efxoutl[i] *= panning;
-        efxoutr[i] *= (1.0f - panning);
+        smpsl[i] *= panning;
+        smpsr[i] *= (1.0f - panning);
     };
 
 };

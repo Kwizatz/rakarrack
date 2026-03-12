@@ -33,7 +33,7 @@
 class Reverb : public Effect
 {
 public:
-    Reverb (float * efxoutl_, float * efxoutr_);
+    Reverb ();
     ~Reverb ();
     void out (float * smps_l, float * smps_r);
     void cleanup ();

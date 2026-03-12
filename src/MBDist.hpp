@@ -34,7 +34,7 @@
 class MBDist : public Effect
 {
 public:
-    MBDist (float * efxoutl_, float * efxoutr_);
+    MBDist ();
     ~MBDist ();
     void out (float * smpsl, float * smpr);
     void setpreset (int npreset);

@@ -31,7 +31,7 @@
 class Infinity : public Effect
 {
 public:
-    Infinity (float * efxoutl_, float * efxoutr_);
+    Infinity ();
     ~Infinity ();
     void out (float * smpsl, float * smpsr);
 

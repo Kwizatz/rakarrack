@@ -33,7 +33,7 @@
 class Looper : public Effect
 {
 public:
-    Looper (float * efxoutl_, float * efxoutr_, float size);
+    Looper (float size);
     ~Looper ();
     void out (float * smpsl, float * smpr);
     void setpreset (int npreset);

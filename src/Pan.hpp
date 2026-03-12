@@ -32,7 +32,7 @@ class Pan : public Effect
 {
 
 public:
-    Pan (float *efxoutl_, float *efxoutr_);
+    Pan ();
     ~Pan ();
     void out (float *smpsl, float *smpsr);
     void setpreset (int npreset);

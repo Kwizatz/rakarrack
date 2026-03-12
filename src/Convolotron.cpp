@@ -63,11 +63,8 @@ static sf_count_t sf_mem_tell(void* user_data) {
     return static_cast<SfMemData*>(user_data)->pos;
 }
 
-Convolotron::Convolotron (float * efxoutl_, float * efxoutr_,int DS, int uq, int dq)
+Convolotron::Convolotron (int DS, int uq, int dq)
 {
-    efxoutl = efxoutl_;
-    efxoutr = efxoutr_;
-
     //default values
     Ppreset = 0;
     Pvolume = 50;
@@ -233,11 +230,11 @@ Convolotron::out (float * smpsl, float * smpsr)
     };
 
     if(DS_state != 0) {
-        D_Resample->out(templ.data(),tempr.data(),efxoutl,efxoutr,nPERIOD,u_down);
+        D_Resample->out(templ.data(),tempr.data(),smpsl,smpsr,nPERIOD,u_down);
 
     } else {
-        memcpy(efxoutl, templ.data(),sizeof(float)*PERIOD);
-        memcpy(efxoutr, tempr.data(),sizeof(float)*PERIOD);
+        memcpy(smpsl, templ.data(),sizeof(float)*PERIOD);
+        memcpy(smpsr, tempr.data(),sizeof(float)*PERIOD);
     }
 
 

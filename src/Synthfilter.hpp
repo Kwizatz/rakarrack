@@ -37,7 +37,7 @@
 class Synthfilter : public Effect
 {
 public:
-    Synthfilter (float * efxoutl_, float * efxoutr_);
+    Synthfilter ();
     ~Synthfilter ();
     void out (float * smpsl, float * smpsr);
     void setpreset (int npreset);

@@ -33,7 +33,7 @@
 class Distorsion : public Effect
 {
 public:
-    Distorsion (float * efxoutl_, float * efxoutr_);
+    Distorsion();
     ~Distorsion ();
     void out (float * smpsl, float * smpr);
     using Effect::setpreset;
@@ -45,7 +45,7 @@ public:
     std::vector<float> octoutr;
 
 private:
-    void applyfilters (float * efxoutl_, float * efxoutr_);
+    void applyfilters (float * smpsl, float * smpsr);
     //Parameters
     int Pvolume;	//Volumul or E/R
     int Ppanning;	//Panning
@@ -56,7 +56,7 @@ private:
     int Pnegate;	//if the input is negated
     int Plpf;		//lowpass filter
     int Phpf;		//highpass filter
-    int Pstereo;	//0=mono, 1=stereo
+    bool Pstereo{false};	//false=mono, true=stereo
     int Pprefiltering;	//if you want to do the filtering before the distorsion
     int Poctave;	//mix sub octave
 

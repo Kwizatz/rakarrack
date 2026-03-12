@@ -37,11 +37,8 @@
 #include "FPreset.hpp"
 #define  MIN_GAIN  0.00001f        // -100dB  This will help prevent evaluation of denormal numbers
 
-Compressor::Compressor (float * efxoutl_, float * efxoutr_)
+Compressor::Compressor ()
 {
-    efxoutl = efxoutl_;
-    efxoutr = efxoutr_;
-
     rvolume = 0.0f;
     rvolume_db = 0.0f;
     lvolume = 0.0f;
@@ -246,7 +243,7 @@ Compressor::Compressor_Change_Preset (int dgui, int npreset)
 
 
 void
-Compressor::out (float *efxoutl, float *efxoutr)
+Compressor::out (float *smpsl, float *smpsr)
 {
 
     int i;
@@ -268,12 +265,12 @@ Compressor::out (float *efxoutl, float *efxoutr)
             }
             ltimer++;
             rtimer++;
-            if(rpeak<fabs(efxoutr[i])) {
-                rpeak = fabs(efxoutr[i]);
+            if(rpeak<fabs(smpsr[i])) {
+                rpeak = fabs(smpsr[i]);
                 rtimer = 0;
             }
-            if(lpeak<fabs(efxoutl[i])) {
-                lpeak = fabs(efxoutl[i]);
+            if(lpeak<fabs(smpsl[i])) {
+                lpeak = fabs(smpsl[i]);
                 ltimer = 0;
             }
 
@@ -281,8 +278,8 @@ Compressor::out (float *efxoutl, float *efxoutr)
             if(rpeak>20.0f) rpeak = 20.0f; //keeps limiter from getting locked up when signal levels go way out of bounds (like hundreds)
 
         } else {
-            rpeak = efxoutr[i];
-            lpeak = efxoutl[i];
+            rpeak = smpsr[i];
+            lpeak = smpsl[i];
         }
 
         if(stereo) {
@@ -363,31 +360,31 @@ Compressor::out (float *efxoutl, float *efxoutr)
         lgain_t = .4f * lgain + .6f * lgain_old;
 
         if (stereo) {
-            efxoutl[i] *= lgain_t;
-            efxoutr[i] *= rgain_t;
+            smpsl[i] *= lgain_t;
+            smpsr[i] *= rgain_t;
             rgain_old = rgain;
             lgain_old = lgain;
         } else {
-            efxoutl[i] *= lgain_t;
-            efxoutr[i] *= lgain_t;
+            smpsl[i] *= lgain_t;
+            smpsr[i] *= lgain_t;
             lgain_old = lgain;
         }
 
         if(peak) {
-            if(efxoutl[i]>0.999f) {            //output hard limiting
-                efxoutl[i] = 0.999f;
+            if(smpsl[i]>0.999f) {            //output hard limiting
+                smpsl[i] = 0.999f;
                 clipping = 1;
             }
-            if(efxoutl[i]<-0.999f) {
-                efxoutl[i] = -0.999f;
+            if(smpsl[i]<-0.999f) {
+                smpsl[i] = -0.999f;
                 clipping = 1;
             }
-            if(efxoutr[i]>0.999f) {
-                efxoutr[i] = 0.999f;
+            if(smpsr[i]>0.999f) {
+                smpsr[i] = 0.999f;
                 clipping = 1;
             }
-            if(efxoutr[i]<-0.999f) {
-                efxoutr[i] = -0.999f;
+            if(smpsr[i]<-0.999f) {
+                smpsr[i] = -0.999f;
                 clipping = 1;
             }
             //highly probably there is a more elegant way to do that, but what the hey...

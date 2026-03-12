@@ -31,7 +31,7 @@
 class Arpie : public Effect
 {
 public:
-    Arpie (float * efxoutl_, float * efxoutr_);
+    Arpie ();
     ~Arpie ();
     void out (float * smpsl, float * smpr);
     void setpreset (int npreset);

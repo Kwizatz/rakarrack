@@ -33,11 +33,8 @@
  * Waveshape (this is called by OscilGen::waveshape and Distorsion::process)
  */
 
-NewDist::NewDist (float * efxoutl_, float * efxoutr_)
+NewDist::NewDist ()
 {
-    efxoutl = efxoutl_;
-    efxoutr = efxoutr_;
-
     octoutl.resize(PERIOD);
     octoutr.resize(PERIOD);
 
@@ -132,12 +129,12 @@ NewDist::cleanup ()
  */
 
 void
-NewDist::applyfilters (float * efxoutl, float * efxoutr)
+NewDist::applyfilters (float * smpsl, float * smpsr)
 {
-    lpfl->filterout(efxoutl);
-    hpfl->filterout(efxoutl);
-    lpfr->filterout(efxoutr);
-    hpfr->filterout(efxoutr);
+    lpfl->filterout(smpsl);
+    hpfl->filterout(smpsl);
+    lpfr->filterout(smpsr);
+    hpfr->filterout(smpsr);
 
 };
 
@@ -169,8 +166,7 @@ NewDist::out (float * smpsl, float * smpsr)
 
 
 
-    memcpy(efxoutl,smpsl,PERIOD * sizeof(float));
-    memcpy(efxoutr,smpsl,PERIOD * sizeof(float));
+    memcpy(smpsr,smpsl,PERIOD * sizeof(float));
 
 
 
@@ -178,8 +174,8 @@ NewDist::out (float * smpsl, float * smpsr)
 
     if (octmix > 0.01f) {
         for (i = 0; i < PERIOD; i++) {
-            lout = efxoutl[i];
-            rout = efxoutr[i];
+            lout = smpsl[i];
+            rout = smpsr[i];
 
             if ( (octave_memoryl < 0.0f) && (lout > 0.0f) ) togglel *= -1.0f;
             octave_memoryl = lout;
@@ -205,15 +201,15 @@ NewDist::out (float * smpsl, float * smpsr)
 
 
     if (Pprefiltering == 0)
-        applyfilters (efxoutl, efxoutr);
+        applyfilters (smpsl, smpsr);
 
 
 
     float level = dB2rap (60.0f * (float)Plevel / 127.0f - 40.0f);
 
     for (i = 0; i < PERIOD; i++) {
-        lout = efxoutl[i];
-        rout = efxoutr[i];
+        lout = smpsl[i];
+        rout = smpsr[i];
 
         l = lout * (1.0f - lrcross) + rout * lrcross;
         r = rout * (1.0f - lrcross) + lout * lrcross;
@@ -226,13 +222,13 @@ NewDist::out (float * smpsl, float * smpsr)
             rout = r;
         }
 
-        efxoutl[i] = lout * level * panning;
-        efxoutr[i] = rout * level * ( 1.0f - panning);
+        smpsl[i] = lout * level * panning;
+        smpsr[i] = rout * level * ( 1.0f - panning);
 
     };
 
-    DCr->filterout (efxoutr);
-    DCl->filterout (efxoutl);
+    DCr->filterout (smpsr);
+    DCl->filterout (smpsl);
 
 
 };

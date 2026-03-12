@@ -27,11 +27,8 @@
 #include "FPreset.hpp"
 #include <cstdio>
 
-Infinity::Infinity (float * efxoutl_, float * efxoutr_)
+Infinity::Infinity ()
 {
-    efxoutl = efxoutl_;
-    efxoutr = efxoutr_;
-
     int i;
     for (i = 0; i<NUM_INF_BANDS; i++) {
         filterl[i] = std::make_unique<RBFilter>(0, 80.0f, 70.0f, 1);
@@ -205,8 +202,8 @@ Infinity::out (float * smpsl, float * smpsr)
         }
 
 
-        efxoutl[i] = (1.0f + autopan*mcos)*volmaster*tmpl;
-        efxoutr[i] = (1.0f - autopan*mcos)*volmaster*tmpr;
+        smpsl[i] = (1.0f + autopan*mcos)*volmaster*tmpl;
+        smpsr[i] = (1.0f - autopan*mcos)*volmaster*tmpr;
 
 
 

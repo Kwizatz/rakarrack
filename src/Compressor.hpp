@@ -36,7 +36,7 @@ class Compressor : public Effect
 
 public:
 
-    Compressor (float * efxoutl_, float * efxoutr_);
+    Compressor ();
     ~Compressor ();
 
     void out (float * smps_l, float * smps_r);

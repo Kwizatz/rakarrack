@@ -31,11 +31,8 @@
 
 
 
-Valve::Valve (float * efxoutl_, float * efxoutr_)
+Valve::Valve ()
 {
-    efxoutl = efxoutl_;
-    efxoutr = efxoutr_;
-
     lpfl = std::make_unique<AnalogFilter> (2, 22000.0f, 1.0f, 0);
     lpfr = std::make_unique<AnalogFilter> (2, 22000.0f, 1.0f, 0);
     hpfl = std::make_unique<AnalogFilter> (3, 20.0f, 1.0f, 0);
@@ -103,15 +100,15 @@ Valve::cleanup ()
  */
 
 void
-Valve::applyfilters (float * efxoutl, float * efxoutr)
+Valve::applyfilters (float * smpsl, float * smpsr)
 {
-    lpfl->filterout (efxoutl);
-    hpfl->filterout (efxoutl);
+    lpfl->filterout (smpsl);
+    hpfl->filterout (smpsl);
 
     if (Pstereo != 0) {
         //stereo
-        lpfr->filterout (efxoutr);
-        hpfr->filterout (efxoutr);
+        lpfr->filterout (smpsr);
+        hpfr->filterout (smpsr);
     };
 
 };
@@ -143,53 +140,53 @@ Valve::out (float * smpsl, float * smpsr)
     if (Pstereo != 0) {
         //Stereo
         for (i = 0; i < PERIOD; i++) {
-            efxoutl[i] = smpsl[i] * inputvol;
-            efxoutr[i] = smpsr[i] * inputvol;
+            smpsl[i] = smpsl[i] * inputvol;
+            smpsr[i] = smpsr[i] * inputvol;
         };
     } else {
         for (i = 0; i < PERIOD; i++) {
-            efxoutl[i] =
+            smpsl[i] =
                 (smpsl[i]  +  smpsr[i] ) * inputvol;
         };
     };
 
-    harm->harm_out(efxoutl,efxoutr);
+    harm->harm_out(smpsl,smpsr);
 
 
     if (Pprefiltering != 0)
-        applyfilters (efxoutl, efxoutr);
+        applyfilters (smpsl, smpsr);
 
     if(Ped) {
         for (i =0; i<PERIOD; i++) {
-            efxoutl[i]=Wshape(efxoutl[i]);
-            if (Pstereo != 0) efxoutr[i]=Wshape(efxoutr[i]);
+            smpsl[i]=Wshape(smpsl[i]);
+            if (Pstereo != 0) smpsr[i]=Wshape(smpsr[i]);
         }
     }
 
     for (i =0; i<PERIOD; i++) { //soft limiting to 3.0 (max)
-        fx = efxoutl[i];
+        fx = smpsl[i];
         if (fx>1.0f) fx = 3.0f - 2.0f/sqrtf(fx);
-        efxoutl[i] = fx;
-        fx = efxoutr[i];
+        smpsl[i] = fx;
+        fx = smpsr[i];
         if (fx>1.0f) fx = 3.0f - 2.0f/sqrtf(fx);
-        efxoutr[i] = fx;
+        smpsr[i] = fx;
     }
 
     if (q == 0.0f) {
         for (i =0; i<PERIOD; i++) {
-            if (efxoutl[i] == q) fx = fdist;
-            else fx =efxoutl[i] / (1.0f - powf(2.0f,-dist * efxoutl[i] ));
+            if (smpsl[i] == q) fx = fdist;
+            else fx =smpsl[i] / (1.0f - powf(2.0f,-dist * smpsl[i] ));
             otml = atk * otml + fx - itml;
             itml = fx;
-            efxoutl[i]= otml;
+            smpsl[i]= otml;
         }
     } else {
         for (i = 0; i < PERIOD; i++) {
-            if (efxoutl[i] == q) fx = fdist + qcoef;
-            else fx =(efxoutl[i] - q) / (1.0f - powf(2.0f,-dist * (efxoutl[i] - q))) + qcoef;
+            if (smpsl[i] == q) fx = fdist + qcoef;
+            else fx =(smpsl[i] - q) / (1.0f - powf(2.0f,-dist * (smpsl[i] - q))) + qcoef;
             otml = atk * otml + fx - itml;
             itml = fx;
-            efxoutl[i]= otml;
+            smpsl[i]= otml;
 
         }
     }
@@ -199,20 +196,20 @@ Valve::out (float * smpsl, float * smpsr)
 
         if (q == 0.0f) {
             for (i =0; i<PERIOD; i++) {
-                if (efxoutr[i] == q) fx = fdist;
-                else fx = efxoutr[i] / (1.0f - powf(2.0f,-dist * efxoutr[i] ));
+                if (smpsr[i] == q) fx = fdist;
+                else fx = smpsr[i] / (1.0f - powf(2.0f,-dist * smpsr[i] ));
                 otmr = atk * otmr + fx - itmr;
                 itmr = fx;
-                efxoutr[i]= otmr;
+                smpsr[i]= otmr;
 
             }
         } else {
             for (i = 0; i < PERIOD; i++) {
-                if (efxoutr[i] == q) fx = fdist + qcoef;
-                else fx = (efxoutr[i] - q) / (1.0f - powf(2.0f,-dist * (efxoutr[i] - q))) + qcoef;
+                if (smpsr[i] == q) fx = fdist + qcoef;
+                else fx = (smpsr[i] - q) / (1.0f - powf(2.0f,-dist * (smpsr[i] - q))) + qcoef;
                 otmr = atk * otmr + fx - itmr;
                 itmr = fx;
-                efxoutr[i]= otmr;
+                smpsr[i]= otmr;
 
             }
         }
@@ -222,16 +219,16 @@ Valve::out (float * smpsl, float * smpsr)
 
 
     if (Pprefiltering == 0)
-        applyfilters (efxoutl, efxoutr);
+        applyfilters (smpsl, smpsr);
 
-    if (Pstereo == 0) memcpy (efxoutr , efxoutl, PERIOD * sizeof(float));
+    if (Pstereo == 0) memcpy (smpsr , smpsl, PERIOD * sizeof(float));
 
 
     float level = dB2rap (60.0f * (float)Plevel / 127.0f - 40.0f);
 
     for (i = 0; i < PERIOD; i++) {
-        lout = efxoutl[i];
-        rout = efxoutr[i];
+        lout = smpsl[i];
+        rout = smpsr[i];
 
 
         l = lout * (1.0f - lrcross) + rout * lrcross;
@@ -240,8 +237,8 @@ Valve::out (float * smpsl, float * smpsr)
         lout = l;
         rout = r;
 
-        efxoutl[i] = lout * 2.0f * level * panning;
-        efxoutr[i] = rout * 2.0f * level * (1.0f -panning);
+        smpsl[i] = lout * 2.0f * level * panning;
+        smpsr[i] = rout * 2.0f * level * (1.0f -panning);
 
     };
 

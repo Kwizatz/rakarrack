@@ -48,7 +48,7 @@ HarmEnhancer::HarmEnhancer(float *Rmag, float hfreq, float lfreq, float gain)
     lpfl = std::make_unique<AnalogFilter>(2, lfreq, 1.0f, 0);
     lpfr = std::make_unique<AnalogFilter>(2, lfreq, 1.0f, 0);
 
-    limiter = std::make_unique<Compressor>(inputl.data(), inputr.data());
+    limiter = std::make_unique<Compressor>();
     limiter->Compressor_Change_Preset(0,4);
     calcula_mag(Rmag);
 }

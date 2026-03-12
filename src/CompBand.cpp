@@ -40,11 +40,8 @@
 
 
 
-CompBand::CompBand (float * efxoutl_, float * efxoutr_)
+CompBand::CompBand ()
 {
-    efxoutl = efxoutl_;
-    efxoutr = efxoutr_;
-
     lowl.resize(PERIOD);
     lowr.resize(PERIOD);
     midll.resize(PERIOD);
@@ -69,10 +66,10 @@ CompBand::CompBand (float * efxoutl_, float * efxoutr_)
     hpf3r = std::make_unique<AnalogFilter> (3, 5000.0f,.7071f, 0);
 
 
-    CL = std::make_unique<Compressor>(efxoutl,efxoutr);
-    CML = std::make_unique<Compressor>(efxoutl,efxoutr);
-    CMH = std::make_unique<Compressor>(efxoutl,efxoutr);
-    CH = std::make_unique<Compressor>(efxoutl,efxoutr);
+    CL = std::make_unique<Compressor>();
+    CML = std::make_unique<Compressor>();
+    CMH = std::make_unique<Compressor>();
+    CH = std::make_unique<Compressor>();
 
     CL->Compressor_Change_Preset(0,5);
     CML->Compressor_Change_Preset(0,5);
@@ -155,8 +152,8 @@ CompBand::out (float * smpsl, float * smpsr)
 
 
     for (i = 0; i < PERIOD; i++) {
-        efxoutl[i]=(lowl[i]+midll[i]+midhl[i]+highl[i])*level;
-        efxoutr[i]=(lowr[i]+midlr[i]+midhr[i]+highr[i])*level;
+        smpsl[i]=(lowl[i]+midll[i]+midhl[i]+highl[i])*level;
+        smpsr[i]=(lowr[i]+midlr[i]+midhr[i]+highr[i])*level;
     }
 
 

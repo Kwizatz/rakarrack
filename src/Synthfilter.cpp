@@ -41,11 +41,8 @@
 #define ONE_  0.99999f        // To prevent LFO ever reaching 1.0 for filter stability purposes
 #define ZERO_ 0.00001f        // Same idea as above.
 
-Synthfilter::Synthfilter (float * efxoutl_, float * efxoutr_)
+Synthfilter::Synthfilter ()
 {
-    efxoutl = efxoutl_;
-    efxoutr = efxoutr_;
-
     lyn1.resize(MAX_SFILTER_STAGES);
     ryn1.resize(MAX_SFILTER_STAGES);
     lx1hp.resize(MAX_SFILTER_STAGES);
@@ -119,7 +116,7 @@ Synthfilter::out (float * smpsl, float * smpsr)
         gr += xr;   //linear interpolation of LFO
 
         //Envelope detection
-        envdelta = (fabsf (efxoutl[i]) + fabsf (efxoutr[i])) - env;    //envelope follower from Compressor.C
+        envdelta = (fabsf (smpsl[i]) + fabsf (smpsr[i])) - env;    //envelope follower from Compressor.C
         if (delta > 0.0)
             env += att * envdelta;
         else
@@ -188,8 +185,8 @@ Synthfilter::out (float * smpsl, float * smpsr)
         fbl = lxn * fb;
         fbr = rxn * fb;
 
-        efxoutl[i] = lxn;
-        efxoutr[i] = rxn;
+        smpsl[i] = lxn;
+        smpsr[i] = rxn;
 
     };
 
@@ -198,8 +195,8 @@ Synthfilter::out (float * smpsl, float * smpsr)
 
     if (Poutsub != 0)
         for (i = 0; i < PERIOD; i++) {
-            efxoutl[i] *= -1.0f;
-            efxoutr[i] *= -1.0f;
+            smpsl[i] *= -1.0f;
+            smpsr[i] *= -1.0f;
         };
 
 };

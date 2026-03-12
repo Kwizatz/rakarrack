@@ -38,7 +38,7 @@
 class Echotron : public Effect
 {
 public:
-    Echotron (float * efxoutl_, float * efxoutr_);
+    Echotron ();
     ~Echotron ();
     void out (float * smpsl, float * smpr);
     void setpreset (int npreset);

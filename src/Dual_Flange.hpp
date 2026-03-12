@@ -38,7 +38,7 @@
 class Dflange : public Effect
 {
 public:
-    Dflange (float * efxoutl_, float * efxoutr_);
+    Dflange ();
     ~Dflange ();
     void out (float * smpsl, float * smpr);
     void setpreset (int npreset);

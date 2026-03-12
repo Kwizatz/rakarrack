@@ -39,7 +39,7 @@
 class CompBand : public Effect
 {
 public:
-    CompBand (float * efxoutl_, float * efxoutr_);
+    CompBand ();
     ~CompBand ();
     void out (float * smpsl, float * smpr);
     void setpreset (int npreset);

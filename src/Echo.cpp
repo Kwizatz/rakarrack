@@ -30,10 +30,8 @@
 #include <cmath>
 #include "Echo.hpp"
 
-Echo::Echo (float * efxoutl_, float * efxoutr_)
+Echo::Echo ()
 {
-    efxoutl = efxoutl_;
-    efxoutr = efxoutr_;
     //default values
     Ppreset = 0;
     Pvolume = 50;
@@ -128,8 +126,8 @@ Echo::out (float * smpsl, float * smpsr)
             rdl = smpsr[i] * (1.0f - panning) + rdlout;
         }
 
-        efxoutl[i]= l;
-        efxoutr[i]= r;
+        smpsl[i]= l;
+        smpsr[i]= r;
 
         //LowPass Filter
         oldl = ldl * hidamp + oldl * (1.0f - hidamp);

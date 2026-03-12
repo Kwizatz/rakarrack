@@ -39,14 +39,14 @@
 class NewDist : public Effect
 {
 public:
-    NewDist (float * efxoutl_, float * efxoutr_);
+    NewDist ();
     ~NewDist ();
     void out (float * smpsl, float * smpr);
     void setpreset (int npreset);
     void changepar (int npar, int value);
     int getpar (int npar);
     void cleanup ();
-    void applyfilters (float * efxoutl, float * efxoutr);
+    void applyfilters (float * smpsl, float * smpsr);
 
 
 private:

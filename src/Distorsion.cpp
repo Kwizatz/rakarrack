@@ -30,11 +30,8 @@
 #include "Distorsion.hpp"
 #include "FPreset.hpp"
 
-Distorsion::Distorsion (float * efxoutl_, float * efxoutr_)
+Distorsion::Distorsion()
 {
-    efxoutl = efxoutl_;
-    efxoutr = efxoutr_;
-
     octoutl.resize(PERIOD);
     octoutr.resize(PERIOD);
 
@@ -99,14 +96,14 @@ Distorsion::cleanup ()
  * Apply the filters
  */
 void
-Distorsion::applyfilters (float * efxoutl_, float * efxoutr_)
+Distorsion::applyfilters (float * smpsl, float * smpsr)
 {
-    lpfl->filterout (efxoutl_);
-    hpfl->filterout (efxoutl_);
+    lpfl->filterout (smpsl);
+    hpfl->filterout (smpsl);
     if (Pstereo != 0) {
         //stereo
-        lpfr->filterout (efxoutr_);
-        hpfr->filterout (efxoutr_);
+        lpfr->filterout (smpsr);
+        hpfr->filterout (smpsr);
     };
 };
 
@@ -123,48 +120,48 @@ Distorsion::out(float * smpsl, float * smpsr)
         inputvol *= -1.0f;
     }
 
-    // The following lines override efxoutl and efxoutr, So why are they pointers to a global buffer?
-    if (Pstereo != 0) 
+    // The following lines override smpsl and smpsr, So why are they pointers to a global buffer?
+    if (Pstereo) 
     {
         //Stereo
         for (int i = 0; i < PERIOD; i++) {
-            efxoutl[i] = smpsl[i] * inputvol * 2.0f;
-            efxoutr[i] = smpsr[i] * inputvol * 2.0f;
+            smpsl[i] = smpsl[i] * inputvol * 2.0f;
+            smpsr[i] = smpsr[i] * inputvol * 2.0f;
         }
     }
     else
     {
         for (int i = 0; i < PERIOD; i++)
         {
-            efxoutl[i] = (smpsl[i]  +  smpsr[i] ) * inputvol;
+            smpsl[i] = (smpsl[i]  +  smpsr[i] ) * inputvol;
         }
     }
 
     if (Pprefiltering != 0)
     {
-        applyfilters (efxoutl, efxoutr);
+        applyfilters (smpsl, smpsr);
     }
 
     //no optimised, yet (no look table)
 
-    dwshapel->waveshapesmps (PERIOD, efxoutl, Ptype, Pdrive, 1);
+    dwshapel->waveshapesmps (PERIOD, smpsl, Ptype, Pdrive, 1);
     if (Pstereo != 0)
-       { dwshaper->waveshapesmps (PERIOD, efxoutr, Ptype, Pdrive, 1);}
+       { dwshaper->waveshapesmps (PERIOD, smpsr, Ptype, Pdrive, 1);}
 
     if (Pprefiltering == 0)
-        {applyfilters (efxoutl, efxoutr);}
+        {applyfilters (smpsl, smpsr);}
 
     if (Pstereo == 0)
     { 
-        memcpy (efxoutr , efxoutl, PERIOD * sizeof(float));
+        memcpy (smpsr , smpsl, PERIOD * sizeof(float));
     }
 
     if (octmix > 0.01f) 
     {
         for (int i = 0; i < PERIOD; i++)
         {
-            lout = efxoutl[i];
-            rout = efxoutr[i];
+            lout = smpsl[i];
+            rout = smpsr[i];
 
             if ( (octave_memoryl < 0.0f) && (lout > 0.0f) ) togglel *= -1.0f;
 
@@ -186,8 +183,8 @@ Distorsion::out(float * smpsl, float * smpsr)
 
     for (int i = 0; i < PERIOD; i++) 
     {
-        lout = efxoutl[i];
-        rout = efxoutr[i];
+        lout = smpsl[i];
+        rout = smpsr[i];
 
         l = lout * (1.0f - lrcross) + rout * lrcross;
         r = rout * (1.0f - lrcross) + lout * lrcross;
@@ -203,11 +200,11 @@ Distorsion::out(float * smpsl, float * smpsr)
             rout = r;
         }
 
-        efxoutl[i] = lout * 2.0f * level * panning;
-        efxoutr[i] = rout * 2.0f * level * (1.0f -panning);
+        smpsl[i] = lout * 2.0f * level * panning;
+        smpsr[i] = rout * 2.0f * level * (1.0f -panning);
     }
-    DCr->filterout (efxoutr);
-    DCl->filterout (efxoutl);
+    DCr->filterout (smpsr);
+    DCl->filterout (smpsl);
 }
 
 /*

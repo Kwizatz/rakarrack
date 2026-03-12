@@ -29,10 +29,8 @@
 #include <time.h>
 #include "f_sin.hpp"
 
-Sequence::Sequence (float * efxoutl_, float * efxoutr_, long int Quality, int DS, int uq, int dq)
+Sequence::Sequence (long int Quality, int DS, int uq, int dq)
 {
-    efxoutl = efxoutl_;
-    efxoutr = efxoutr_;
     hq = Quality;
     adjust(DS);
 
@@ -198,8 +196,8 @@ Sequence::out (float * smpsl, float * smpsr)
                 ldbl = lmod * (1.0f - cosf(D_PI*ifperiod*ftcount));
                 ldbr = rmod * (1.0f - cosf(D_PI*ifperiod*ftcount));
 
-                efxoutl[i] = ldbl * smpsl[i];
-                efxoutr[i] = ldbr * smpsr[i];
+                smpsl[i] = ldbl * smpsl[i];
+                smpsr[i] = ldbr * smpsr[i];
             }
 
             float frl = MINFREQ + MAXFREQ*lmod;
@@ -210,8 +208,8 @@ Sequence::out (float * smpsl, float * smpsr)
                 filterr->setfreq_and_q (frr, fq);
             }
 
-            efxoutl[i] = filterl->filterout_s(efxoutl[i]);
-            efxoutr[i] = filterr->filterout_s (efxoutr[i]);
+            smpsl[i] = filterl->filterout_s(smpsl[i]);
+            smpsr[i] = filterr->filterout_s (smpsr[i]);
 
         }
         break;
@@ -237,8 +235,8 @@ Sequence::out (float * smpsl, float * smpsr)
                 ldbl = lmod * (1.0f - cosf(2.0f*ftcount));
                 ldbr = rmod * (1.0f - cosf(2.0f*ftcount));
 
-                efxoutl[i] = ldbl * smpsl[i];
-                efxoutr[i] = ldbr * smpsr[i];
+                smpsl[i] = ldbl * smpsl[i];
+                smpsr[i] = ldbr * smpsr[i];
             }
 
             float frl = MINFREQ + MAXFREQ*lmod;
@@ -250,8 +248,8 @@ Sequence::out (float * smpsl, float * smpsr)
                 filterr->setfreq_and_q (frr, fq);
             }
 
-            efxoutl[i] = filterl->filterout_s (efxoutl[i]);
-            efxoutr[i] = filterr->filterout_s (efxoutr[i]);
+            smpsl[i] = filterl->filterout_s (smpsl[i]);
+            smpsr[i] = filterr->filterout_s (smpsr[i]);
 
         }
 
@@ -278,8 +276,8 @@ Sequence::out (float * smpsl, float * smpsr)
                 ldbl = seqpower * lmod;
                 ldbr = seqpower * rmod;
 
-                efxoutl[i] = ldbl * smpsl[i];
-                efxoutr[i] = ldbr * smpsr[i];
+                smpsl[i] = ldbl * smpsl[i];
+                smpsr[i] = ldbr * smpsr[i];
             }
 
             float frl = MINFREQ + lmod * MAXFREQ;
@@ -291,8 +289,8 @@ Sequence::out (float * smpsl, float * smpsr)
                 filterr->setfreq_and_q (frr, fq);
             }
 
-            efxoutl[i] = filterl->filterout_s (efxoutl[i]);
-            efxoutr[i] = filterr->filterout_s (efxoutr[i]);
+            smpsl[i] = filterl->filterout_s (smpsl[i]);
+            smpsr[i] = filterr->filterout_s (smpsr[i]);
 
         }
 
@@ -348,10 +346,10 @@ Sequence::out (float * smpsl, float * smpsr)
         memcpy(tempr.data(), outo.data(), sizeof(float)*nPERIOD);
 
         if(DS_state != 0) {
-            D_Resample->out(templ.data(),tempr.data(),efxoutl,efxoutr,nPERIOD,u_down);
+            D_Resample->out(templ.data(),tempr.data(),smpsl,smpsr,nPERIOD,u_down);
         } else {
-            memcpy(efxoutl, templ.data(),sizeof(float)*PERIOD);
-            memcpy(efxoutr, tempr.data(),sizeof(float)*PERIOD);
+            memcpy(smpsl, templ.data(),sizeof(float)*PERIOD);
+            memcpy(smpsr, tempr.data(),sizeof(float)*PERIOD);
         }
 
 
@@ -401,16 +399,16 @@ Sequence::out (float * smpsl, float * smpsr)
                 ldbl = seqpower * lmod * (1.0f - cosf(D_PI*ifperiod*ftcount));
                 ldbr = seqpower * rmod * (1.0f - cosf(D_PI*ifperiod*ftcount));
 
-                efxoutl[i] = ldbl * smpsl[i];
-                efxoutr[i] = ldbr * smpsr[i];
+                smpsl[i] = ldbl * smpsl[i];
+                smpsr[i] = ldbr * smpsr[i];
             } else {
                 lmod = seqpower * fsequence[scount];
                 rmod = seqpower * fsequence[dscount];
                 lmod = modfilterl->filterout_s(lmod);
                 rmod = modfilterr->filterout_s(rmod);
 
-                efxoutl[i] = lmod * smpsl[i];
-                efxoutr[i] = rmod * smpsr[i];
+                smpsl[i] = lmod * smpsl[i];
+                smpsr[i] = rmod * smpsr[i];
             }
 
 
@@ -459,10 +457,10 @@ Sequence::out (float * smpsl, float * smpsr)
         memcpy(tempr.data(), outo.data(), sizeof(float)*nPERIOD);
 
         if(DS_state != 0) {
-            D_Resample->out(templ.data(),tempr.data(),efxoutl,efxoutr,nPERIOD,u_down);
+            D_Resample->out(templ.data(),tempr.data(),smpsl,smpsr,nPERIOD,u_down);
         } else {
-            memcpy(efxoutl, templ.data(),sizeof(float)*nPERIOD);
-            memcpy(efxoutr, tempr.data(),sizeof(float)*nPERIOD);
+            memcpy(smpsl, templ.data(),sizeof(float)*nPERIOD);
+            memcpy(smpsr, tempr.data(),sizeof(float)*nPERIOD);
         }
 
 
@@ -528,10 +526,10 @@ Sequence::out (float * smpsl, float * smpsr)
         }
 
         if(DS_state != 0) {
-            D_Resample->out(templ.data(),tempr.data(),efxoutl,efxoutr,nPERIOD,u_down);
+            D_Resample->out(templ.data(),tempr.data(),smpsl,smpsr,nPERIOD,u_down);
         } else {
-            memcpy(efxoutl, templ.data(),sizeof(float)*nPERIOD);
-            memcpy(efxoutr, tempr.data(),sizeof(float)*nPERIOD);
+            memcpy(smpsl, templ.data(),sizeof(float)*nPERIOD);
+            memcpy(smpsr, tempr.data(),sizeof(float)*nPERIOD);
         }
 
 
@@ -592,8 +590,8 @@ Sequence::out (float * smpsl, float * smpsr)
                 ldbl = seqpower * ltarget;
                 ldbr = seqpower * rtarget;
 
-                efxoutl[i] = ldbl * smpsl[i];
-                efxoutr[i] = ldbr * smpsr[i];
+                smpsl[i] = ldbl * smpsl[i];
+                smpsr[i] = ldbr * smpsr[i];
             }
 
             float frl = MINFREQ + ltarget * MAXFREQ;
@@ -605,11 +603,11 @@ Sequence::out (float * smpsl, float * smpsr)
                 filterr->setfreq_and_q (frr, fq);
             }
 
-            efxoutl[i] = filterl->filterout_s (efxoutl[i]);
-            efxoutr[i] = filterr->filterout_s (efxoutr[i]);
+            smpsl[i] = filterl->filterout_s (smpsl[i]);
+            smpsr[i] = filterr->filterout_s (smpsr[i]);
 
-            //efxoutl[i] += triggernow;  //test to see the pulse
-            //efxoutr[i] = peakpulse;
+            //smpsl[i] += triggernow;  //test to see the pulse
+            //smpsr[i] = peakpulse;
         }
 
         break;
@@ -637,19 +635,19 @@ Sequence::out (float * smpsl, float * smpsr)
                 lmod = tempodiv*fsequence[scount];
                 rmod = tempodiv*fsequence[dscount];
 
-                efxoutl[i] = ldbl*ldelay->delay((ldlyfb + smpsl[i]), lmod, 0, 1, 0);
-                efxoutr[i] = ldbr*rdelay->delay((rdlyfb + smpsr[i]), rmod, 0, 1, 0);
+                smpsl[i] = ldbl*ldelay->delay((ldlyfb + smpsl[i]), lmod, 0, 1, 0);
+                smpsr[i] = ldbr*rdelay->delay((rdlyfb + smpsr[i]), rmod, 0, 1, 0);
 
             }
 
             lmod = tempodiv*fsequence[scount];
             rmod = tempodiv*fsequence[dscount];
 
-            efxoutl[i] = ldelay->delay_simple((ldlyfb + smpsl[i]), lmod, 0, 1, 0);
-            efxoutr[i] = rdelay->delay_simple((rdlyfb + smpsr[i]), rmod, 0, 1, 0);
+            smpsl[i] = ldelay->delay_simple((ldlyfb + smpsl[i]), lmod, 0, 1, 0);
+            smpsr[i] = rdelay->delay_simple((rdlyfb + smpsr[i]), rmod, 0, 1, 0);
 
-            ldlyfb = fb*efxoutl[i];
-            rdlyfb = fb*efxoutr[i];
+            ldlyfb = fb*smpsl[i];
+            rdlyfb = fb*smpsr[i];
 
         }
         break;

@@ -27,10 +27,8 @@
 
 
 
-ShelfBoost::ShelfBoost (float * efxoutl_, float * efxoutr_)
+ShelfBoost::ShelfBoost ()
 {
-    efxoutl = efxoutl_;
-    efxoutr = efxoutr_;
 
 
     //default values

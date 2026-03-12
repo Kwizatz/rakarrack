@@ -27,11 +27,8 @@
 #include <cmath>
 #include "EQ.hpp"
 
-EQ::EQ (float * efxoutl_, float * efxoutr_)
+EQ::EQ ()
 {
-
-    efxoutl = efxoutl_;
-    efxoutr = efxoutr_;
 
 
     for (int i = 0; i < MAX_EQ_BANDS; i++) {
@@ -77,14 +74,14 @@ EQ::out (float * smpsl, float * smpsr)
     for (i = 0; i < MAX_EQ_BANDS; i++) {
         if (filter[i].Ptype == 0)
             continue;
-        filter[i].l->filterout (efxoutl);
-        filter[i].r->filterout (efxoutr);
+        filter[i].l->filterout (smpsl);
+        filter[i].r->filterout (smpsr);
     };
 
 
     for (i = 0; i < PERIOD; i++) {
-        efxoutl[i] = smpsl[i] * outvolume;
-        efxoutr[i] = smpsr[i] * outvolume;
+        smpsl[i] = smpsl[i] * outvolume;
+        smpsr[i] = smpsr[i] * outvolume;
     };
 
 };

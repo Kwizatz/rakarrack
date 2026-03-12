@@ -34,7 +34,7 @@
 class Analog_Phaser : public Effect
 {
 public:
-    Analog_Phaser (float * efxoutl_, float * efxoutr_);
+    Analog_Phaser ();
     ~Analog_Phaser ();
     void out (float * smpsl, float * smpsr);
     void setpreset (int npreset);

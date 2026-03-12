@@ -30,13 +30,11 @@
 
 
 
-Shifter::Shifter (float *efxoutl_, float *efxoutr_, long int Quality, int DS, int uq, int dq)
+Shifter::Shifter (long int Quality, int DS, int uq, int dq)
 {
 
 
 
-    efxoutl = efxoutl_;
-    efxoutr = efxoutr_;
     hq = Quality;
     adjust(DS);
 
@@ -240,11 +238,11 @@ Shifter::out (float *smpsl, float *smpsr)
 
 
     if(DS_state != 0) {
-        D_Resample->out(templ.data(),tempr.data(),efxoutl,efxoutr,nPERIOD,u_down);
+        D_Resample->out(templ.data(),tempr.data(),smpsl,smpsr,nPERIOD,u_down);
 
     } else {
-        memcpy(efxoutl, templ.data(),sizeof(float)*PERIOD);
-        memcpy(efxoutr, tempr.data(),sizeof(float)*PERIOD);
+        memcpy(smpsl, templ.data(),sizeof(float)*PERIOD);
+        memcpy(smpsr, tempr.data(),sizeof(float)*PERIOD);
     }
 
 

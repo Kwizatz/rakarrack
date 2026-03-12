@@ -28,11 +28,8 @@
 #include "Arpie.hpp"
 #include "FPreset.hpp"
 
-Arpie::Arpie (float * efxoutl_, float * efxoutr_)
+Arpie::Arpie ()
 {
-    efxoutl = efxoutl_;
-    efxoutr = efxoutr_;
-
     //default values
     Ppreset = 0;
     Pvolume = 50;
@@ -142,23 +139,23 @@ Arpie::out (float * smpsl, float * smpsr)
             if (envswell > 1.0f) envswell = 1.0f;
             if (lswell <= PI) {
                 lswell = 0.5f * (1.0f - cosf(lswell));  //Clickless transition
-                efxoutl[i] = envswell * (reverse * (ldelay[rvkl] * lswell + ldelay[rvfl] * (1.0f - lswell))  + (ldl * (1-reverse)));   //Volume ducking near zero crossing.
+                smpsl[i] = envswell * (reverse * (ldelay[rvkl] * lswell + ldelay[rvfl] * (1.0f - lswell))  + (ldl * (1-reverse)));   //Volume ducking near zero crossing.
             } else {
-                efxoutl[i] = ((ldelay[rvkl] * reverse)  + (ldl * (1-reverse))) * envswell;
+                smpsl[i] = ((ldelay[rvkl] * reverse)  + (ldl * (1-reverse))) * envswell;
             }
 
             rswell = 	(float)(abs(kr - rvkr)) * Srate_Attack_Coeff;
             if (rswell <= PI) {
                 rswell = 0.5f * (1.0f - cosf(rswell));   //Clickless transition
-                efxoutr[i] = envswell * (reverse * (rdelay[rvkr] * rswell + rdelay[rvfr] * (1.0f - rswell))  + (rdl * (1-reverse)));  //Volume ducking near zero crossing.
+                smpsr[i] = envswell * (reverse * (rdelay[rvkr] * rswell + rdelay[rvfr] * (1.0f - rswell))  + (rdl * (1-reverse)));  //Volume ducking near zero crossing.
             } else {
-                efxoutr[i] = envswell * ((rdelay[rvkr] * reverse)  + (rdl * (1-reverse)));
+                smpsr[i] = envswell * ((rdelay[rvkr] * reverse)  + (rdl * (1-reverse)));
             }
 
 
         } else {
-            efxoutl[i]= ldl;
-            efxoutr[i]= rdl;
+            smpsl[i]= ldl;
+            smpsr[i]= rdl;
         }
 
 

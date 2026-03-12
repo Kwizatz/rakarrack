@@ -28,7 +28,7 @@
 class ShelfBoost : public Effect
 {
 public:
-    ShelfBoost (float * efxoutl_, float * efxoutr_);
+    ShelfBoost ();
     ~ShelfBoost ();
     void out (float * smpsl, float * smpr);
     void setpreset (int npreset);

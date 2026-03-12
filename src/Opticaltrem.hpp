@@ -35,7 +35,7 @@ class Opticaltrem : public Effect
 
 public:
 
-    Opticaltrem (float * efxoutl_, float * efxoutr_);
+    Opticaltrem ();
     ~Opticaltrem ();
 
     void out (float * smpsl, float * smpsr);

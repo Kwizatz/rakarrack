@@ -40,7 +40,7 @@ class Expander : public Effect
 
 public:
 
-    Expander (float * efxoutl_, float * efxoutr_);
+    Expander ();
     ~Expander ();
 
     void out (float * smps_l, float * smps_r);
