@@ -406,10 +406,10 @@ public:
     class Vibe *efx_Vibe;
     class Infinity *efx_Infinity;
 
-    jack_client_t *jackclient;
-    jack_options_t options;
-    jack_status_t status;
-    char jackcliname[64];
+    jack_client_t *jackclient{};
+    jack_options_t options{};
+    jack_status_t status{};
+    char jackcliname[64]{};
 
     int db6booster;
     int jdis;

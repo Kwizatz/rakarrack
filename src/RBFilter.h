@@ -55,8 +55,9 @@ private:
     } st[MAX_FILTER_STAGES + 1];
 
     struct parameters {
-        float f, q, q_sqrt;
-    } par, ipar;
+        float f{}, q{}, q_sqrt{};
+    };
+    parameters par{}, ipar{};
 
     void singlefilterout (float * smp, fstage & x, parameters & par);
     float singlefilterout_s (float smp, fstage & x, parameters & par);

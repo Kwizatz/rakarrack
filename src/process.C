@@ -1224,6 +1224,7 @@ RKR::Control_Gain (float *origl, float *origr)
     float temp_sum;
 
     float tmp;
+    const size_t period_frames = (PERIOD > 0) ? static_cast<size_t>(PERIOD) : 0u;
 
 
 
@@ -1243,7 +1244,7 @@ RKR::Control_Gain (float *origl, float *origr)
 
 
 
-    for (i = 0; i <= PERIOD; i++) {
+    for (i = 0; i < PERIOD; i++) {
         efxoutl[i] *= Log_I_Gain;
         efxoutr[i] *= Log_I_Gain;
         tmp = fabsf(efxoutr[i]);
@@ -1253,8 +1254,8 @@ RKR::Control_Gain (float *origl, float *origr)
 
 
     }
-    memcpy(smpl,efxoutl,sizeof(float)*PERIOD);
-    memcpy(smpr,efxoutr,sizeof(float)*PERIOD);
+    memcpy(smpl,efxoutl,sizeof(float) * period_frames);
+    memcpy(smpr,efxoutr,sizeof(float) * period_frames);
 
     temp_sum = (float)CLAMP (rap2dB (il_sum), -48.0, 15.0);
     val_il_sum = .6f * old_il_sum + .4f * temp_sum;
@@ -1268,7 +1269,7 @@ RKR::Control_Gain (float *origl, float *origr)
     if((ACI_Bypass) && (Aux_Source==0)) {
         temp_sum = 0.0;
         tmp = 0.0;
-        for (i = 0; i <= PERIOD; i++) {
+        for (i = 0; i < PERIOD; i++) {
             tmp = fabsf(auxresampled[i]);
             if (tmp > a_sum) a_sum = tmp;
         }
@@ -1276,14 +1277,7 @@ RKR::Control_Gain (float *origl, float *origr)
         val_a_sum = .6f * old_a_sum + .4f * a_sum;
         old_a_sum = val_a_sum;
     }
-
-
-
-
-
-
 }
-
 
 void
 RKR::Control_Volume (float *origl,float *origr)

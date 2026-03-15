@@ -40,6 +40,7 @@ SVFilter::SVFilter (unsigned char Ftype, float Ffreq, float Fq,
     if (stages >= MAX_FILTER_STAGES)
         stages = MAX_FILTER_STAGES;
     cleanup ();
+    computefiltercoefs ();
     setfreq_and_q (Ffreq, Fq);
 };
 

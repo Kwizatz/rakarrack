@@ -37,28 +37,26 @@ public:
                         int drive, int eff);
     void cleanup();
 
-    int period_coeff;
+    int period_coeff{};
 
-    double u_up;
-    double u_down;
+    double u_up{};
+    double u_down{};
 
-    float dthresh;  //dynamic threshold in compression waveshaper
-    float dyno;
-    float dynodecay;  //dynamically control symmetry
+    float dthresh{};  //dynamic threshold in compression waveshaper
+    float dyno{};
+    float dynodecay{};  //dynamically control symmetry
 
-    float compg;  //used by compression distortion
-    float cratio;  //used by compression for hardness
-    float tmpgain;  // compression distortion temp variable
-    float ncSAMPLE_RATE;
-    float *temps;
+    float compg{};  //used by compression distortion
+    float cratio{};  //used by compression for hardness
+    float tmpgain{};  // compression distortion temp variable
+    float ncSAMPLE_RATE{};
+    float *temps{};
 
-    float R, P, Vgbias, Vsupp, Ip, Vmin, Vg, Vfactor, Vdyno;  //Valve1 Modeling variables.
-    float mu, V2bias, Is, Vg2, vfact, ffact, Vlv2out, V2dyno; //Valve2 variables
+    float R{}, P{}, Vgbias{}, Vsupp{}, Ip{}, Vmin{}, Vg{}, Vfactor{}, Vdyno{};  //Valve1 Modeling variables.
+    float mu{}, V2bias{}, Is{}, Vg2{}, vfact{}, ffact{}, Vlv2out{}, V2dyno{}; //Valve2 variables
 
-    class Resample *U_Resample;
-    class Resample *D_Resample;
-
-
+    class Resample *U_Resample{};
+    class Resample *D_Resample{};
 };
 
 #endif

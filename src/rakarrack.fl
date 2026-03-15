@@ -26,6 +26,9 @@ decl {\#include <FL/x.H>} {public local
 decl {\#include <FL/Fl_PNG_Image.H>} {public local
 } 
 
+decl {\#include <FL/Fl_Shared_Image.H>} {public local
+} 
+
 decl {\#include <FL/Fl_Tiled_Image.H>} {public local
 } 
 
@@ -6910,7 +6913,10 @@ if((int)o->value())B_wav->activate(); else B_wav->deactivate();}
 filename=fl_file_chooser("Load Wav File:","(*.wav)",NULL,0);
 if (filename==NULL) return;
 filename=fl_filename_setext(filename,".wav");
-strcpy(rkr->efx_Convol->Filename,filename);
+size_t copylen = strlen(filename);
+if (copylen >= sizeof(rkr->efx_Convol->Filename)) copylen = sizeof(rkr->efx_Convol->Filename) - 1;
+memcpy(rkr->efx_Convol->Filename, filename, copylen);
+rkr->efx_Convol->Filename[copylen] = 0;
 rkr->efx_Convol->setfile(100);}
           xywh {428 356 46 12} labelsize 10 deactivate
         }
@@ -8926,7 +8932,10 @@ if((int)o->value())B_rvb->activate(); else B_rvb->deactivate();}
 filename=fl_file_chooser("Load rvb File:","(*.rvb)",NULL,0);
 if (filename==NULL) return;
 filename=fl_filename_setext(filename,".rvb");
-strcpy(rkr->efx_Reverbtron->Filename,filename);
+size_t copylen = strlen(filename);
+if (copylen >= sizeof(rkr->efx_Reverbtron->Filename)) copylen = sizeof(rkr->efx_Reverbtron->Filename) - 1;
+memcpy(rkr->efx_Reverbtron->Filename, filename, copylen);
+rkr->efx_Reverbtron->Filename[copylen] = 0;
 rkr->efx_Reverbtron->setfile(100);}
           xywh {264 368 46 10} labelsize 10 deactivate
         }
@@ -9180,7 +9189,10 @@ if((int)o->value())B_ech->activate(); else B_ech->deactivate();}
 filename=fl_file_chooser("Load dly File:","(*.dly)",NULL,0);
 if (filename==NULL) return;
 filename=fl_filename_setext(filename,".dly");
-strcpy(rkr->efx_Echotron->Filename,filename);
+size_t copylen = strlen(filename);
+if (copylen >= sizeof(rkr->efx_Echotron->Filename)) copylen = sizeof(rkr->efx_Echotron->Filename) - 1;
+memcpy(rkr->efx_Echotron->Filename, filename, copylen);
+rkr->efx_Echotron->Filename[copylen] = 0;
 rkr->efx_Echotron->setfile(100);
 echotron_length->value(rkr->efx_Echotron->getpar(3));
 echotron_length->maximum(rkr->efx_Echotron->getpar(3));}
@@ -10473,7 +10485,10 @@ filename=fl_filename_setext(filename,EXT);
 ok=rkr->savebank(filename);
 if (ok)
 {
-strcpy(rkr->Bank_Saved,filename);
+size_t copylen = strlen(filename);
+if (copylen >= sizeof(rkr->Bank_Saved)) copylen = sizeof(rkr->Bank_Saved) - 1;
+memcpy(rkr->Bank_Saved, filename, copylen);
+rkr->Bank_Saved[copylen] = 0;
 BankWin_Label(filename);
 }}
           xywh {524 117 44 14} labelfont 1 labelcolor 7 when 0
@@ -10721,7 +10736,10 @@ BankWindow->hide();}
           xywh {448 50 64 18} shortcut 0x62 color 62 labelsize 12
         }
         Fl_Input WPreset_Name {
-          callback {strcpy(rkr->Preset_Name,o->value());}
+          callback {size_t copylen = strlen(o->value());
+if (copylen >= sizeof(rkr->Preset_Name)) copylen = sizeof(rkr->Preset_Name) - 1;
+memcpy(rkr->Preset_Name, o->value(), copylen);
+rkr->Preset_Name[copylen] = 0;}
           xywh {174 72 338 30} color 62 labelcolor 7 align 20 textsize 24 textcolor 7
           code0 {o->maximum_size(22);}
         }
@@ -11037,9 +11055,16 @@ if(rkr->CheckOldBank(filename)==0)
 {
         char nombre[64];
         char *filepart;
+  size_t filelen;
+  size_t copylen;
         memset(nombre,0,sizeof(nombre));
-        filepart = strrchr(filename,'/')+1;
-        strncpy(nombre,filepart,strlen(filepart)-5);
+  filepart = strrchr(filename,'/');
+  filepart = (filepart != NULL) ? filepart + 1 : filename;
+  filelen = strlen(filepart);
+  copylen = (filelen > 5) ? filelen - 5 : filelen;
+  if (copylen >= sizeof(nombre)) copylen = sizeof(nombre) - 1;
+  memcpy(nombre, filepart, copylen);
+  nombre[copylen] = 0;
         CH_UB->add((const char *)nombre, 0, (Fl_Callback *)cb_CH_UB, (void *)filename, 0);
 }
 }}
@@ -11457,7 +11482,10 @@ filename=fl_file_chooser("Browse:","(*.png)",NULL,0);
 if (filename==NULL) return;
 filename=fl_filename_setext(filename,".png");
 BackFiname->value(filename);
-strcpy(rkr->BackgroundImage,filename);
+  size_t copylen = strlen(filename);
+  if (copylen >= sizeof(rkr->BackgroundImage)) copylen = sizeof(rkr->BackgroundImage) - 1;
+  memcpy(rkr->BackgroundImage, filename, copylen);
+  rkr->BackgroundImage[copylen] = 0;
 PutBackground();}
             xywh {410 455 65 20}
           }
@@ -12050,9 +12078,12 @@ else BMidiIn->deactivate();}
             label {ALSA Sequencer Ports}
             callback {int valor;
 valor = (int) o->value();
-if(o->text(valor) != NULL)
-strcpy(rkr->MID,o->text(valor));
-else return;
+const char *midi_text = o->text(valor);
+if(midi_text == NULL) return;
+size_t copylen = strlen(midi_text);
+if (copylen >= sizeof(rkr->MID)) copylen = sizeof(rkr->MID) - 1;
+memcpy(rkr->MID, midi_text, copylen);
+rkr->MID[copylen] = 0;
 o->select(valor,1);
 \#ifdef ENABLE_MIDI
   rkr->Conecta();
@@ -12145,7 +12176,7 @@ else JackIn->deactivate();}
           }
           Fl_Input Username {
             label {Username:}
-            callback {strncpy(rkr->UserRealName, o->value(),sizeof(rkr->UserRealName)-1);}
+            callback {snprintf(rkr->UserRealName, sizeof(rkr->UserRealName), "%s", o->value());}
             xywh {80 32 240 21} labelsize 11 labelcolor 7 textsize 11 textcolor 7
           }
           Fl_Check_Button MES_DIS {
@@ -12185,7 +12216,10 @@ filename=fl_file_chooser("Browse:","(*.rkrb)",NULL,0);
 if (filename==NULL) return;
 filename=fl_filename_setext(filename,".rkrb");
 BFiname->value(filename);
-strcpy(rkr->BankFilename,filename);}
+size_t copylen = strlen(filename);
+if (copylen >= sizeof(rkr->BankFilename)) copylen = sizeof(rkr->BankFilename) - 1;
+memcpy(rkr->BankFilename, filename, copylen);
+rkr->BankFilename[copylen] = 0;}
             xywh {415 60 65 20}
           }
           Fl_File_Input Udir {
@@ -12199,7 +12233,10 @@ strcpy(rkr->BankFilename,filename);}
 dir=fl_dir_chooser("Browse:",NULL,0);
 if (dir==NULL) return;
 Udir->value(dir);
-strcpy(rkr->UDirFilename,dir);
+size_t copylen = strlen(dir);
+if (copylen >= sizeof(rkr->UDirFilename)) copylen = sizeof(rkr->UDirFilename) - 1;
+memcpy(rkr->UDirFilename, dir, copylen);
+rkr->UDirFilename[copylen] = 0;
 ScanDir();}
             xywh {415 112 65 20}
           }
@@ -17839,12 +17876,13 @@ return(1000);} {}
         AddBankName(nombank);
         if(rkr->CheckOldBank(nombank)==0)
         {
-         size_t namelen = strlen(fs->d_name);
-         strncpy(nombre,fs->d_name, 254);
-         namelen = (namelen > 5) ? namelen - 5 : 0;
-         if(namelen > 0)
+          size_t namelen = strlen(fs->d_name);
+          size_t copylen = (namelen > 5) ? namelen - 5 : namelen;
+          if(copylen >= sizeof(nombre)) copylen = sizeof(nombre) - 1;
+          memcpy(nombre, fs->d_name, copylen);
+          nombre[copylen] = 0;
+          if(copylen > 0)
          {
-            nombre[namelen] = 0;
             CH_UB->add((const char *)nombre, 0, (Fl_Callback *)cb_CH_UB, (void *)nombank, 0);
          }
         }
@@ -17864,12 +17902,13 @@ return(1000);} {}
         AddBankName(nombank);
         if(rkr->CheckOldBank(nombank)==0)
         {
-         strncpy(nombre,fs->d_name, sizeof(nombre));
          size_t namelen = strlen(fs->d_name);
-         namelen = (namelen > 5) ? namelen - 5 : 0;
-         if(namelen > 0)
+          size_t copylen = (namelen > 5) ? namelen - 5 : namelen;
+          if(copylen >= sizeof(nombre)) copylen = sizeof(nombre) - 1;
+          memcpy(nombre, fs->d_name, copylen);
+          nombre[copylen] = 0;
+          if(copylen > 0)
          {
-            nombre[namelen] = 0;
             CH_UB->add((const char *)nombre, 0, (Fl_Callback *)cb_CH_UB, (void *)nombank, 0);
          }
         }
@@ -18539,7 +18578,12 @@ drag=1000;
                 free(elem);
                 return 0;
         }
-        strncpy(elem->name, name, 255);
+        if (name != NULL) {
+          size_t copylen = strlen(name);
+          if (copylen > 255) copylen = 255;
+          memcpy(elem->name, name, copylen);
+          elem->name[copylen] = 0;
+        }
         if (mBankNameList == NULL) {
                 mBankNameList = elem;
                 elem->forward = elem->backward = nullptr;
