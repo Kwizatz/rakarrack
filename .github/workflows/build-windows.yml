@@ -51,3 +51,38 @@ jobs:
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build
+
+    - name: Delete old NuGet packages from feed
+      if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+      shell: pwsh
+      run: |
+        $headers = @{
+          Authorization = "Bearer ${{ secrets.PAT }}"
+          Accept        = "application/vnd.github+json"
+        }
+        $owner = "Kwizatz"
+        $packagesUrl = "https://api.github.com/user/packages?package_type=nuget&per_page=100"
+        $packages = Invoke-RestMethod -Uri $packagesUrl -Headers $headers
+
+        foreach ($pkg in $packages) {
+          $versionsUrl = "https://api.github.com/user/packages/nuget/$($pkg.name)/versions?per_page=100"
+          $versions = Invoke-RestMethod -Uri $versionsUrl -Headers $headers
+
+          if ($versions.Count -le 1) {
+            Write-Host "Package $($pkg.name): only $($versions.Count) version(s), skipping."
+            continue
+          }
+
+          # Versions are returned newest-first; skip the first (latest) and delete the rest
+          $toDelete = $versions | Select-Object -Skip 1
+          foreach ($ver in $toDelete) {
+            Write-Host "Deleting $($pkg.name) version $($ver.name) (id $($ver.id))..."
+            $deleteUrl = "https://api.github.com/user/packages/nuget/$($pkg.name)/versions/$($ver.id)"
+            try {
+              Invoke-RestMethod -Method Delete -Uri $deleteUrl -Headers $headers
+              Write-Host "  Deleted."
+            } catch {
+              Write-Host "  Failed to delete: $_"
+            }
+          }
+        }
