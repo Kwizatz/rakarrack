@@ -100,20 +100,12 @@ int main(int argc, char* argv[])
     {
         commandline    = 1;
         needtoloadfile = 1;
-#ifdef _MSC_VER
-        filetoload     = _strdup(parser.value(loadOpt).toLocal8Bit().constData());
-#else
-        filetoload     = strdup(parser.value(loadOpt).toLocal8Bit().constData());
-#endif
+        filetoload     = parser.value(loadOpt).toLocal8Bit().constData();
     }
     if (parser.isSet(bankOpt))
     {
         needtoloadbank = 1;
-#ifdef _MSC_VER
-        banktoload     = _strdup(parser.value(bankOpt).toLocal8Bit().constData());
-#else
-        banktoload     = strdup(parser.value(bankOpt).toLocal8Bit().constData());
-#endif
+        banktoload     = parser.value(bankOpt).toLocal8Bit().constData();
     }
     if (parser.isSet(presetOpt))
     {
@@ -144,8 +136,8 @@ int main(int argc, char* argv[])
     rkr.ConnectMIDI();
 #endif
 
-    if (needtoloadfile)  rkr.loadfile(filetoload);
-    if (needtoloadbank)  rkr.loadbank(banktoload);
+    if (needtoloadfile)  rkr.loadfile(filetoload.data());
+    if (needtoloadbank)  rkr.loadbank(banktoload.data());
 
     // ── EngineController bridge ────────────────────────────────────
     EngineController controller(rkr);

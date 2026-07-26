@@ -29,6 +29,7 @@
 #include "AppConfig.hpp"
 #include "compat_time.hpp"
 
+#include <string>
 #include <signal.h>
 #include <jack/jack.h>
 #include <jack/midiport.h>
@@ -104,8 +105,8 @@ extern int stecla;
 extern int looper_lqua;
 extern char *s_uuid;
 extern char *statefile;
-extern char *filetoload;
-extern char *banktoload;
+extern std::string filetoload;
+extern std::string banktoload;
 
 // Message callback — set by the GUI layer for dialog display.
 // If null, RKR::Message() only logs to stderr.

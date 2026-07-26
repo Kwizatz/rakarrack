@@ -41,8 +41,9 @@ SystemTray::SystemTray(EngineController& engine,
     m_trayIcon = new QSystemTrayIcon(icon, this);
     m_trayIcon->setToolTip(QStringLiteral("Rakarrack"));
 
-    // Context menu
-    auto* menu = new QMenu();
+    // Context menu.  QSystemTrayIcon::setContextMenu() does NOT take ownership
+    // of the menu, so it must be parented to a widget to avoid a leak.
+    auto* menu = new QMenu(m_mainWindow);
 
     auto* showHide = menu->addAction(tr("Show / Hide"));
     connect(showHide, &QAction::triggered,

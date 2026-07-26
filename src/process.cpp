@@ -65,8 +65,8 @@ std::array<float, 12> lfreqs;
 float aFreq;
 char *s_uuid;
 char *statefile;
-char *filetoload;
-char *banktoload;
+std::string filetoload;
+std::string banktoload;
 Preferences rakarrack (Preferences::USER, WEBSITE, PACKAGE);
 MessageCallback gui_message_handler = nullptr;
 

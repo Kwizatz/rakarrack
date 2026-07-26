@@ -52,6 +52,12 @@ class PitchShifter
 public:
     PitchShifter (long fftFrameSize, long osamp, float sampleRate);
     ~PitchShifter ();
+
+    // Owns raw FFTW plans/buffers freed in the destructor.  Non-copyable to
+    // prevent a double-free / leak from a shallow copy (Rule of Five).
+    PitchShifter (const PitchShifter&) = delete;
+    PitchShifter& operator= (const PitchShifter&) = delete;
+
     void smbPitchShift (float pitchShift, long numSampsToProcess,
                         long fftFrameSize, long osamp, float sampleRate,
                         float *indata, float *outdata);

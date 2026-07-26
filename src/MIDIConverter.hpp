@@ -33,6 +33,11 @@ public:
     MIDIConverter (char *jname);
     ~MIDIConverter ();
 
+    // Owns an ALSA sequencer handle closed in the destructor.  Non-copyable to
+    // prevent a double-close / leak from a shallow copy (Rule of Five).
+    MIDIConverter (const MIDIConverter&) = delete;
+    MIDIConverter& operator= (const MIDIConverter&) = delete;
+
 
     float *efxoutl;
     float *efxoutr;
