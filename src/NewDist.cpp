@@ -148,12 +148,6 @@ NewDist::out (float * smpsl, float * smpsr)
     int i;
     float l, r, lout, rout;
 
-    float inputvol = .5f;
-
-    if (Pnegate != 0)
-        inputvol *= -1.0f;
-
-
     if (Pprefiltering != 0)
         applyfilters (smpsl, smpsr);
 

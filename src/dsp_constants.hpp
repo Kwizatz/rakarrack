@@ -27,6 +27,7 @@
 #include <array>
 #include <vector>
 #include <cmath>
+#include <cstdint>
 #include <cstdlib>
 #include <string>
 #include <type_traits>
