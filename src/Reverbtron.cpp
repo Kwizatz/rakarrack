@@ -47,8 +47,7 @@ Reverbtron::Reverbtron (int DS, int uq, int dq)
     feedback = 0.0f;
     maxtime = 0.0f;
     adjust(DS);
-    templ.resize(PERIOD);
-    tempr.resize(PERIOD);
+    setMaxBlockSize(PERIOD);
 
     hrtf_size = nSAMPLE_RATE/2;
     maxx_size = (int) (nfSAMPLE_RATE * convlength);  //just to get the max memory allocated
@@ -108,21 +107,49 @@ Reverbtron::cleanup ()
 void
 Reverbtron::out (float * smpsl, float * smpsr)
 {
+    out (smpsl, smpsr, PERIOD);
+};
+
+
+int
+Reverbtron::resampledFrames (int nframes) const
+{
+    return (int) lrint ((double) nframes * u_up);
+};
+
+
+void
+Reverbtron::setMaxBlockSize (int maxBlockSize)
+{
+    const int nrs = resampledFrames(maxBlockSize);
+
+    // templ/tempr receive the convolution output at the INTERNAL rate before
+    // being resampled back down, so they must hold whichever count is larger.
+    const int scratch = (nrs > maxBlockSize) ? nrs : maxBlockSize;
+    templ.resize(scratch);
+    tempr.resize(scratch);
+};
+
+
+void
+Reverbtron::out (float * smpsl, float * smpsr, int nframes)
+{
     int i, j, xindex, hindex;
     float l,lyn, hyn;
     float ldiff,rdiff;
     int length = Plength;
     hlength = Pdiff;
     int doffset;
+    const int nrs = resampledFrames (nframes);
 
     if(DS_state != 0) {
-        memcpy(templ.data(), smpsl,sizeof(float)*PERIOD);
-        memcpy(tempr.data(), smpsr,sizeof(float)*PERIOD);
-        U_Resample->out(templ.data(),tempr.data(),smpsl,smpsr,PERIOD,u_up);
+        memcpy(templ.data(), smpsl,sizeof(float)*nframes);
+        memcpy(tempr.data(), smpsr,sizeof(float)*nframes);
+        U_Resample->out(templ.data(),tempr.data(),smpsl,smpsr,nframes,u_up);
     }
 
 
-    for (i = 0; i < nPERIOD; i++) {
+    for (i = 0; i < nrs; i++) {
 
         l = 0.5f*(smpsr[i] + smpsl[i]);
         oldl = l * hidamp + oldl * (alpha_hidamp);  //apply damping while I'm in the loop
@@ -197,11 +224,11 @@ Reverbtron::out (float * smpsl, float * smpsr)
     };
 
     if(DS_state != 0) {
-        D_Resample->out(templ.data(),tempr.data(),smpsl,smpsr,nPERIOD,u_down);
+        D_Resample->out(templ.data(),tempr.data(),smpsl,smpsr,nrs,u_down);
 
     } else {
-        memcpy(smpsl, templ.data(),sizeof(float)*PERIOD);
-        memcpy(smpsr, tempr.data(),sizeof(float)*PERIOD);
+        memcpy(smpsl, templ.data(),sizeof(float)*nframes);
+        memcpy(smpsr, tempr.data(),sizeof(float)*nframes);
     }
 
 

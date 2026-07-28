@@ -44,11 +44,7 @@ Vocoder::Vocoder (float *auxresampled_,int bands, int DS, int uq, int dq)
     Plrcross = 100;
 
     filterbank.resize(VOC_BANDS);
-    tmpl.resize(nPERIOD);
-    tmpr.resize(nPERIOD);
-    tsmpsl.resize(nPERIOD);
-    tsmpsr.resize(nPERIOD);
-    tmpaux.resize(nPERIOD);
+    setMaxBlockSize(PERIOD);
 
 
 
@@ -213,20 +209,47 @@ Vocoder::adjust(int DS)
 void
 Vocoder::out (float * smpsl, float * smpsr)
 {
+    out (smpsl, smpsr, PERIOD);
+};
+
+
+int
+Vocoder::resampledFrames (int nframes) const
+{
+    return (int) lrint ((double) nframes * u_up);
+};
+
+
+void
+Vocoder::setMaxBlockSize (int maxBlockSize)
+{
+    const int nrs = resampledFrames(maxBlockSize);
+    tmpl.resize(nrs);
+    tmpr.resize(nrs);
+    tsmpsl.resize(nrs);
+    tsmpsr.resize(nrs);
+    tmpaux.resize(nrs);
+};
+
+
+void
+Vocoder::out (float * smpsl, float * smpsr, int nframes)
+{
     int i, j;
 
     float tempgain;
     float maxgain=0.0f;
     float auxtemp, tmpgain;
+    const int nrs = resampledFrames (nframes);
 
 
     if(DS_state != 0) {
-        A_Resample->mono_out(auxresampled,tmpaux.data(),PERIOD,u_up,nPERIOD);
+        A_Resample->mono_out(auxresampled,tmpaux.data(),nframes,u_up,nrs);
     } else
-        memcpy(tmpaux.data(),auxresampled,sizeof(float)*nPERIOD);
+        memcpy(tmpaux.data(),auxresampled,sizeof(float)*nrs);
 
 
-    for (i = 0; i<nPERIOD; i++) {  //apply compression to auxresampled
+    for (i = 0; i<nrs; i++) {  //apply compression to auxresampled
         auxtemp = input * tmpaux[i];
         if(fabs(auxtemp > compeak)) compeak = fabs(auxtemp);   //First do peak detection on the signal
         compeak *= prls;
@@ -259,21 +282,21 @@ Vocoder::out (float * smpsl, float * smpsr)
     auxtemp = 0.0f;
 
     if(DS_state != 0) {
-        U_Resample->out(smpsl,smpsr,tsmpsl.data(),tsmpsr.data(),PERIOD,u_up);
+        U_Resample->out(smpsl,smpsr,tsmpsl.data(),tsmpsr.data(),nframes,u_up);
     } else {
-        memcpy(tsmpsl.data(),smpsl,sizeof(float)*nPERIOD);
-        memcpy(tsmpsr.data(),smpsr,sizeof(float)*nPERIOD);
+        memcpy(tsmpsl.data(),smpsl,sizeof(float)*nrs);
+        memcpy(tsmpsr.data(),smpsr,sizeof(float)*nrs);
     }
 
 
-    memset(tmpl.data(),0,sizeof(float)*nPERIOD);
-    memset(tmpr.data(),0,sizeof(float)*nPERIOD);
+    memset(tmpl.data(),0,sizeof(float)*nrs);
+    memset(tmpr.data(),0,sizeof(float)*nrs);
 
 
 
     for (j = 0; j < VOC_BANDS; j++) {
 
-        for (i = 0; i<nPERIOD; i++) {
+        for (i = 0; i<nrs; i++) {
             auxtemp = tmpaux[i];
 
             if(filterbank[j].speak < gate) filterbank[j].speak = 0.0f;  //gate
@@ -299,17 +322,17 @@ Vocoder::out (float * smpsl, float * smpsr)
     };
 
 
-    for (i = 0; i<nPERIOD; i++) {
+    for (i = 0; i<nrs; i++) {
         tmpl[i]*=lpanning*level;
         tmpr[i]*=rpanning*level;
     };
 
 
     if(DS_state != 0) {
-        D_Resample->out(tmpl.data(),tmpr.data(),smpsl,smpsr,nPERIOD,u_down);
+        D_Resample->out(tmpl.data(),tmpr.data(),smpsl,smpsr,nrs,u_down);
     } else {
-        memcpy(smpsl,tmpl.data(),sizeof(float)*nPERIOD);
-        memcpy(smpsr,tmpr.data(),sizeof(float)*nPERIOD);
+        memcpy(smpsl,tmpl.data(),sizeof(float)*nrs);
+        memcpy(smpsr,tmpr.data(),sizeof(float)*nrs);
     }
 
     vulevel = (float)CLAMP(rap2dB(maxgain), -48.0, 15.0);

@@ -34,12 +34,16 @@ class Vocoder : public Effect
 public:
     Vocoder (float *auxresampled_,int bands, int DS, int uq, int dq);
     ~Vocoder ();
-    void out (float * smpsl, float * smpr);
+    void out (float * smpsl, float * smpr) override;
+    void out (float * smpsl, float * smpr, int nframes) override;
+    void setMaxBlockSize (int maxBlockSize) override;
     void setpreset (int npreset);
     void changepar (int npar, int value);
     int getpar (int npar);
     void cleanup ();
     void adjust(int DS);
+    /// Internal-rate frames produced from `nframes` host-rate frames.
+    int resampledFrames (int nframes) const;
 
     float vulevel;
 
