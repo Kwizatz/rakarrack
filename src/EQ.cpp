@@ -70,16 +70,22 @@ EQ::cleanup ()
 void
 EQ::out (float * smpsl, float * smpsr)
 {
+    out (smpsl, smpsr, PERIOD);
+};
+
+void
+EQ::out (float * smpsl, float * smpsr, int nframes)
+{
     int i;
     for (i = 0; i < MAX_EQ_BANDS; i++) {
         if (filter[i].Ptype == 0)
             continue;
-        filter[i].l->filterout (smpsl);
-        filter[i].r->filterout (smpsr);
+        filter[i].l->filterout (smpsl, nframes);
+        filter[i].r->filterout (smpsr, nframes);
     };
 
 
-    for (i = 0; i < PERIOD; i++) {
+    for (i = 0; i < nframes; i++) {
         smpsl[i] = smpsl[i] * outvolume;
         smpsr[i] = smpsr[i] * outvolume;
     };

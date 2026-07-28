@@ -106,12 +106,18 @@ RBEcho::initdelays ()
 void
 RBEcho::out (float * smpsl, float * smpsr)
 {
+    out (smpsl, smpsr, PERIOD);
+};
+
+void
+RBEcho::out (float * smpsl, float * smpsr, int nframes)
+{
     int i;
     float ldl, rdl;
     float avg, ldiff, rdiff, tmp;
 
 
-    for (i = 0; i < PERIOD; i++) {
+    for (i = 0; i < nframes; i++) {
 
         //LowPass Filter
         ldl = lfeedback * hidamp + oldl * (1.0f - hidamp);

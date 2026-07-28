@@ -88,8 +88,8 @@ DynamicFilter::out (float * smpsl, float * smpsr, int nframes)
     filterr->setfreq_and_q (frr, q);
 
 
-    filterl->filterout (smpsl);
-    filterr->filterout (smpsr);
+    filterl->filterout (smpsl, nframes);
+    filterr->filterout (smpsr, nframes);
 
     //panning
     for (i = 0; i < nframes; i++) {

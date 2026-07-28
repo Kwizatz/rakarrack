@@ -39,7 +39,8 @@ public:
     Compressor ();
     ~Compressor ();
 
-    void out (float * smps_l, float * smps_r);
+    void out (float * smps_l, float * smps_r) override;
+    void out (float * smps_l, float * smps_r, int nframes) override;
 
     void Compressor_Change (int np, int value);
     void Compressor_Change_Preset (int dgui,int npreset);

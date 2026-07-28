@@ -144,8 +144,8 @@ RyanWah::out (float * smpsl, float * smpsr, int nframes)
         filterl->setfreq_and_q (frl, q);
         filterr->setfreq_and_q (frr, q);
 
-        filterl->filterout (smpsl);
-        filterr->filterout (smpsr);
+        filterl->filterout (smpsl, nframes);
+        filterr->filterout (smpsr, nframes);
     }
 
 };

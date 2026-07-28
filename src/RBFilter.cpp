@@ -195,7 +195,7 @@ RBFilter::setmix (int mix, float lpmix, float bpmix, float hpmix)
 
 
 void
-RBFilter::singlefilterout (float * smp, fstage & x, parameters & par)
+RBFilter::singlefilterout (float * smp, fstage & x, parameters & par, int nframes)
 {
     int i;
     float *out = nullptr;
@@ -222,7 +222,7 @@ RBFilter::singlefilterout (float * smp, fstage & x, parameters & par)
     tmpsq = oldsq;
     tmpf = oldf;
 
-    for (i = 0; i < PERIOD; i++) {
+    for (i = 0; i < nframes; i++) {
         tmpq += qdiff;
         tmpsq += sqdiff;
         tmpf += fdiff;   //Modulation interpolation
@@ -250,23 +250,32 @@ RBFilter::singlefilterout (float * smp, fstage & x, parameters & par)
 void
 RBFilter::filterout (float * smp)
 {
+    filterout (smp, PERIOD);
+};
+
+void
+RBFilter::filterout (float * smp, int nframes)
+{
     int i;
-    ismp.resize(PERIOD);
+
+    // Modulation interpolation step is per-block, so it must track nframes.
+    iper = 1.0f / (float) nframes;
+    ismp.resize(nframes);
 
     if (needsinterpolation != 0) {
-        for (i = 0; i < PERIOD; i++)
+        for (i = 0; i < nframes; i++)
             {ismp[i] = smp[i];}
         for (i = 0; i < stages + 1; i++)
-            {singlefilterout (ismp.data(), st[i], ipar); }
+            {singlefilterout (ismp.data(), st[i], ipar, nframes); }
 
         needsinterpolation = 0;
     };
 
     for (i = 0; i < stages + 1; i++)
-        singlefilterout (smp, st[i], par);
+        singlefilterout (smp, st[i], par, nframes);
 
 
-    for (i = 0; i < PERIOD; i++)
+    for (i = 0; i < nframes; i++)
         smp[i] *= outgain;
 
 };

@@ -245,11 +245,17 @@ Compressor::Compressor_Change_Preset (int dgui, int npreset)
 void
 Compressor::out (float *smpsl, float *smpsr)
 {
+    out (smpsl, smpsr, PERIOD);
+};
+
+void
+Compressor::out (float *smpsl, float *smpsr, int nframes)
+{
 
     int i;
 
 
-    for (i = 0; i < PERIOD; i++) {
+    for (i = 0; i < nframes; i++) {
         float rdelta = 0.0f;
         float ldelta = 0.0f;
 //Right Channel

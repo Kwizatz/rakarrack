@@ -96,10 +96,16 @@ Echo::initdelays ()
 void
 Echo::out (float * smpsl, float * smpsr)
 {
+    out (smpsl, smpsr, PERIOD);
+};
+
+void
+Echo::out (float * smpsl, float * smpsr, int nframes)
+{
     int i;
     float l, r, ldl, rdl, ldlout, rdlout, rvl, rvr;
 
-    for (i = 0; i < PERIOD; i++) {
+    for (i = 0; i < nframes; i++) {
 
         ldl = ldelay->delay_simple(oldl, ltime, 0, 1, 0);
         rdl = rdelay->delay_simple(oldr, rtime, 0, 1, 0);

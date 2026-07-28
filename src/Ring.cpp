@@ -104,6 +104,12 @@ Ring::cleanup ()
 void
 Ring::out (float * smpsl, float * smpsr)
 {
+    out (smpsl, smpsr, PERIOD);
+};
+
+void
+Ring::out (float * smpsl, float * smpsr, int nframes)
+{
     int i;
     float l, r, lout, rout, tmpfactor;
 
@@ -111,7 +117,7 @@ Ring::out (float * smpsl, float * smpsr)
 
     if (Pstereo != 0) {
         //Stereo
-        for (i = 0; i < PERIOD; i++) {
+        for (i = 0; i < nframes; i++) {
             smpsl[i] = smpsl[i] * inputvol;
             smpsr[i] = smpsr[i] * inputvol;
             if(inputvol == 0.0) {
@@ -120,7 +126,7 @@ Ring::out (float * smpsl, float * smpsr)
             }
         };
     } else {
-        for (i = 0; i < PERIOD; i++) {
+        for (i = 0; i < nframes; i++) {
             smpsl[i] =
                 (smpsl[i]  +  smpsr[i] ) * inputvol;
             if (inputvol == 0.0) smpsl[i]=1.0;
@@ -128,7 +134,7 @@ Ring::out (float * smpsl, float * smpsr)
     };
 
 
-    for (i=0; i < PERIOD; i++) {
+    for (i=0; i < nframes; i++) {
         tmpfactor =  depth * (scale * ( sin * sin_tbl[offset] + tri * tri_tbl[offset] + saw * saw_tbl[offset] + squ * squ_tbl[offset] ) + idepth) ;    //This is now mathematically equivalent, but less computation
         smpsl[i] *= tmpfactor;
 
@@ -140,11 +146,11 @@ Ring::out (float * smpsl, float * smpsr)
     }
 
 
-    if (Pstereo == 0) memcpy (smpsr , smpsl, PERIOD * sizeof(float));
+    if (Pstereo == 0) memcpy (smpsr , smpsl, nframes * sizeof(float));
 
     float level = dB2rap (60.0f * (float)Plevel / 127.0f - 40.0f);
 
-    for (i= 0; i<PERIOD; i++) {
+    for (i= 0; i<nframes; i++) {
         lout = smpsl[i];
         rout = smpsr[i];
 

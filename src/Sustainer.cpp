@@ -70,12 +70,18 @@ Sustainer::cleanup ()
 void
 Sustainer::out (float * smpsl, float * smpsr)
 {
+    out (smpsl, smpsr, PERIOD);
+};
+
+void
+Sustainer::out (float * smpsl, float * smpsr, int nframes)
+{
     int i;
     float auxtempl = 0.0f;
     float auxtempr = 0.0f;
     float auxcombi = 0.0f;
 
-    for (i = 0; i<PERIOD; i++) {  //apply compression to auxresampled
+    for (i = 0; i<nframes; i++) {  //apply compression to auxresampled
         auxtempl = input * smpsl[i];
         auxtempr = input * smpsr[i];
         auxcombi = 0.5f * (auxtempl + auxtempr);

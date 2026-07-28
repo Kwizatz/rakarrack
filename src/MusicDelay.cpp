@@ -139,10 +139,16 @@ MusicDelay::initdelays ()
 void
 MusicDelay::out (float * smpsl, float * smpsr)
 {
+    out (smpsl, smpsr, PERIOD);
+};
+
+void
+MusicDelay::out (float * smpsl, float * smpsr, int nframes)
+{
     int i;
     float l1, r1, ldl1, rdl1, l2, r2, ldl2, rdl2;
 
-    for (i = 0; i < PERIOD; i++) {
+    for (i = 0; i < nframes; i++) {
         ldl1 = ldelay1[kl1];
         rdl1 = rdelay1[kr1];
         l1 = ldl1 * (1.0f - lrcross) + rdl1 * lrcross;

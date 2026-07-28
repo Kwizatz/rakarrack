@@ -43,7 +43,8 @@ public:
     Expander ();
     ~Expander ();
 
-    void out (float * smps_l, float * smps_r);
+    void out (float * smps_l, float * smps_r) override;
+    void out (float * smps_l, float * smps_r, int nframes) override;
 
     void Expander_Change (int np, int value);
     void Expander_Change_Preset (int npreset);

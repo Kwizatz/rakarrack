@@ -33,7 +33,8 @@ class Ring : public Effect
 public:
     Ring ();
     ~Ring ();
-    void out (float * smpsl, float * smpr);
+    void out (float * smpsl, float * smpr) override;
+    void out (float * smpsl, float * smpr, int nframes) override;
     void setpreset (int npreset);
     void changepar (int npar, int value);
     int getpar (int npar);

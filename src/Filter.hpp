@@ -39,6 +39,7 @@ public:
     Filter (FilterParams * pars);
     ~Filter () = default;
     void filterout (float * smp);
+    void filterout (float * smp, int nframes);
     void setfreq (float frequency);
     void setfreq_and_q (float frequency, float q_);
     void setq (float q_);

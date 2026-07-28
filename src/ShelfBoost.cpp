@@ -66,19 +66,25 @@ ShelfBoost::cleanup ()
 void
 ShelfBoost::out (float * smpsl, float * smpsr)
 {
+    out (smpsl, smpsr, PERIOD);
+};
+
+void
+ShelfBoost::out (float * smpsl, float * smpsr, int nframes)
+{
     int i;
 
 
-    RB1l->filterout(smpsl);
-    if(Pstereo) RB1r->filterout(smpsr);
+    RB1l->filterout(smpsl, nframes);
+    if(Pstereo) RB1r->filterout(smpsr, nframes);
 
 
-    for(i=0; i<PERIOD; i++) {
+    for(i=0; i<nframes; i++) {
         smpsl[i]*=outvolume*u_gain;
         if(Pstereo) smpsr[i]*=outvolume*u_gain;
     }
 
-    if(!Pstereo) memcpy(smpsr,smpsl,sizeof(float)*PERIOD);
+    if(!Pstereo) memcpy(smpsr,smpsl,sizeof(float)*nframes);
 
 
 

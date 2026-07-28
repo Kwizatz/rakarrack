@@ -396,13 +396,13 @@ AnalogFilter::setstages (int stages_)
 
 void
 AnalogFilter::singlefilterout (float * smp, fstage & x, fstage & y,
-                               float * c, float * d)
+                               float * c, float * d, int nframes)
 {
     int i;
     float y0;
     if (order == 1) {
         //First order filter
-        for (i = 0; i < PERIOD; i++) {
+        for (i = 0; i < nframes; i++) {
 
             y0 = smp[i] * c[0] + x.c1 * c[1] + y.c1 * d[1];
             y.c1 = y0 + DENORMAL_GUARD;
@@ -413,7 +413,7 @@ AnalogFilter::singlefilterout (float * smp, fstage & x, fstage & y,
     };
     if (order == 2) {
         //Second order filter
-        for (i = 0; i < PERIOD; i++) {
+        for (i = 0; i < nframes; i++) {
             y0 =
                 (smp[i] * c[0]) + (x.c1 * c[1]) + (x.c2 * c[2]) + (y.c1 * d[1]) +
                 (y.c2 * d[2]);
@@ -430,20 +430,26 @@ AnalogFilter::singlefilterout (float * smp, fstage & x, fstage & y,
 void
 AnalogFilter::filterout (float * smp)
 {
+    filterout (smp, PERIOD);
+};
+
+void
+AnalogFilter::filterout (float * smp, int nframes)
+{
     int i;
     std::vector<float> ismp;	//used if it needs interpolation
     if (needsinterpolation != 0) {
-        ismp.assign(smp, smp + PERIOD);
+        ismp.assign(smp, smp + nframes);
         for (i = 0; i < stages + 1; i++)
-            singlefilterout (ismp.data(), oldx[i], oldy[i], oldc, oldd);
+            singlefilterout (ismp.data(), oldx[i], oldy[i], oldc, oldd, nframes);
     };
 
     for (i = 0; i < stages + 1; i++)
-        singlefilterout (smp, x[i], y[i], c, d);
+        singlefilterout (smp, x[i], y[i], c, d, nframes);
 
     if (needsinterpolation != 0) {
-        for (i = 0; i < PERIOD; i++) {
-            float x = (float) i / fPERIOD;
+        for (i = 0; i < nframes; i++) {
+            float x = (float) i / (float) nframes;
             smp[i] = ismp[i] * (1.0f - x) + smp[i] * x;
         };
         needsinterpolation = 0;

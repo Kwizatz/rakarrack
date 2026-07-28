@@ -178,10 +178,16 @@ Infinity::oscillator()
 void
 Infinity::out (float * smpsl, float * smpsr)
 {
+    out (smpsl, smpsr, PERIOD);
+};
+
+void
+Infinity::out (float * smpsl, float * smpsr, int nframes)
+{
     int i, j;
     float tmpr, tmpl;
 
-    for (i = 0; i<PERIOD; i++)  {
+    for (i = 0; i<nframes; i++)  {
         //modulate
         oscillator();
         tmpr = tmpl = 0.0f;

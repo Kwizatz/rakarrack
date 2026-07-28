@@ -59,6 +59,12 @@ Filter::filterout (float * smp)
 };
 
 void
+Filter::filterout (float * smp, int nframes)
+{
+    filter->filterout (smp, nframes);
+};
+
+void
 Filter::setfreq (float frequency)
 {
     filter->setfreq (frequency);

@@ -35,7 +35,8 @@ public:
     RBFilter (int Ftype, float Ffreq, float Fq,
               int Fstages);
     ~RBFilter () = default;
-    void filterout (float * smp);
+    void filterout (float * smp) override;
+    void filterout (float * smp, int nframes) override;
     float filterout_s (float smp);
 
     void setfreq (float frequency);
@@ -63,7 +64,7 @@ private:
         float q_sqrt{0.0f};
     } par, ipar;
 
-    void singlefilterout (float * smp, fstage & x, parameters & par);
+    void singlefilterout (float * smp, fstage & x, parameters & par, int nframes);
     float singlefilterout_s (float smp, fstage & x, parameters & par);
     void computefiltercoefs ();
     void computefiltercoefs_hiQ ();

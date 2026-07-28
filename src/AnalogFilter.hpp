@@ -34,7 +34,8 @@ public:
     AnalogFilter (unsigned char Ftype, float Ffreq, float Fq,
                   unsigned char Fstages);
     ~AnalogFilter ();
-    void filterout (float * smp);
+    void filterout (float * smp) override;
+    void filterout (float * smp, int nframes) override;
     float filterout_s (float smp);
 
     void setfreq (float frequency);
@@ -58,7 +59,7 @@ private:
     oldx[MAX_FILTER_STAGES + 1], oldy[MAX_FILTER_STAGES + 1];
 
     void singlefilterout (float * smp, fstage & x, fstage & y, float * c,
-                          float * d);
+                          float * d, int nframes);
     float singlefilterout_s (float smp, fstage & x, fstage & y, float * c,
                              float * d);
 

@@ -189,19 +189,25 @@ Gate::Gate_Change_Preset (int npreset)
 void
 Gate::out (float *smpsl, float *smpsr)
 {
+    out (smpsl, smpsr, PERIOD);
+};
+
+void
+Gate::out (float *smpsl, float *smpsr, int nframes)
+{
 
 
     int i;
     float sum;
 
 
-    lpfl->filterout (smpsl);
-    hpfl->filterout (smpsl);
-    lpfr->filterout (smpsr);
-    hpfr->filterout (smpsr);
+    lpfl->filterout (smpsl, nframes);
+    hpfl->filterout (smpsl, nframes);
+    lpfr->filterout (smpsr, nframes);
+    hpfr->filterout (smpsr, nframes);
 
 
-    for (i = 0; i < PERIOD; i++) {
+    for (i = 0; i < nframes; i++) {
 
         sum = fabsf (smpsl[i]) + fabsf (smpsr[i]);
 

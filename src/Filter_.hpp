@@ -34,6 +34,9 @@ class Filter_
 public:
     virtual ~ Filter_ ()  {};
     virtual void filterout ([[maybe_unused]] float * smp) { };
+    /// Block-size-aware variant.  Filters migrated off the global PERIOD
+    /// override this; the default forwards to the legacy fixed-size filterout().
+    virtual void filterout (float * smp, [[maybe_unused]] int nframes) { filterout (smp); };
     virtual void setfreq ([[maybe_unused]] float frequency) {};
     virtual void setfreq_and_q ([[maybe_unused]] float frequency, [[maybe_unused]] float q_) { };
     virtual void setq ([[maybe_unused]] float q_) { };

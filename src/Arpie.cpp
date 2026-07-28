@@ -117,10 +117,16 @@ Arpie::initdelays ()
 void
 Arpie::out (float * smpsl, float * smpsr)
 {
+    out (smpsl, smpsr, PERIOD);
+};
+
+void
+Arpie::out (float * smpsl, float * smpsr, int nframes)
+{
     int i;
     float l, r, ldl, rdl, rswell, lswell;
 
-    for (i = 0; i < PERIOD; i++) {
+    for (i = 0; i < nframes; i++) {
         ldl = ldelay[kl];
         rdl = rdelay[kr];
         l = ldl * (1.0f - lrcross) + rdl * lrcross;

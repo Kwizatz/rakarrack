@@ -192,6 +192,12 @@ Expander::Expander_Change_Preset (int npreset)
 void
 Expander::out (float *smpsl, float *smpsr)
 {
+    out (smpsl, smpsr, PERIOD);
+};
+
+void
+Expander::out (float *smpsl, float *smpsr, int nframes)
+{
 
 
     int i;
@@ -199,13 +205,13 @@ Expander::out (float *smpsl, float *smpsr)
     float expenv = 0.0f;
 
 
-    lpfl->filterout (smpsl);
-    hpfl->filterout (smpsl);
-    lpfr->filterout (smpsr);
-    hpfr->filterout (smpsr);
+    lpfl->filterout (smpsl, nframes);
+    hpfl->filterout (smpsl, nframes);
+    lpfr->filterout (smpsr, nframes);
+    hpfr->filterout (smpsr, nframes);
 
 
-    for (i = 0; i < PERIOD; i++) {
+    for (i = 0; i < nframes; i++) {
 
         delta = 0.5f*(fabsf (smpsl[i]) + fabsf (smpsr[i])) - env;    //envelope follower from Compressor.C
         if (delta > 0.0)
