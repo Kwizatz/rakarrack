@@ -37,13 +37,17 @@ public:
     Sequence (long int Quality, int DS, int uq, int dq);
     ~Sequence ();
     void cleanup ();
-    void out (float * smpsl, float * smpr);
+    void out (float * smpsl, float * smpr) override;
+    void out (float * smpsl, float * smpr, int nframes) override;
+    void setMaxBlockSize (int maxBlockSize) override;
     void changepar (int npar, int value);
     int getpar (int npar);
     void setpreset (int npreset);
     void setranges(int value);
     void settempo(int value);
     void adjust(int DS);
+    /// Internal-rate frames produced from `nframes` host-rate frames.
+    int resampledFrames (int nframes) const;
 
 
 

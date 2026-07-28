@@ -81,12 +81,18 @@ metronome::set_meter (int counts)  //how many counts to hear the "mark"
 void
 metronome::metronomeout (float * tickout)
 {
+    metronomeout (tickout, PERIOD);
+}
+
+void
+metronome::metronomeout (float * tickout, int nframes)
+{
     float outsharp, outdull;
     float ticker = 0.0f;
     float hipass = 0.0f;
     int i;
 
-    for(i=0; i<PERIOD; i++) {
+    for(i=0; i<nframes; i++) {
         tickctr++;
 
         if (tickctr>tick_interval) {

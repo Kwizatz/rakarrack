@@ -58,6 +58,8 @@ Looper::Looper (float size)
     t2ldelay.resize(maxx_delay);
     t2rdelay.resize(maxx_delay);
 
+    setMaxBlockSize(PERIOD);
+
     setpreset (Ppreset);
     cleanup ();
 };
@@ -124,17 +126,33 @@ Looper::initdelays ()
  * Effect output
  */
 void
+Looper::setMaxBlockSize (int maxBlockSize)
+{
+    ticktock.resize(maxBlockSize);
+};
+
+
+void
 Looper::out (float * smpsl, float * smpsr)
+{
+    out (smpsl, smpsr, PERIOD);
+};
+
+
+void
+Looper::out (float * smpsl, float * smpsr, int nframes)
 {
     int i;
     float rswell, lswell;
-    ticktock.resize(PERIOD);
+
+    // ticktock is sized by setMaxBlockSize; resizing here would allocate on
+    // the audio thread.
     if ((Pmetro) && (Pplay) && (!Pstop))
     {
-        ticker.metronomeout(ticktock.data());
+        ticker.metronomeout(ticktock.data(), nframes);
     }
 
-    for (i = 0; i < PERIOD; i++) {
+    for (i = 0; i < nframes; i++) {
 
         if((Pplay) && (!Pstop)) {
             if(Precord) {

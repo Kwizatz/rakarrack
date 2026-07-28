@@ -35,7 +35,9 @@ class Looper : public Effect
 public:
     Looper (float size);
     ~Looper ();
-    void out (float * smpsl, float * smpr);
+    void out (float * smpsl, float * smpr) override;
+    void out (float * smpsl, float * smpr, int nframes) override;
+    void setMaxBlockSize (int maxBlockSize) override;
     void setpreset (int npreset);
     void loadpreset (int npar, int value);  // to set one from a preset
     void changepar (int npar, int value);

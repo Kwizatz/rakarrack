@@ -35,6 +35,7 @@ public:
     ~metronome ();
     void cleanup();
     void metronomeout (float * tickout);
+    void metronomeout (float * tickout, int nframes);
     void set_tempo (int bpm);
     void set_meter (int counts);
     int markctr;

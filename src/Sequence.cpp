@@ -34,11 +34,7 @@ Sequence::Sequence (long int Quality, int DS, int uq, int dq)
     hq = Quality;
     adjust(DS);
 
-    templ.resize(PERIOD);
-    tempr.resize(PERIOD);
-
-    outi.resize(nPERIOD);
-    outo.resize(nPERIOD);
+    setMaxBlockSize(PERIOD);
 
     U_Resample = std::make_unique<Resample>(dq);
     D_Resample = std::make_unique<Resample>(uq);
@@ -103,8 +99,8 @@ void
 Sequence::cleanup ()
 {
 
-    memset(outi.data(), 0, sizeof(float)*nPERIOD);
-    memset(outo.data(), 0, sizeof(float)*nPERIOD);
+    memset(outi.data(), 0, sizeof(float)*outi.size());
+    memset(outo.data(), 0, sizeof(float)*outo.size());
 
     ldelay->cleanup();
     rdelay->cleanup();
@@ -122,10 +118,41 @@ Sequence::cleanup ()
 void
 Sequence::out (float * smpsl, float * smpsr)
 {
+    out (smpsl, smpsr, PERIOD);
+};
+
+
+int
+Sequence::resampledFrames (int nframes) const
+{
+    return (int) lrint ((double) nframes * u_up);
+};
+
+
+void
+Sequence::setMaxBlockSize (int maxBlockSize)
+{
+    const int nrs = resampledFrames(maxBlockSize);
+
+    // templ/tempr receive the pitch-shifter output at the INTERNAL rate before
+    // being resampled back down, so they must hold whichever count is larger.
+    const int scratch = (nrs > maxBlockSize) ? nrs : maxBlockSize;
+    templ.resize(scratch);
+    tempr.resize(scratch);
+
+    outi.resize(nrs);
+    outo.resize(nrs);
+};
+
+
+void
+Sequence::out (float * smpsl, float * smpsr, int nframes)
+{
     int i;
     size_t nextcount;
     size_t dnextcount;
     int hPERIOD;
+    const int nrs = resampledFrames (nframes);
 
     float ldiff, rdiff, lfol, lfor, ftcount;
     float ldbl, ldbr;
@@ -139,8 +166,8 @@ Sequence::out (float * smpsl, float * smpsr)
         avflag = 0;
     }
 
-    if((Pmode == 3) || (Pmode == 5) || (Pmode == 6)) {hPERIOD=nPERIOD;}
-    else {hPERIOD=PERIOD;}
+    if((Pmode == 3) || (Pmode == 5) || (Pmode == 6)) {hPERIOD=nrs;}
+    else {hPERIOD=nframes;}
 
 
     if ((rndflag) && (tcount < hPERIOD + 1)) { //This is an Easter Egg
@@ -167,7 +194,7 @@ Sequence::out (float * smpsl, float * smpsr)
         rdiff = ifperiod * (fsequence[dnextcount] - fsequence[dscount]);
         lfor = fsequence[dscount];
 
-        for ( i = 0; i < PERIOD; i++) { //Maintain sequenced modulator
+        for ( i = 0; i < nframes; i++) { //Maintain sequenced modulator
 
             if (++tcount >= intperiod) {
                 tcount = 0;
@@ -217,7 +244,7 @@ Sequence::out (float * smpsl, float * smpsr)
     case 1:		//Up Down
 
 
-        for ( i = 0; i < PERIOD; i++) { //Maintain sequenced modulator
+        for ( i = 0; i < nframes; i++) { //Maintain sequenced modulator
 
             if (++tcount >= intperiod) {
                 tcount = 0;
@@ -257,7 +284,7 @@ Sequence::out (float * smpsl, float * smpsr)
 
     case 2:  //Stepper
 
-        for ( i = 0; i < PERIOD; i++) { //Maintain sequenced modulator
+        for ( i = 0; i < nframes; i++) { //Maintain sequenced modulator
 
             if (++tcount >= intperiod) {
                 tcount = 0;
@@ -304,13 +331,13 @@ Sequence::out (float * smpsl, float * smpsr)
         lfol = fsequence[scount];
 
         if(DS_state != 0) {
-            memcpy(templ.data(), smpsl,sizeof(float)*PERIOD);
-            memcpy(tempr.data(), smpsr,sizeof(float)*PERIOD);
-            U_Resample->out(templ.data(),tempr.data(),smpsl,smpsr,PERIOD,u_up);
+            memcpy(templ.data(), smpsl,sizeof(float)*nframes);
+            memcpy(tempr.data(), smpsr,sizeof(float)*nframes);
+            U_Resample->out(templ.data(),tempr.data(),smpsl,smpsr,nframes,u_up);
         }
 
 
-        for ( i = 0; i < nPERIOD; i++) { //Maintain sequenced modulator
+        for ( i = 0; i < nrs; i++) { //Maintain sequenced modulator
 
             if (++tcount >= intperiod) {
                 tcount = 0;
@@ -339,17 +366,17 @@ Sequence::out (float * smpsl, float * smpsr)
 
 
         PS->ratio = lmod;
-        PS->smbPitchShift (PS->ratio, nPERIOD, window, hq, nfSAMPLE_RATE, outi.data(), outo.data());
+        PS->smbPitchShift (PS->ratio, nrs, window, hq, nfSAMPLE_RATE, outi.data(), outo.data());
 
 
-        memcpy(templ.data(), outo.data(), sizeof(float)*nPERIOD);
-        memcpy(tempr.data(), outo.data(), sizeof(float)*nPERIOD);
+        memcpy(templ.data(), outo.data(), sizeof(float)*nrs);
+        memcpy(tempr.data(), outo.data(), sizeof(float)*nrs);
 
         if(DS_state != 0) {
-            D_Resample->out(templ.data(),tempr.data(),smpsl,smpsr,nPERIOD,u_down);
+            D_Resample->out(templ.data(),tempr.data(),smpsl,smpsr,nrs,u_down);
         } else {
-            memcpy(smpsl, templ.data(),sizeof(float)*PERIOD);
-            memcpy(smpsr, tempr.data(),sizeof(float)*PERIOD);
+            memcpy(smpsl, templ.data(),sizeof(float)*nframes);
+            memcpy(smpsr, tempr.data(),sizeof(float)*nframes);
         }
 
 
@@ -372,7 +399,7 @@ Sequence::out (float * smpsl, float * smpsr)
         rdiff = ifperiod * (fsequence[dnextcount] - fsequence[dscount]);
         lfor = fsequence[dscount];
 
-        for ( i = 0; i < PERIOD; i++) { //Maintain sequenced modulator
+        for ( i = 0; i < nframes; i++) { //Maintain sequenced modulator
 
             if (++tcount >= intperiod) {
                 tcount = 0;
@@ -420,14 +447,14 @@ Sequence::out (float * smpsl, float * smpsr)
         lfol = floorf(fsequence[scount]*12.75f);
 
         if(DS_state != 0) {
-            memcpy(templ.data(), smpsl,sizeof(float)*PERIOD);
-            memcpy(tempr.data(), smpsr,sizeof(float)*PERIOD);
-            U_Resample->out(templ.data(),tempr.data(),smpsl,smpsr,PERIOD,u_up);
+            memcpy(templ.data(), smpsl,sizeof(float)*nframes);
+            memcpy(tempr.data(), smpsr,sizeof(float)*nframes);
+            U_Resample->out(templ.data(),tempr.data(),smpsl,smpsr,nframes,u_up);
         }
 
 
 
-        for ( i = 0; i < nPERIOD; i++) { //Maintain sequenced modulator
+        for ( i = 0; i < nrs; i++) { //Maintain sequenced modulator
 
             if (++tcount >= intperiod) {
                 tcount = 0;
@@ -449,18 +476,18 @@ Sequence::out (float * smpsl, float * smpsr)
 
 
         PS->ratio = lmod;
-        PS->smbPitchShift (PS->ratio, nPERIOD, window, hq, nfSAMPLE_RATE, outi.data(), outo.data());
+        PS->smbPitchShift (PS->ratio, nrs, window, hq, nfSAMPLE_RATE, outi.data(), outo.data());
 
 
 
-        memcpy(templ.data(), outo.data(), sizeof(float)*nPERIOD);
-        memcpy(tempr.data(), outo.data(), sizeof(float)*nPERIOD);
+        memcpy(templ.data(), outo.data(), sizeof(float)*nrs);
+        memcpy(tempr.data(), outo.data(), sizeof(float)*nrs);
 
         if(DS_state != 0) {
-            D_Resample->out(templ.data(),tempr.data(),smpsl,smpsr,nPERIOD,u_down);
+            D_Resample->out(templ.data(),tempr.data(),smpsl,smpsr,nrs,u_down);
         } else {
-            memcpy(smpsl, templ.data(),sizeof(float)*nPERIOD);
-            memcpy(smpsr, tempr.data(),sizeof(float)*nPERIOD);
+            memcpy(smpsl, templ.data(),sizeof(float)*nframes);
+            memcpy(smpsr, tempr.data(),sizeof(float)*nframes);
         }
 
 
@@ -474,14 +501,14 @@ Sequence::out (float * smpsl, float * smpsr)
         lfol = fsequence[scount];
 
         if(DS_state != 0) {
-            memcpy(templ.data(), smpsl,sizeof(float)*PERIOD);
-            memcpy(tempr.data(), smpsr,sizeof(float)*PERIOD);
-            U_Resample->out(templ.data(),tempr.data(),smpsl,smpsr,PERIOD,u_up);
+            memcpy(templ.data(), smpsl,sizeof(float)*nframes);
+            memcpy(tempr.data(), smpsr,sizeof(float)*nframes);
+            U_Resample->out(templ.data(),tempr.data(),smpsl,smpsr,nframes,u_up);
         }
 
 
 
-        for ( i = 0; i < nPERIOD; i++) { //Maintain sequenced modulator
+        for ( i = 0; i < nrs; i++) { //Maintain sequenced modulator
 
             if (++tcount >= intperiod) {
                 tcount = 0;
@@ -508,28 +535,28 @@ Sequence::out (float * smpsl, float * smpsr)
 
 
         PS->ratio = lmod;
-        PS->smbPitchShift (PS->ratio, nPERIOD, window, hq, nfSAMPLE_RATE, outi.data(), outo.data());
+        PS->smbPitchShift (PS->ratio, nrs, window, hq, nfSAMPLE_RATE, outi.data(), outo.data());
 
         if(Pstdiff==1) {
-            for ( i = 0; i < nPERIOD; i++) {
+            for ( i = 0; i < nrs; i++) {
                 templ[i]=smpsl[i]-smpsr[i]+outo[i];
                 tempr[i]=smpsl[i]-smpsr[i]+outo[i];
             }
         } else if(Pstdiff==2) {
-            for ( i = 0; i < nPERIOD; i++) {
+            for ( i = 0; i < nrs; i++) {
                 templ[i]=outo[i]*(1.0f-panning);
                 tempr[i]=outo[i]*panning;
             }
         } else {
-            memcpy(templ.data(), outo.data(), sizeof(float)*nPERIOD);
-            memcpy(tempr.data(), outo.data(), sizeof(float)*nPERIOD);
+            memcpy(templ.data(), outo.data(), sizeof(float)*nrs);
+            memcpy(tempr.data(), outo.data(), sizeof(float)*nrs);
         }
 
         if(DS_state != 0) {
-            D_Resample->out(templ.data(),tempr.data(),smpsl,smpsr,nPERIOD,u_down);
+            D_Resample->out(templ.data(),tempr.data(),smpsl,smpsr,nrs,u_down);
         } else {
-            memcpy(smpsl, templ.data(),sizeof(float)*nPERIOD);
-            memcpy(smpsr, tempr.data(),sizeof(float)*nPERIOD);
+            memcpy(smpsl, templ.data(),sizeof(float)*nframes);
+            memcpy(smpsr, tempr.data(),sizeof(float)*nframes);
         }
 
 
@@ -542,7 +569,7 @@ Sequence::out (float * smpsl, float * smpsr)
         //to see how well it performs.
         beats->detect(smpsl, smpsr);
 
-        for ( i = 0; i < PERIOD; i++) { //Detect dynamics onset
+        for ( i = 0; i < nframes; i++) { //Detect dynamics onset
 
             tmp = 10.0f*fabs(smpsl[i] + smpsr[i]);
             envrms = rmsfilter->filterout_s(tmp);
@@ -614,7 +641,7 @@ Sequence::out (float * smpsl, float * smpsr)
 
     case 8:  //delay
 
-        for ( i = 0; i < PERIOD; i++) { //Maintain sequenced modulator
+        for ( i = 0; i < nframes; i++) { //Maintain sequenced modulator
 
             if (++tcount >= intperiod) {
                 tcount = 0;
