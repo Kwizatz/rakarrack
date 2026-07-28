@@ -33,7 +33,7 @@
 
 Reverb::Reverb ()
 {
-    inputbuf.resize(PERIOD);
+    setMaxBlockSize(PERIOD);
 
 
     //defaults
@@ -107,7 +107,7 @@ Reverb::cleanup ()
  * Process one channel; 0=left,1=right
  */
 void
-Reverb::processmono (int ch, float * output)
+Reverb::processmono (int ch, float * output, int nframes)
 {
     int i, j;
     float fbout, tmp;
@@ -119,7 +119,7 @@ Reverb::processmono (int ch, float * output)
         int comblength = comblen[j];
         float lpcombj = lpcomb[j];
 
-        for (i = 0; i < PERIOD; i++) {
+        for (i = 0; i < nframes; i++) {
             fbout = comb[j][ck] * combfb[j];
             fbout = fbout * (1.0f - lohifb) + (lpcombj * lohifb);
             lpcombj = fbout;
@@ -138,7 +138,7 @@ Reverb::processmono (int ch, float * output)
     for (j = REV_APS * ch; j < REV_APS * (1 + ch); j++) {
         int ak = apk[j];
         int aplength = aplen[j];
-        for (i = 0; i < PERIOD; i++) {
+        for (i = 0; i < nframes; i++) {
             tmp = ap[j][ak];
             ap[j][ak] = 0.7f * tmp + output[i];
             output[i] = tmp - 0.7f * ap[j][ak];
@@ -153,11 +153,23 @@ Reverb::processmono (int ch, float * output)
  * Effect output
  */
 void
+Reverb::setMaxBlockSize (int maxBlockSize)
+{
+    inputbuf.resize(maxBlockSize);
+}
+
+void
 Reverb::out (float * smps_l, float * smps_r)
+{
+    out (smps_l, smps_r, PERIOD);
+}
+
+void
+Reverb::out (float * smps_l, float * smps_r, int nframes)
 {
     int i;
 
-    for (i = 0; i < PERIOD; i++) {
+    for (i = 0; i < nframes; i++) {
         inputbuf[i] = (smps_l[i] + smps_r[i]) * .5f;
         //Initial delay r
         if (!idelay.empty()) {
@@ -171,18 +183,18 @@ Reverb::out (float * smps_l, float * smps_r)
     };
 
 
-    lpf->filterout (inputbuf.data());
-    hpf->filterout (inputbuf.data());
+    lpf->filterout (inputbuf.data(), nframes);
+    hpf->filterout (inputbuf.data(), nframes);
 
-    processmono (0, smps_l);	//left
-    processmono (1, smps_r);	//right
+    processmono (0, smps_l, nframes);	//left
+    processmono (1, smps_r, nframes);	//right
 
 
 
     float lvol = rs_coeff * pan * 2.0f;
     float rvol = rs_coeff * (1.0f - pan) * 2.0f;
 
-    for (int i = 0; i < PERIOD; i++) {
+    for (int i = 0; i < nframes; i++) {
         smps_l[i] *= lvol;
         smps_r[i] *= rvol;
 

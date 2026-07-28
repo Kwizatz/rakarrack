@@ -35,7 +35,9 @@ class Reverb : public Effect
 public:
     Reverb ();
     ~Reverb ();
-    void out (float * smps_l, float * smps_r);
+    void out (float * smps_l, float * smps_r) override;
+    void out (float * smps_l, float * smps_r, int nframes) override;
+    void setMaxBlockSize (int maxBlockSize) override;
     void cleanup ();
 
     void setpreset (int npreset);
@@ -58,7 +60,7 @@ private:
     void setlpf (int Plpf);
     void settype (int Ptype);
     void setroomsize (int Proomsize);
-    void processmono (int ch, float * output);
+    void processmono (int ch, float * output, int nframes);
 
 
 

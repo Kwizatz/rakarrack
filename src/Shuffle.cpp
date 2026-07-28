@@ -36,8 +36,7 @@
 
 Shuffle::Shuffle ()
 {
-    inputl.resize(PERIOD);
-    inputr.resize(PERIOD);
+    setMaxBlockSize(PERIOD);
 
 
     lr = std::make_unique<AnalogFilter> (6, 300.0f, .3f, 0);
@@ -76,11 +75,24 @@ Shuffle::cleanup ()
  * Effect output
  */
 void
+Shuffle::setMaxBlockSize (int maxBlockSize)
+{
+    inputl.resize(maxBlockSize);
+    inputr.resize(maxBlockSize);
+}
+
+void
 Shuffle::out (float * smpsl, float * smpsr)
+{
+    out (smpsl, smpsr, PERIOD);
+}
+
+void
+Shuffle::out (float * smpsl, float * smpsr, int nframes)
 {
     int i;
 
-    for (i = 0; i < PERIOD; i++) {
+    for (i = 0; i < nframes; i++) {
 
         inputl[i] = smpsl[i] + smpsr[i];
         inputr[i] = smpsl[i] - smpsr[i];
@@ -88,19 +100,19 @@ Shuffle::out (float * smpsl, float * smpsr)
 
     if(E) {
 
-        lr->filterout(inputr.data());
-        mlr->filterout(inputr.data());
-        mhr->filterout(inputr.data());
-        hr->filterout(inputr.data());
+        lr->filterout(inputr.data(), nframes);
+        mlr->filterout(inputr.data(), nframes);
+        mhr->filterout(inputr.data(), nframes);
+        hr->filterout(inputr.data(), nframes);
     } else {
-        lr->filterout(inputl.data());
-        mlr->filterout(inputl.data());
-        mhr->filterout(inputl.data());
-        hr->filterout(inputl.data());
+        lr->filterout(inputl.data(), nframes);
+        mlr->filterout(inputl.data(), nframes);
+        mhr->filterout(inputl.data(), nframes);
+        hr->filterout(inputl.data(), nframes);
     }
 
 
-    for (i = 0; i < PERIOD; i++) {
+    for (i = 0; i < nframes; i++) {
         smpsl[i]=(inputl[i]+inputr[i]-smpsl[i])*.333333f;
         smpsr[i]=(inputl[i]-inputr[i]-smpsr[i])*.333333f;
 

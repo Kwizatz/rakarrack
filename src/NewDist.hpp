@@ -41,12 +41,14 @@ class NewDist : public Effect
 public:
     NewDist ();
     ~NewDist ();
-    void out (float * smpsl, float * smpr);
+    void out (float * smpsl, float * smpr) override;
+    void out (float * smpsl, float * smpr, int nframes) override;
+    void setMaxBlockSize (int maxBlockSize) override;
     void setpreset (int npreset);
     void changepar (int npar, int value);
     int getpar (int npar);
     void cleanup ();
-    void applyfilters (float * smpsl, float * smpsr);
+    void applyfilters (float * smpsl, float * smpsr, int nframes);
 
 
 private:

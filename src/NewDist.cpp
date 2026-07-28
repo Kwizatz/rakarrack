@@ -35,9 +35,6 @@
 
 NewDist::NewDist ()
 {
-    octoutl.resize(PERIOD);
-    octoutr.resize(PERIOD);
-
 
 
     lpfl = std::make_unique<AnalogFilter>(2, 22000.0f, 1.0f, 0);
@@ -48,6 +45,9 @@ NewDist::NewDist ()
     blockDCr = std::make_unique<AnalogFilter>(2, 75.0f, 1.0f, 0);
     wshapel = std::make_unique<Waveshaper>();
     wshaper = std::make_unique<Waveshaper>();
+
+    // Sizes octoutl/octoutr and the waveshapers' oversampling scratch.
+    setMaxBlockSize (PERIOD);
 
     blockDCl->setfreq (75.0f);
     blockDCr->setfreq (75.0f);
@@ -129,12 +129,12 @@ NewDist::cleanup ()
  */
 
 void
-NewDist::applyfilters (float * smpsl, float * smpsr)
+NewDist::applyfilters (float * smpsl, float * smpsr, int nframes)
 {
-    lpfl->filterout(smpsl);
-    hpfl->filterout(smpsl);
-    lpfr->filterout(smpsr);
-    hpfr->filterout(smpsr);
+    lpfl->filterout(smpsl, nframes);
+    hpfl->filterout(smpsl, nframes);
+    lpfr->filterout(smpsr, nframes);
+    hpfr->filterout(smpsr, nframes);
 
 };
 
@@ -143,31 +143,46 @@ NewDist::applyfilters (float * smpsl, float * smpsr)
  * Effect output
  */
 void
+NewDist::setMaxBlockSize (int maxBlockSize)
+{
+    octoutl.resize (maxBlockSize);
+    octoutr.resize (maxBlockSize);
+    wshapel->setMaxBlockSize (maxBlockSize);
+    wshaper->setMaxBlockSize (maxBlockSize);
+}
+
+void
 NewDist::out (float * smpsl, float * smpsr)
+{
+    out (smpsl, smpsr, PERIOD);
+}
+
+void
+NewDist::out (float * smpsl, float * smpsr, int nframes)
 {
     int i;
     float l, r, lout, rout;
 
     if (Pprefiltering != 0)
-        applyfilters (smpsl, smpsr);
+        applyfilters (smpsl, smpsr, nframes);
 
     //no optimised, yet (no look table)
 
 
-    wshapel->waveshapesmps (PERIOD, smpsl, Ptype, Pdrive, 2);
-    wshaper->waveshapesmps (PERIOD, smpsr, Ptype, Pdrive, 2);
+    wshapel->waveshapesmps (nframes, smpsl, Ptype, Pdrive, 2);
+    wshaper->waveshapesmps (nframes, smpsr, Ptype, Pdrive, 2);
 
 
 
 
-    memcpy(smpsr,smpsl,PERIOD * sizeof(float));
+    memcpy(smpsr,smpsl,nframes * sizeof(float));
 
 
 
 
 
     if (octmix > 0.01f) {
-        for (i = 0; i < PERIOD; i++) {
+        for (i = 0; i < nframes; i++) {
             lout = smpsl[i];
             rout = smpsr[i];
 
@@ -183,25 +198,25 @@ NewDist::out (float * smpsl, float * smpsr)
         }
 
 
-        blockDCr->filterout (octoutr.data());
-        blockDCl->filterout (octoutl.data());
+        blockDCr->filterout (octoutr.data(), nframes);
+        blockDCl->filterout (octoutl.data(), nframes);
     }
 
 
 
-    filterl->filterout(smpsl);
-    filterr->filterout(smpsr);
+    filterl->filterout(smpsl, nframes);
+    filterr->filterout(smpsr, nframes);
 
 
 
     if (Pprefiltering == 0)
-        applyfilters (smpsl, smpsr);
+        applyfilters (smpsl, smpsr, nframes);
 
 
 
     float level = dB2rap (60.0f * (float)Plevel / 127.0f - 40.0f);
 
-    for (i = 0; i < PERIOD; i++) {
+    for (i = 0; i < nframes; i++) {
         lout = smpsl[i];
         rout = smpsr[i];
 
@@ -221,8 +236,8 @@ NewDist::out (float * smpsl, float * smpsr)
 
     };
 
-    DCr->filterout (smpsr);
-    DCl->filterout (smpsl);
+    DCr->filterout (smpsr, nframes);
+    DCl->filterout (smpsl, nframes);
 
 
 };

@@ -36,15 +36,7 @@
 
 MBVvol::MBVvol ()
 {
-    lowl.resize(PERIOD);
-    lowr.resize(PERIOD);
-    midll.resize(PERIOD);
-    midlr.resize(PERIOD);
-    midhl.resize(PERIOD);
-    midhr.resize(PERIOD);
-    highl.resize(PERIOD);
-    highr.resize(PERIOD);
-
+    setMaxBlockSize(PERIOD);
 
     lpf1l = std::make_unique<AnalogFilter> (2, 500.0f, .7071f, 0);
     lpf1r = std::make_unique<AnalogFilter> (2, 500.0f, .7071f, 0);
@@ -96,44 +88,65 @@ MBVvol::cleanup ()
  * Effect output
  */
 void
+MBVvol::setMaxBlockSize (int maxBlockSize)
+{
+    lowl.resize(maxBlockSize);
+    lowr.resize(maxBlockSize);
+    midll.resize(maxBlockSize);
+    midlr.resize(maxBlockSize);
+    midhl.resize(maxBlockSize);
+    midhr.resize(maxBlockSize);
+    highl.resize(maxBlockSize);
+    highr.resize(maxBlockSize);
+}
+
+void
 MBVvol::out (float * smpsl, float * smpsr)
+{
+    out (smpsl, smpsr, PERIOD);
+}
+
+void
+MBVvol::out (float * smpsl, float * smpsr, int nframes)
 {
     int i;
 
+    // Per-block LFO interpolation step: must track the actual block size.
+    coeff = 1.0f / (float) nframes;
 
-    memcpy(lowl.data(),smpsl,sizeof(float) * PERIOD);
-    memcpy(midll.data(),smpsl,sizeof(float) * PERIOD);
-    memcpy(midhl.data(),smpsl,sizeof(float) * PERIOD);
-    memcpy(highl.data(),smpsl,sizeof(float) * PERIOD);
+    memcpy(lowl.data(),smpsl,sizeof(float) * nframes);
+    memcpy(midll.data(),smpsl,sizeof(float) * nframes);
+    memcpy(midhl.data(),smpsl,sizeof(float) * nframes);
+    memcpy(highl.data(),smpsl,sizeof(float) * nframes);
 
-    lpf1l->filterout(lowl.data());
-    hpf1l->filterout(midll.data());
-    lpf2l->filterout(midll.data());
-    hpf2l->filterout(midhl.data());
-    lpf3l->filterout(midhl.data());
-    hpf3l->filterout(highl.data());
+    lpf1l->filterout(lowl.data(), nframes);
+    hpf1l->filterout(midll.data(), nframes);
+    lpf2l->filterout(midll.data(), nframes);
+    hpf2l->filterout(midhl.data(), nframes);
+    lpf3l->filterout(midhl.data(), nframes);
+    hpf3l->filterout(highl.data(), nframes);
 
-    memcpy(lowr.data(),smpsr,sizeof(float) * PERIOD);
-    memcpy(midlr.data(),smpsr,sizeof(float) * PERIOD);
-    memcpy(midhr.data(),smpsr,sizeof(float) * PERIOD);
-    memcpy(highr.data(),smpsr,sizeof(float) * PERIOD);
+    memcpy(lowr.data(),smpsr,sizeof(float) * nframes);
+    memcpy(midlr.data(),smpsr,sizeof(float) * nframes);
+    memcpy(midhr.data(),smpsr,sizeof(float) * nframes);
+    memcpy(highr.data(),smpsr,sizeof(float) * nframes);
 
-    lpf1r->filterout(lowr.data());
-    hpf1r->filterout(midlr.data());
-    lpf2r->filterout(midlr.data());
-    hpf2r->filterout(midhr.data());
-    lpf3r->filterout(midhr.data());
-    hpf3r->filterout(highr.data());
+    lpf1r->filterout(lowr.data(), nframes);
+    hpf1r->filterout(midlr.data(), nframes);
+    lpf2r->filterout(midlr.data(), nframes);
+    hpf2r->filterout(midhr.data(), nframes);
+    lpf3r->filterout(midhr.data(), nframes);
+    hpf3r->filterout(highr.data(), nframes);
 
-    lfo1.effectlfoout (&lfo1l, &lfo1r);
-    lfo2.effectlfoout (&lfo2l, &lfo2r);
+    lfo1.effectlfoout (&lfo1l, &lfo1r, nframes);
+    lfo2.effectlfoout (&lfo2l, &lfo2r, nframes);
 
     d1=(lfo1l-v1l)*coeff;
     d2=(lfo1r-v1r)*coeff;
     d3=(lfo2l-v2l)*coeff;
     d4=(lfo2r-v2r)*coeff;
 
-    for (i = 0; i < PERIOD; i++) {
+    for (i = 0; i < nframes; i++) {
 
         setCombi(Pcombi);
 

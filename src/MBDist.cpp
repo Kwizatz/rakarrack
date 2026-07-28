@@ -36,13 +36,6 @@
 
 MBDist::MBDist ()
 {
-    lowl.resize(PERIOD);
-    lowr.resize(PERIOD);
-    midl.resize(PERIOD);
-    midr.resize(PERIOD);
-    highl.resize(PERIOD);
-    highr.resize(PERIOD);
-
 
     lpf1l = std::make_unique<AnalogFilter>(2, 500.0f, .7071f, 0);
     lpf1r = std::make_unique<AnalogFilter>(2, 500.0f, .7071f, 0);
@@ -65,6 +58,9 @@ MBDist::MBDist ()
     mbwshape1r = std::make_unique<Waveshaper>();
     mbwshape2r = std::make_unique<Waveshaper>();
     mbwshape3r = std::make_unique<Waveshaper>();
+
+    // Sizes the six band buffers and the six waveshapers' oversampling scratch.
+    setMaxBlockSize (PERIOD);
 
     //default values
     Ppreset = 0;
@@ -109,7 +105,31 @@ MBDist::cleanup ()
  * Effect output
  */
 void
+MBDist::setMaxBlockSize (int maxBlockSize)
+{
+    lowl.resize (maxBlockSize);
+    lowr.resize (maxBlockSize);
+    midl.resize (maxBlockSize);
+    midr.resize (maxBlockSize);
+    highl.resize (maxBlockSize);
+    highr.resize (maxBlockSize);
+
+    mbwshape1l->setMaxBlockSize (maxBlockSize);
+    mbwshape2l->setMaxBlockSize (maxBlockSize);
+    mbwshape3l->setMaxBlockSize (maxBlockSize);
+    mbwshape1r->setMaxBlockSize (maxBlockSize);
+    mbwshape2r->setMaxBlockSize (maxBlockSize);
+    mbwshape3r->setMaxBlockSize (maxBlockSize);
+}
+
+void
 MBDist::out (float * smpsl, float * smpsr)
+{
+    out (smpsl, smpsr, PERIOD);
+}
+
+void
+MBDist::out (float * smpsl, float * smpsr, int nframes)
 {
     int i;
     float l, r, lout, rout;
@@ -120,60 +140,60 @@ MBDist::out (float * smpsl, float * smpsr)
 
 
     if (Pstereo) {
-        for (i = 0; i < PERIOD; i++) {
+        for (i = 0; i < nframes; i++) {
             smpsl[i] = smpsl[i] * inputvol * 2.0f;
             smpsr[i] = smpsr[i] * inputvol * 2.0f;
         };
     } else {
-        for (i = 0; i < PERIOD; i++) {
+        for (i = 0; i < nframes; i++) {
             smpsl[i] =
                 (smpsl[i]  +  smpsr[i] ) * inputvol;
         };
     };
 
 
-    memcpy(lowl.data(),smpsl,sizeof(float) * PERIOD);
-    memcpy(midl.data(),smpsl,sizeof(float) * PERIOD);
-    memcpy(highl.data(),smpsl,sizeof(float) * PERIOD);
+    memcpy(lowl.data(),smpsl,sizeof(float) * nframes);
+    memcpy(midl.data(),smpsl,sizeof(float) * nframes);
+    memcpy(highl.data(),smpsl,sizeof(float) * nframes);
 
-    lpf1l->filterout(lowl.data());
-    hpf1l->filterout(midl.data());
-    lpf2l->filterout(midl.data());
-    hpf2l->filterout(highl.data());
+    lpf1l->filterout(lowl.data(), nframes);
+    hpf1l->filterout(midl.data(), nframes);
+    lpf2l->filterout(midl.data(), nframes);
+    hpf2l->filterout(highl.data(), nframes);
 
-    if(volL> 0)  mbwshape1l->waveshapesmps (PERIOD, lowl.data(), PtypeL, PdriveL, 1);
-    if(volM> 0)  mbwshape2l->waveshapesmps (PERIOD, midl.data(), PtypeM, PdriveM, 1);
-    if(volH> 0)  mbwshape3l->waveshapesmps (PERIOD, highl.data(), PtypeH, PdriveH, 1);
+    if(volL> 0)  mbwshape1l->waveshapesmps (nframes, lowl.data(), PtypeL, PdriveL, 1);
+    if(volM> 0)  mbwshape2l->waveshapesmps (nframes, midl.data(), PtypeM, PdriveM, 1);
+    if(volH> 0)  mbwshape3l->waveshapesmps (nframes, highl.data(), PtypeH, PdriveH, 1);
 
 
     if(Pstereo) {
-        memcpy(lowr.data(),smpsr,sizeof(float) * PERIOD);
-        memcpy(midr.data(),smpsr,sizeof(float) * PERIOD);
-        memcpy(highr.data(),smpsr,sizeof(float) * PERIOD);
+        memcpy(lowr.data(),smpsr,sizeof(float) * nframes);
+        memcpy(midr.data(),smpsr,sizeof(float) * nframes);
+        memcpy(highr.data(),smpsr,sizeof(float) * nframes);
 
-        lpf1r->filterout(lowr.data());
-        hpf1r->filterout(midr.data());
-        lpf2r->filterout(midr.data());
-        hpf2r->filterout(highr.data());
+        lpf1r->filterout(lowr.data(), nframes);
+        hpf1r->filterout(midr.data(), nframes);
+        lpf2r->filterout(midr.data(), nframes);
+        hpf2r->filterout(highr.data(), nframes);
 
-        if(volL> 0)  mbwshape1r->waveshapesmps (PERIOD, lowr.data(), PtypeL, PdriveL, 1);
-        if(volM> 0)  mbwshape2r->waveshapesmps (PERIOD, midr.data(), PtypeM, PdriveM, 1);
-        if(volH> 0)  mbwshape3r->waveshapesmps (PERIOD, highr.data(), PtypeH, PdriveH, 1);
+        if(volL> 0)  mbwshape1r->waveshapesmps (nframes, lowr.data(), PtypeL, PdriveL, 1);
+        if(volM> 0)  mbwshape2r->waveshapesmps (nframes, midr.data(), PtypeM, PdriveM, 1);
+        if(volH> 0)  mbwshape3r->waveshapesmps (nframes, highr.data(), PtypeH, PdriveH, 1);
 
 
     }
 
-    for (i = 0; i < PERIOD; i++) {
+    for (i = 0; i < nframes; i++) {
         smpsl[i]=lowl[i]*volL+midl[i]*volM+highl[i]*volH;
         if (Pstereo) smpsr[i]=lowr[i]*volL+midr[i]*volM+highr[i]*volH;
     }
 
-    if (!Pstereo) memcpy(smpsr, smpsl, sizeof(float)* PERIOD);
+    if (!Pstereo) memcpy(smpsr, smpsl, sizeof(float)* nframes);
 
 
     float level = dB2rap (60.0f * (float)Plevel / 127.0f - 40.0f);
 
-    for (i = 0; i < PERIOD; i++) {
+    for (i = 0; i < nframes; i++) {
         lout = smpsl[i];
         rout = smpsr[i];
 
@@ -185,8 +205,8 @@ MBDist::out (float * smpsl, float * smpsr)
 
     };
 
-    DCr->filterout (smpsr);
-    DCl->filterout (smpsl);
+    DCr->filterout (smpsr, nframes);
+    DCl->filterout (smpsl, nframes);
 
 
 
