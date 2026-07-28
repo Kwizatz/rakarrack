@@ -56,18 +56,24 @@ Pan::cleanup ()
 void
 Pan::out (float *smpsl, float *smpsr)
 {
+    out (smpsl, smpsr, PERIOD);
+};
+
+void
+Pan::out (float *smpsl, float *smpsr, int nframes)
+{
 
     int i;
     float avg, ldiff, rdiff, tmp;
     float pp;
-    float coeff_PERIOD = 1.0f / fPERIOD;
+    float coeff_PERIOD = 1.0f / (float) nframes;
     float fi,P_i;
 
 
 
     if (PextraON) {
 
-        for (i = 0; i < PERIOD; i++)
+        for (i = 0; i < nframes; i++)
 
         {
 
@@ -91,10 +97,10 @@ Pan::out (float *smpsl, float *smpsr)
 
         ll = lfol;
         lr = lfor;
-        lfo.effectlfoout (&lfol, &lfor);
-        for (i = 0; i < PERIOD; i++) {
+        lfo.effectlfoout (&lfol, &lfor, nframes);
+        for (i = 0; i < nframes; i++) {
             fi = (float) i;
-            P_i = (float) (PERIOD - i);
+            P_i = (float) (nframes - i);
 
             pp = (ll * P_i + lfol * fi) * coeff_PERIOD;
 

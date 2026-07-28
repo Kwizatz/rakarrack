@@ -113,6 +113,12 @@ Dflange::cleanup ()
 void
 Dflange::out (float * smpsl, float * smpsr)
 {
+    out (smpsl, smpsr, PERIOD);
+};
+
+void
+Dflange::out (float * smpsl, float * smpsr, int nframes)
+{
     int i;
     //deal with LFO's
     int tmp0, tmp1;
@@ -121,7 +127,10 @@ Dflange::out (float * smpsl, float * smpsr)
     float ldif0, ldif1, rdif0, rdif1;  //Difference between fractional delay and floor(fractional delay)
     float drA, drB, dlA, dlB;	//LFO inside the loop.
 
-    lfo.effectlfoout (&lfol, &lfor);
+    // Per-block LFO interpolation step: must track the actual block size.
+    period_const = 1.0f / (float) nframes;
+
+    lfo.effectlfoout (&lfol, &lfor, nframes);
     lmod = lfol;
     if(Pzero && Pintense) rmod = 1.0f - lfol;  //using lfol is intentional
     else rmod = lfor;
@@ -153,7 +162,7 @@ Dflange::out (float * smpsl, float * smpsr)
         //lfo ready...
 
         if(Pzero) {
-            for (i = 0; i < PERIOD; i++) {
+            for (i = 0; i < nframes; i++) {
 
                 ldl = smpsl[i] * lpan + ldl * ffb;
                 rdl = smpsr[i] * rpan + rdl * ffb;
@@ -183,7 +192,7 @@ Dflange::out (float * smpsl, float * smpsr)
                 dlB += lx1;
             }
         } else {
-            for (i = 0; i < PERIOD; i++) {
+            for (i = 0; i < nframes; i++) {
 
                 ldl = smpsl[i] * lpan + ldl * ffb;
                 rdl = smpsr[i] * rpan + rdl * ffb;
@@ -261,7 +270,7 @@ Dflange::out (float * smpsl, float * smpsr)
         //lfo ready...
 
 
-        for (i = 0; i < PERIOD; i++) {
+        for (i = 0; i < nframes; i++) {
 
             //Delay line utility
             ldl = ldelay[kl];

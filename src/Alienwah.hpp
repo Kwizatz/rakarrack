@@ -40,7 +40,8 @@ class Alienwah : public Effect
 public:
     Alienwah ();
     ~Alienwah ();
-    void out (float * smpsl, float * smpsr);
+    void out (float * smpsl, float * smpsr) override;
+    void out (float * smpsl, float * smpsr, int nframes) override;
 
     void setpreset (int npreset);
     void changepar (int npar, int value);

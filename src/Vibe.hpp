@@ -38,7 +38,8 @@ public:
     Vibe ();
     ~Vibe ();
 
-    void out (float * smpsl, float * smpsr);
+    void out (float * smpsl, float * smpsr) override;
+    void out (float * smpsl, float * smpsr, int nframes) override;
     void setvolume(int value);
     void setpanning(int value);
     void setpreset (int npreset);

@@ -46,6 +46,12 @@ DynamicFilter::~DynamicFilter () = default;
 void
 DynamicFilter::out (float * smpsl, float * smpsr)
 {
+    out (smpsl, smpsr, PERIOD);
+};
+
+void
+DynamicFilter::out (float * smpsl, float * smpsr, int nframes)
+{
     int i;
     float lfol, lfor;
 
@@ -54,13 +60,13 @@ DynamicFilter::out (float * smpsl, float * smpsr)
         cleanup ();
     };
 
-    lfo.effectlfoout (&lfol, &lfor);
+    lfo.effectlfoout (&lfol, &lfor, nframes);
     lfol *= depth * 5.0f;
     lfor *= depth * 5.0f;
     float freq = filterpars->getfreq ();
     float q = filterpars->getq ();
 
-    for (i = 0; i < PERIOD; i++) {
+    for (i = 0; i < nframes; i++) {
         smpsl[i] = smpsl[i];
         smpsr[i] = smpsr[i];
 
@@ -86,7 +92,7 @@ DynamicFilter::out (float * smpsl, float * smpsr)
     filterr->filterout (smpsr);
 
     //panning
-    for (i = 0; i < PERIOD; i++) {
+    for (i = 0; i < nframes; i++) {
         smpsl[i] *= panning;
         smpsr[i] *= (1.0f - panning);
     };

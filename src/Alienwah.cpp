@@ -48,11 +48,18 @@ Alienwah::~Alienwah () = default;
 void
 Alienwah::out (float * smpsl, float * smpsr)
 {
+    out (smpsl, smpsr, PERIOD);
+};
+
+void
+Alienwah::out (float * smpsl, float * smpsr, int nframes)
+{
     int i;
     float lfol, lfor;
     COMPLEXTYPE clfol, clfor, out, tmp;
+    const float fnframes = (float) nframes;
 
-    lfo.effectlfoout (&lfol, &lfor);
+    lfo.effectlfoout (&lfol, &lfor, nframes);
     lfol *= depth * D_PI;
     lfor *= depth * D_PI;
     clfol.a = cosf (lfol + phase) * fb;
@@ -60,8 +67,8 @@ Alienwah::out (float * smpsl, float * smpsr)
     clfor.a = cosf (lfor + phase) * fb;
     clfor.b = sinf (lfor + phase) * fb;
 
-    for (i = 0; i < PERIOD; i++) {
-        float x = (float)i / fPERIOD;
+    for (i = 0; i < nframes; i++) {
+        float x = (float)i / fnframes;
         float x1 = 1.0f - x;
         //left
         tmp.a = clfol.a * x + oldclfol.a * x1;

@@ -86,6 +86,12 @@ Vibe::cleanup ()
 void
 Vibe::out (float *smpsl, float *smpsr)
 {
+    out (smpsl, smpsr, PERIOD);
+};
+
+void
+Vibe::out (float *smpsl, float *smpsr, int nframes)
+{
 
     int i,j;
     float lfol, lfor, xl, xr, fxl, fxr = 0.0f;
@@ -96,7 +102,10 @@ Vibe::out (float *smpsl, float *smpsr)
 
     input = cvolt = ocvolt = evolt = 0.0f;
 
-    lfo.effectlfoout (&lfol, &lfor);
+    // Per-block LFO interpolation step: must track the actual block size.
+    cperiod = 1.0f / (float) nframes;
+
+    lfo.effectlfoout (&lfol, &lfor, nframes);
 
     lfol = fdepth + lfol*fwidth;
     if (lfol > 1.0f)
@@ -112,7 +121,7 @@ Vibe::out (float *smpsl, float *smpsr)
         lfor = 2.0f - 2.0f/(lfor + 1.0f);   //
     }
 
-    for (i = 0; i < PERIOD; i++) {
+    for (i = 0; i < nframes; i++) {
         //Left Lamp
         gl = lfol*lampTC + oldgl*ilampTC;
         oldgl = gl;

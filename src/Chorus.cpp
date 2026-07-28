@@ -83,11 +83,18 @@ float Chorus::getdelay (float xlfo)
 void
 Chorus::out (float * smpsl, float * smpsr)
 {
+    out (smpsl, smpsr, PERIOD);
+};
+
+void
+Chorus::out (float * smpsl, float * smpsr, int nframes)
+{
     int i;
     float tmp;
+    const float fnframes = (float) nframes;
     dl1 = dl2;
     dr1 = dr2;
-    lfo.effectlfoout (&lfol, &lfor);
+    lfo.effectlfoout (&lfol, &lfor, nframes);
 
     if(awesome_mode) { //use interpolated delay line for better sound
         float tmpsub;
@@ -97,15 +104,15 @@ Chorus::out (float * smpsl, float * smpsr)
         if (Poutsub != 0) tmpsub = -1.0f;
         else tmpsub = 1.0f;
 
-        for (i = 0; i < PERIOD; i++) {
+        for (i = 0; i < nframes; i++) {
             //Left
-            mdel = (dl1 * (float)(PERIOD - i) + dl2 * (float)i) / fPERIOD;
+            mdel = (dl1 * (float)(nframes - i) + dl2 * (float)i) / fnframes;
             tmp = smpsl[i] + oldl*fb;
             smpsl[i] = tmpsub*ldelay.delay(tmp, mdel, 0, 1, 0);
             oldl = smpsl[i];
 
             //Right
-            mdel = (dr1 * (float)(PERIOD - i) + dr2 * (float)i) / fPERIOD;
+            mdel = (dr1 * (float)(nframes - i) + dr2 * (float)i) / fnframes;
             tmp = smpsr[i] + oldr*fb;
             smpsr[i] = tmpsub*rdelay.delay(tmp, mdel, 0, 1, 0);
             oldr =  smpsr[i];
@@ -115,7 +122,7 @@ Chorus::out (float * smpsl, float * smpsr)
 
         dl2 = getdelay (lfol);
         dr2 = getdelay (lfor);
-        for (i = 0; i < PERIOD; i++) {
+        for (i = 0; i < nframes; i++) {
             float inl = smpsl[i];
             float inr = smpsr[i];
             //LRcross
@@ -127,7 +134,7 @@ Chorus::out (float * smpsl, float * smpsr)
             //Left channel
 
             //compute the delay in samples using linear interpolation between the lfo delays
-            mdel = (dl1 * (float)(PERIOD - i) + dl2 * (float)i) / fPERIOD;
+            mdel = (dl1 * (float)(nframes - i) + dl2 * (float)i) / fnframes;
             if (++dlk >= maxdelay)
                 dlk = 0;
             float tmp = (float) dlk - mdel + (float)maxdelay * 2.0f;	//where should I get the sample from
@@ -143,7 +150,7 @@ Chorus::out (float * smpsl, float * smpsr)
             //Right channel
 
             //compute the delay in samples using linear interpolation between the lfo delays
-            mdel = (dr1 * (float)(PERIOD - i) + dr2 * (float)i) / fPERIOD;
+            mdel = (dr1 * (float)(nframes - i) + dr2 * (float)i) / fnframes;
             if (++drk >= maxdelay)
                 drk = 0;
             tmp = (float)drk - mdel + (float)maxdelay * 2.0f;	//where should I get the sample from
@@ -160,13 +167,13 @@ Chorus::out (float * smpsl, float * smpsr)
 
 
         if (Poutsub != 0)
-            for (i = 0; i < PERIOD; i++) {
+            for (i = 0; i < nframes; i++) {
                 smpsl[i] *= -1.0f;
                 smpsr[i] *= -1.0f;
             };
 
 
-        for (int i = 0; i < PERIOD; i++) {
+        for (int i = 0; i < nframes; i++) {
             smpsl[i] *= panning;
             smpsr[i] *= (1.0f - panning);
         };

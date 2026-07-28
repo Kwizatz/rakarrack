@@ -91,16 +91,25 @@ Analog_Phaser::~Analog_Phaser () = default;
 void
 Analog_Phaser::out (float * smpsl, float * smpsr)
 {
+    out (smpsl, smpsr, PERIOD);
+};
+
+void
+Analog_Phaser::out (float * smpsl, float * smpsr, int nframes)
+{
     int i, j;
     float lfol, lfor, lgain, rgain, bl, br, gl, gr, rmod, lmod, d, hpfr, hpfl;
     lgain = 0.0;
     rgain = 0.0;
 
+    // Per-block LFO interpolation step: must track the actual block size.
+    invperiod = 1.0f / (float) nframes;
+
     //initialize hpf
     hpfl = 0.0;
     hpfr = 0.0;
 
-    lfo.effectlfoout (&lfol, &lfor);
+    lfo.effectlfoout (&lfol, &lfor, nframes);
     lmod = lfol*width + depth;
     rmod = lfor*width + depth;
 
@@ -130,7 +139,7 @@ Analog_Phaser::out (float * smpsl, float * smpsr)
     oldlgain = lmod;
     oldrgain = rmod;
 
-    for (i = 0; i < PERIOD; i++) {
+    for (i = 0; i < nframes; i++) {
 
         gl += ldiff;	// Linear interpolation between LFO samples
         gr += rdiff;
@@ -189,7 +198,7 @@ Analog_Phaser::out (float * smpsl, float * smpsr)
     };
 
     if (Poutsub != 0)
-        for (i = 0; i < PERIOD; i++) {
+        for (i = 0; i < nframes; i++) {
             smpsl[i] *= -1.0f;
             smpsr[i] *= -1.0f;
         };

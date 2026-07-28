@@ -47,10 +47,17 @@ Phaser::~Phaser () = default;
 void
 Phaser::out (float * smpsl, float * smpsr)
 {
+    out (smpsl, smpsr, PERIOD);
+};
+
+void
+Phaser::out (float * smpsl, float * smpsr, int nframes)
+{
     int i, j;
     float lfol, lfor, lgain, rgain, tmp;
+    const float fnframes = (float) nframes;
 
-    lfo.effectlfoout (&lfol, &lfor);
+    lfo.effectlfoout (&lfol, &lfor, nframes);
     lgain = lfol;
     rgain = lfor;
     lgain =
@@ -71,8 +78,8 @@ Phaser::out (float * smpsl, float * smpsr)
     else if (rgain < 0.0)
         rgain = 0.0f;
 
-    for (i = 0; i < PERIOD; i++) {
-        float x = (float) i / fPERIOD;
+    for (i = 0; i < nframes; i++) {
+        float x = (float) i / fnframes;
         float x1 = 1.0f - x;
         float gl = lgain * x + oldlgain * x1;
         float gr = rgain * x + oldrgain * x1;
@@ -110,7 +117,7 @@ Phaser::out (float * smpsl, float * smpsr)
     oldrgain = rgain;
 
     if (Poutsub != 0)
-        for (i = 0; i < PERIOD; i++) {
+        for (i = 0; i < nframes; i++) {
             smpsl[i] *= -1.0f;
             smpsr[i] *= -1.0f;
         };

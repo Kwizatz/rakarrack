@@ -38,7 +38,8 @@ public:
     Opticaltrem ();
     ~Opticaltrem ();
 
-    void out (float * smpsl, float * smpsr);
+    void out (float * smpsl, float * smpsr) override;
+    void out (float * smpsl, float * smpsr, int nframes) override;
     void setpanning(int value);
     void setpreset (int npreset);
     void changepar (int npar, int value);

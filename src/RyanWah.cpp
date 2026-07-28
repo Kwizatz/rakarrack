@@ -70,11 +70,17 @@ RyanWah::~RyanWah () = default;
 void
 RyanWah::out (float * smpsl, float * smpsr)
 {
+    out (smpsl, smpsr, PERIOD);
+};
+
+void
+RyanWah::out (float * smpsl, float * smpsr, int nframes)
+{
     int i;
     float lmod, rmod;
     float lfol, lfor;
     float rms = 0.0f;
-    lfo.effectlfoout (&lfol, &lfor);
+    lfo.effectlfoout (&lfol, &lfor, nframes);
     if (Pamode) {
         lfol *= depth;
         lfor *= depth;
@@ -83,7 +89,7 @@ RyanWah::out (float * smpsl, float * smpsr)
         lfor *= depth * 5.0f;
     }
 
-    for (i = 0; i < PERIOD; i++) {
+    for (i = 0; i < nframes; i++) {
         smpsl[i] = smpsl[i];
         smpsr[i] = smpsr[i];
 

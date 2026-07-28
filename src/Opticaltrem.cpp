@@ -70,11 +70,21 @@ Opticaltrem::cleanup ()
 void
 Opticaltrem::out (float *smpsl, float *smpsr)
 {
+    out (smpsl, smpsr, PERIOD);
+};
+
+void
+Opticaltrem::out (float *smpsl, float *smpsr, int nframes)
+{
 
     int i;
     float lfol, lfor, xl, xr, fxl, fxr;
     float rdiff, ldiff;
-    lfo.effectlfoout (&lfol, &lfor);
+
+    // Per-block LFO interpolation step: must track the actual block size.
+    cperiod = 1.0f / (float) nframes;
+
+    lfo.effectlfoout (&lfol, &lfor, nframes);
 
     if(Pinvert) {
     lfol = lfol*fdepth;
@@ -104,7 +114,7 @@ Opticaltrem::out (float *smpsl, float *smpsr)
     oldgr = lfor;
     oldgl = lfol;
 
-    for (i = 0; i < PERIOD; i++) {
+    for (i = 0; i < nframes; i++) {
         //Left Cds
         stepl = gl*(1.0f - alphal) + alphal*oldstepl;
         oldstepl = stepl;

@@ -36,7 +36,12 @@ class Chorus : public Effect
 public:
     Chorus ();
     ~Chorus ();
-    void out (float * smpsl, float * smpsr);
+    // Legacy entry point — forwards to the block-size-aware overload below
+    // using the global PERIOD.
+    void out (float * smpsl, float * smpsr) override;
+    // Block-size-aware processing: operates on exactly `nframes` samples and
+    // does not read the global PERIOD.
+    void out (float * smpsl, float * smpsr, int nframes) override;
     using Effect::setpreset;
     void setpreset (int dgui, int npreset);
     void changepar (int npar, int value);

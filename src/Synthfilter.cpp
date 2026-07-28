@@ -79,12 +79,21 @@ Synthfilter::~Synthfilter () = default;
 void
 Synthfilter::out (float * smpsl, float * smpsr)
 {
+    out (smpsl, smpsr, PERIOD);
+};
+
+void
+Synthfilter::out (float * smpsl, float * smpsr, int nframes)
+{
     int i, j;
     float lfol, lfor, lgain, rgain,rmod, lmod, d;
     lgain = 0.0;
     rgain = 0.0;
 
-    lfo.effectlfoout (&lfol, &lfor);
+    // Per-block LFO interpolation step: must track the actual block size.
+    inv_period = 1.0f / (float) nframes;
+
+    lfo.effectlfoout (&lfol, &lfor, nframes);
     lmod = lfol*width + depth + env*sns;
     rmod = lfor*width + depth + env*sns;
 
@@ -107,7 +116,7 @@ Synthfilter::out (float * smpsl, float * smpsr)
     float gl = oldlgain;	// Linear interpolation between LFO samples
     float gr = oldrgain;
 
-    for (i = 0; i < PERIOD; i++) {
+    for (i = 0; i < nframes; i++) {
 
         float lxn = bandgain*smpsl[i];
         float rxn = bandgain*smpsr[i]; //extra gain
@@ -194,7 +203,7 @@ Synthfilter::out (float * smpsl, float * smpsr)
     oldrgain = rmod;
 
     if (Poutsub != 0)
-        for (i = 0; i < PERIOD; i++) {
+        for (i = 0; i < nframes; i++) {
             smpsl[i] *= -1.0f;
             smpsr[i] *= -1.0f;
         };

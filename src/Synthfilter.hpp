@@ -39,7 +39,8 @@ class Synthfilter : public Effect
 public:
     Synthfilter ();
     ~Synthfilter ();
-    void out (float * smpsl, float * smpsr);
+    void out (float * smpsl, float * smpsr) override;
+    void out (float * smpsl, float * smpsr, int nframes) override;
     void setpreset (int npreset);
     void changepar (int npar, int value);
     int getpar (int npar);
