@@ -43,6 +43,8 @@ set(ENGINE_SOURCES
 	DynamicFilter.cpp
 	Echo.cpp
 	Echotron.cpp
+	EffectFactory.cpp
+	EffectGraph.cpp
 	EffectLFO.cpp
 	EngineController.cpp
 	EQ.cpp
