@@ -38,12 +38,16 @@ class StereoHarm : public Effect
 public:
     StereoHarm (long int Quality, int DS, int uq, int dq);
     ~StereoHarm ();
-    void out (float *smpsl, float *smpsr);
+    void out (float *smpsl, float *smpsr) override;
+    void out (float *smpsl, float *smpsr, int nframes) override;
+    void setMaxBlockSize (int maxBlockSize) override;
     void setpreset (int npreset);
     void changepar (int npar, int value);
     int getpar (int npar);
     void cleanup ();
     void adjust(int DS);
+    /// Internal-rate frames produced from `nframes` host-rate frames.
+    int resampledFrames (int nframes) const;
 
 
     int Pintervall;

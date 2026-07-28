@@ -38,15 +38,7 @@ StereoHarm::StereoHarm (long int Quality, int DS, int uq, int dq)
     hq = Quality;
     adjust(DS);
 
-    templ.resize(PERIOD);
-    tempr.resize(PERIOD);
-
-
-    outil.resize(nPERIOD);
-    outir.resize(nPERIOD);
-
-    outol.resize(nPERIOD);
-    outor.resize(nPERIOD);
+    setMaxBlockSize(PERIOD);
 
     U_Resample = std::make_unique<Resample>(dq);
     D_Resample = std::make_unique<Resample>(uq);
@@ -92,18 +84,48 @@ StereoHarm::cleanup ()
 void
 StereoHarm::out (float *smpsl, float *smpsr)
 {
+    out (smpsl, smpsr, PERIOD);
+};
+
+
+int
+StereoHarm::resampledFrames (int nframes) const
+{
+    return (int) lrint ((double) nframes * u_up);
+};
+
+
+void
+StereoHarm::setMaxBlockSize (int maxBlockSize)
+{
+    // templ/tempr only ever hold host-rate frames.
+    templ.resize(maxBlockSize);
+    tempr.resize(maxBlockSize);
+
+    const int nrs = resampledFrames(maxBlockSize);
+    outil.resize(nrs);
+    outir.resize(nrs);
+    outol.resize(nrs);
+    outor.resize(nrs);
+};
+
+
+void
+StereoHarm::out (float *smpsl, float *smpsr, int nframes)
+{
 
     int i;
+    const int nrs = resampledFrames (nframes);
 
 
     if(DS_state != 0) {
-        memcpy(templ.data(), smpsl,sizeof(float)*PERIOD);
-        memcpy(tempr.data(), smpsr,sizeof(float)*PERIOD);
-        U_Resample->out(templ.data(),tempr.data(),smpsl,smpsr,PERIOD,u_up);
+        memcpy(templ.data(), smpsl,sizeof(float)*nframes);
+        memcpy(tempr.data(), smpsr,sizeof(float)*nframes);
+        U_Resample->out(templ.data(),tempr.data(),smpsl,smpsr,nframes,u_up);
     }
 
 
-    for (i = 0; i < nPERIOD; i++) {
+    for (i = 0; i < nrs; i++) {
 
 
         outil[i] = smpsl[i];
@@ -126,27 +148,27 @@ StereoHarm::out (float *smpsl, float *smpsr)
     }
 
     if (PSl->ratio != 1.0f) {
-        PSl->smbPitchShift (PSl->ratio, nPERIOD, window, hq, nfSAMPLE_RATE, outil.data(), outol.data());
+        PSl->smbPitchShift (PSl->ratio, nrs, window, hq, nfSAMPLE_RATE, outil.data(), outol.data());
     } else
-        memcpy(outol.data(),outil.data(),sizeof(float)*nPERIOD);
+        memcpy(outol.data(),outil.data(),sizeof(float)*nrs);
 
 
     if (PSr->ratio != 1.0f) {
-        PSr->smbPitchShift (PSr->ratio, nPERIOD, window, hq, nfSAMPLE_RATE, outir.data(), outor.data());
+        PSr->smbPitchShift (PSr->ratio, nrs, window, hq, nfSAMPLE_RATE, outir.data(), outor.data());
     } else
-        memcpy(outor.data(),outir.data(),sizeof(float)*nPERIOD);
+        memcpy(outor.data(),outir.data(),sizeof(float)*nrs);
 
 
     if(DS_state != 0) {
-        D_Resample->out(outol.data(),outor.data(),templ.data(),tempr.data(),nPERIOD,u_down);
+        D_Resample->out(outol.data(),outor.data(),templ.data(),tempr.data(),nrs,u_down);
     } else {
-        memcpy(templ.data(), outol.data(),sizeof(float)*PERIOD);
-        memcpy(tempr.data(), outor.data(),sizeof(float)*PERIOD);
+        memcpy(templ.data(), outol.data(),sizeof(float)*nframes);
+        memcpy(tempr.data(), outor.data(),sizeof(float)*nframes);
 
     }
 
 
-    for (i = 0; i < PERIOD; i++) {
+    for (i = 0; i < nframes; i++) {
         smpsl[i] = (templ[i] * (1.0f - lrcross) + tempr[i] * lrcross)* gainl;
         smpsr[i] = (tempr[i] * (1.0f - lrcross) + templ[i] * lrcross)* gainr;
     }

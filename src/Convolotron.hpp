@@ -35,13 +35,17 @@ class Convolotron : public Effect
 public:
     Convolotron (int DS, int uq, int dq);
     ~Convolotron ();
-    void out (float * smpsl, float * smpr);
+    void out (float * smpsl, float * smpr) override;
+    void out (float * smpsl, float * smpr, int nframes) override;
+    void setMaxBlockSize (int maxBlockSize) override;
     void setpreset (int npreset);
     void changepar (int npar, int value);
     int getpar (int npar);
     void cleanup ();
     int setfile (int value);
     void adjust(int DS);
+    /// Internal-rate frames produced from `nframes` host-rate frames.
+    int resampledFrames (int nframes) const;
     void loaddefault();
 
 
