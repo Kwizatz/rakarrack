@@ -32,9 +32,6 @@
 
 Distorsion::Distorsion()
 {
-    octoutl.resize(PERIOD);
-    octoutr.resize(PERIOD);
-
     lpfl = std::make_unique<AnalogFilter> (2, 22000.0f, 1.0f, 0);
     lpfr = std::make_unique<AnalogFilter> (2, 22000.0f, 1.0f, 0);
     hpfl = std::make_unique<AnalogFilter> (3, 20.0f, 1.0f, 0);
@@ -50,6 +47,9 @@ Distorsion::Distorsion()
 
     dwshapel = std::make_unique<Waveshaper>();
     dwshaper = std::make_unique<Waveshaper>();
+
+    // Sizes octoutl/octoutr and the waveshapers' oversampling scratch.
+    setMaxBlockSize (PERIOD);
 
     //default values
     Ppreset = 0;
@@ -96,14 +96,14 @@ Distorsion::cleanup ()
  * Apply the filters
  */
 void
-Distorsion::applyfilters (float * smpsl, float * smpsr)
+Distorsion::applyfilters (float * smpsl, float * smpsr, int nframes)
 {
-    lpfl->filterout (smpsl);
-    hpfl->filterout (smpsl);
+    lpfl->filterout (smpsl, nframes);
+    hpfl->filterout (smpsl, nframes);
     if (Pstereo != 0) {
         //stereo
-        lpfr->filterout (smpsr);
-        hpfr->filterout (smpsr);
+        lpfr->filterout (smpsr, nframes);
+        hpfr->filterout (smpsr, nframes);
     };
 };
 
@@ -111,7 +111,22 @@ Distorsion::applyfilters (float * smpsl, float * smpsr)
  * Effect output
  */
 void
+Distorsion::setMaxBlockSize (int maxBlockSize)
+{
+    octoutl.resize (maxBlockSize);
+    octoutr.resize (maxBlockSize);
+    dwshapel->setMaxBlockSize (maxBlockSize);
+    dwshaper->setMaxBlockSize (maxBlockSize);
+}
+
+void
 Distorsion::out(float * smpsl, float * smpsr)
+{
+    out (smpsl, smpsr, PERIOD);
+}
+
+void
+Distorsion::out(float * smpsl, float * smpsr, int nframes)
 {
     float l, r, lout, rout;
     float inputvol = powf (5.0f, (static_cast<float>(Pdrive) - 32.0f) / 127.0f);
@@ -120,18 +135,17 @@ Distorsion::out(float * smpsl, float * smpsr)
         inputvol *= -1.0f;
     }
 
-    // The following lines override smpsl and smpsr, So why are they pointers to a global buffer?
     if (Pstereo) 
     {
         //Stereo
-        for (int i = 0; i < PERIOD; i++) {
+        for (int i = 0; i < nframes; i++) {
             smpsl[i] = smpsl[i] * inputvol * 2.0f;
             smpsr[i] = smpsr[i] * inputvol * 2.0f;
         }
     }
     else
     {
-        for (int i = 0; i < PERIOD; i++)
+        for (int i = 0; i < nframes; i++)
         {
             smpsl[i] = (smpsl[i]  +  smpsr[i] ) * inputvol;
         }
@@ -139,26 +153,26 @@ Distorsion::out(float * smpsl, float * smpsr)
 
     if (Pprefiltering != 0)
     {
-        applyfilters (smpsl, smpsr);
+        applyfilters (smpsl, smpsr, nframes);
     }
 
     //no optimised, yet (no look table)
 
-    dwshapel->waveshapesmps (PERIOD, smpsl, Ptype, Pdrive, 1);
+    dwshapel->waveshapesmps (nframes, smpsl, Ptype, Pdrive, 1);
     if (Pstereo != 0)
-       { dwshaper->waveshapesmps (PERIOD, smpsr, Ptype, Pdrive, 1);}
+       { dwshaper->waveshapesmps (nframes, smpsr, Ptype, Pdrive, 1);}
 
     if (Pprefiltering == 0)
-        {applyfilters (smpsl, smpsr);}
+        {applyfilters (smpsl, smpsr, nframes);}
 
     if (Pstereo == 0)
     { 
-        memcpy (smpsr , smpsl, PERIOD * sizeof(float));
+        memcpy (smpsr , smpsl, nframes * sizeof(float));
     }
 
     if (octmix > 0.01f) 
     {
-        for (int i = 0; i < PERIOD; i++)
+        for (int i = 0; i < nframes; i++)
         {
             lout = smpsl[i];
             rout = smpsr[i];
@@ -175,13 +189,13 @@ Distorsion::out(float * smpsl, float * smpsr)
             octoutr[i] = rout *  toggler;
         }
 
-        blockDCr->filterout (octoutr.data());
-        blockDCl->filterout (octoutl.data());
+        blockDCr->filterout (octoutr.data(), nframes);
+        blockDCl->filterout (octoutl.data(), nframes);
     }
 
     float level = dB2rap (60.0f * (static_cast<float>(Plevel) / 127.0f) - 40.0f);
 
-    for (int i = 0; i < PERIOD; i++) 
+    for (int i = 0; i < nframes; i++) 
     {
         lout = smpsl[i];
         rout = smpsr[i];

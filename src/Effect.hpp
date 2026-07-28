@@ -64,6 +64,20 @@ public:
     virtual void cleanup ()
     {
     }
+
+    /// Size internal per-block scratch storage for blocks of at most
+    /// `maxBlockSize` samples.
+    ///
+    /// This is the allocation hook a plugin host drives (VST3 setupProcessing,
+    /// AU/LV2 prepare, ...): it is called before processing starts and again
+    /// whenever the host changes the block size, so that out() itself never has
+    /// to allocate.  After calling it, out() must not be passed an `nframes`
+    /// larger than `maxBlockSize`.
+    ///
+    /// Effects that keep no per-block scratch buffers do not need to override it.
+    virtual void setMaxBlockSize ([[maybe_unused]] int maxBlockSize)
+    {
+    }
     virtual float getfreqresponse ([[maybe_unused]] float freq)
     {
         return (0);

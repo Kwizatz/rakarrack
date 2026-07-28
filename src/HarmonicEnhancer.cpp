@@ -31,8 +31,7 @@
 HarmEnhancer::HarmEnhancer(float *Rmag, float hfreq, float lfreq, float gain)
 {
 
-    inputl.resize(PERIOD);
-    inputr.resize(PERIOD);
+    setMaxBlockSize(PERIOD);
 
     set_vol(0,gain);
     realvol = gain;
@@ -184,20 +183,33 @@ HarmEnhancer::calcula_mag (float *Rmag)
 void
 HarmEnhancer::harm_out(float *smpsl, float *smpsr)
 {
+    harm_out(smpsl, smpsr, PERIOD);
+}
+
+void
+HarmEnhancer::setMaxBlockSize(int maxBlockSize)
+{
+    inputl.resize(maxBlockSize);
+    inputr.resize(maxBlockSize);
+}
+
+void
+HarmEnhancer::harm_out(float *smpsl, float *smpsr, int nframes)
+{
 
     int i,j;
 
-    memcpy(inputl.data(),smpsl, sizeof(float)*PERIOD);
-    memcpy(inputr.data(),smpsr, sizeof(float)*PERIOD);
+    memcpy(inputl.data(),smpsl, sizeof(float)*nframes);
+    memcpy(inputr.data(),smpsr, sizeof(float)*nframes);
 
 
 
-    hpfl->filterout(inputl.data());
-    hpfr->filterout(inputr.data());
+    hpfl->filterout(inputl.data(), nframes);
+    hpfr->filterout(inputr.data(), nframes);
 
-    limiter->out(inputl.data(),inputr.data());
+    limiter->out(inputl.data(),inputr.data(), nframes);
 
-    for (i=0; i<PERIOD; i++) {
+    for (i=0; i<nframes; i++) {
         float xl = inputl[i];
         float xr = inputr[i];
         float yl=0.0f;
@@ -224,10 +236,10 @@ HarmEnhancer::harm_out(float *smpsl, float *smpsr)
 
     }
 
-    lpfl->filterout(inputl.data());
-    lpfr->filterout(inputr.data());
+    lpfl->filterout(inputl.data(), nframes);
+    lpfr->filterout(inputr.data(), nframes);
 
-    for (i=0; i<PERIOD; i++) {
+    for (i=0; i<nframes; i++) {
         smpsl[i] =(smpsl[i]+inputl[i]*vol);
         smpsr[i] =(smpsr[i]+inputr[i]*vol);
     }

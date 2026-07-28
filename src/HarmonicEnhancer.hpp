@@ -41,6 +41,9 @@ public:
     void chebpc(float c[], float d[]);
     void calcula_mag(float *Rmag);
     void harm_out(float *smpsl, float *smpsr);
+    void harm_out(float *smpsl, float *smpsr, int nframes);
+    /// Size the internal scratch buffers for blocks of at most `maxBlockSize`.
+    void setMaxBlockSize(int maxBlockSize);
     void set_vol(int mode, float gain);
     void set_freqh(int mode, float freq);
     void set_freql(int mode, float freq);

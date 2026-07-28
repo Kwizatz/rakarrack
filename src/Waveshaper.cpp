@@ -61,7 +61,7 @@ Waveshaper::Waveshaper()
     }
 
 
-    temps.resize(PERIOD * period_coeff);
+    setMaxBlockSize(PERIOD);
     u_up= (double)period_coeff;
     u_down = 1.0 / u_up;
 
@@ -98,6 +98,11 @@ Waveshaper::Waveshaper()
 
 
 };
+
+void Waveshaper::setMaxBlockSize(int maxBlockSize)
+{
+    temps.resize(maxBlockSize * period_coeff);
+}
 
 void Waveshaper::cleanup()
 {

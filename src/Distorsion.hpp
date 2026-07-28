@@ -35,7 +35,9 @@ class Distorsion : public Effect
 public:
     Distorsion();
     ~Distorsion ();
-    void out (float * smpsl, float * smpr);
+    void out (float * smpsl, float * smpr) override;
+    void out (float * smpsl, float * smpr, int nframes) override;
+    void setMaxBlockSize (int maxBlockSize) override;
     using Effect::setpreset;
     void setpreset (int dgui, int npreset);
     void changepar (int npar, int value);
@@ -45,7 +47,7 @@ public:
     std::vector<float> octoutr;
 
 private:
-    void applyfilters (float * smpsl, float * smpsr);
+    void applyfilters (float * smpsl, float * smpsr, int nframes);
     //Parameters
     int Pvolume;	//Volumul or E/R
     int Ppanning;	//Panning

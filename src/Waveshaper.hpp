@@ -36,6 +36,9 @@ public:
 //Waveshaping
     void waveshapesmps (int n, float * smps, int type,
                         int drive, int eff);
+    /// Size the internal oversampling scratch buffer so that waveshapesmps()
+    /// can be called with up to `maxBlockSize` samples.
+    void setMaxBlockSize (int maxBlockSize);
     void cleanup();
 
     int period_coeff;

@@ -109,28 +109,34 @@ CoilCrafter::cleanup ()
 void
 CoilCrafter::out (float * smpsl, float * smpsr)
 {
+    out (smpsl, smpsr, PERIOD);
+};
+
+void
+CoilCrafter::out (float * smpsl, float * smpsr, int nframes)
+{
     int i;
 
 
     if(Ppo>0) {
-        RB1l->filterout(smpsl);
-        RB1r->filterout(smpsr);
+        RB1l->filterout(smpsl, nframes);
+        RB1r->filterout(smpsr, nframes);
 
-        for (i=0; i<PERIOD; i++) {
+        for (i=0; i<nframes; i++) {
             smpsl[i]*=att;
             smpsr[i]*=att;
         }
 
     }
     if(Ppd>0) {
-        RB2l->filterout(smpsl);
-        RB2r->filterout(smpsr);
+        RB2l->filterout(smpsl, nframes);
+        RB2r->filterout(smpsr, nframes);
     }
 
-    if(Pmode) harm->harm_out(smpsl,smpsr);
+    if(Pmode) harm->harm_out(smpsl,smpsr, nframes);
 
 
-    for (i=0; i<PERIOD; i++) {
+    for (i=0; i<nframes; i++) {
         smpsl[i]*=outvolume;
         smpsr[i]*=outvolume;
 
