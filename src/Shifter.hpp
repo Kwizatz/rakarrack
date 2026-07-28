@@ -43,13 +43,17 @@ class Shifter : public Effect
 public:
     Shifter (long int Quality, int DS, int uq, int dq);
     ~Shifter ();
-    void out (float *smpsl, float *smpsr);
+    void out (float *smpsl, float *smpsr) override;
+    void out (float *smpsl, float *smpsr, int nframes) override;
+    void setMaxBlockSize (int maxBlockSize) override;
     void setpreset (int npreset);
     void changepar (int npar, int value);
     int getpar (int npar);
     void cleanup ();
     void applyfilters (float * smpsl);
     void adjust(int DS);
+    /// Internal-rate frames produced from `nframes` host-rate frames.
+    int resampledFrames (int nframes) const;
 
     long int hq;
 

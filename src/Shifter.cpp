@@ -38,11 +38,7 @@ Shifter::Shifter (long int Quality, int DS, int uq, int dq)
     hq = Quality;
     adjust(DS);
 
-    templ.resize(PERIOD);
-    tempr.resize(PERIOD);
-
-    outi.resize(nPERIOD);
-    outo.resize(nPERIOD);
+    setMaxBlockSize(PERIOD);
 
     U_Resample = std::make_unique<Resample>(dq);
     D_Resample = std::make_unique<Resample>(uq);
@@ -162,22 +158,53 @@ Shifter::adjust(int DS)
 
 
 
+int
+Shifter::resampledFrames (int nframes) const
+{
+    return (int) lrint ((double) nframes * u_up);
+};
+
+
+void
+Shifter::setMaxBlockSize (int maxBlockSize)
+{
+    const int nrs = resampledFrames(maxBlockSize);
+
+    // templ/tempr are written at the INTERNAL rate (nrs frames) before being
+    // resampled back down, so they must hold whichever count is larger.
+    const int scratch = (nrs > maxBlockSize) ? nrs : maxBlockSize;
+    templ.resize(scratch);
+    tempr.resize(scratch);
+
+    outi.resize(nrs);
+    outo.resize(nrs);
+};
+
+
 void
 Shifter::out (float *smpsl, float *smpsr)
+{
+    out (smpsl, smpsr, PERIOD);
+};
+
+
+void
+Shifter::out (float *smpsl, float *smpsr, int nframes)
 {
 
     int i;
     float sum;
     float use;
+    const int nrs = resampledFrames (nframes);
 
 
     if(DS_state != 0) {
-        memcpy(templ.data(), smpsl,sizeof(float)*PERIOD);
-        memcpy(tempr.data(), smpsr,sizeof(float)*PERIOD);
-        U_Resample->out(templ.data(),tempr.data(),smpsl,smpsr,PERIOD,u_up);
+        memcpy(templ.data(), smpsl,sizeof(float)*nframes);
+        memcpy(tempr.data(), smpsr,sizeof(float)*nframes);
+        U_Resample->out(templ.data(),tempr.data(),smpsl,smpsr,nframes,u_up);
     }
 
-    for (i=0; i < nPERIOD; i++) {
+    for (i=0; i < nrs; i++) {
         if((Pmode == 0) || (Pmode ==2)) {
             sum = fabsf(smpsl[i])+fabsf(smpsr[i]);
             if (sum>env) env = sum;
@@ -229,20 +256,20 @@ Shifter::out (float *smpsl, float *smpsr)
         PS->ratio = 1.0f+((range-1.0f)*use);
 
 
-    PS->smbPitchShift (PS->ratio, nPERIOD, window, hq, nfSAMPLE_RATE, outi.data(), outo.data());
+    PS->smbPitchShift (PS->ratio, nrs, window, hq, nfSAMPLE_RATE, outi.data(), outo.data());
 
-    for (i = 0; i < nPERIOD; i++) {
+    for (i = 0; i < nrs; i++) {
         templ[i] = outo[i] * gain * panning;
         tempr[i] = outo[i] * gain * (1.0f - panning);
     }
 
 
     if(DS_state != 0) {
-        D_Resample->out(templ.data(),tempr.data(),smpsl,smpsr,nPERIOD,u_down);
+        D_Resample->out(templ.data(),tempr.data(),smpsl,smpsr,nrs,u_down);
 
     } else {
-        memcpy(smpsl, templ.data(),sizeof(float)*PERIOD);
-        memcpy(smpsr, tempr.data(),sizeof(float)*PERIOD);
+        memcpy(smpsl, templ.data(),sizeof(float)*nframes);
+        memcpy(smpsr, tempr.data(),sizeof(float)*nframes);
     }
 
 

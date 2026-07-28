@@ -38,15 +38,7 @@ Harmonizer::Harmonizer (long int Quality, int DS, int uq, int dq)
     hq = Quality;
     adjust(DS);
 
-    templ.resize(PERIOD);
-    tempr.resize(PERIOD);
-
-
-    outi.resize(nPERIOD);
-    outo.resize(nPERIOD);
-
-    std::fill(outi.begin(), outi.end(), 0.0f);
-    std::fill(outo.begin(), outo.end(), 0.0f);
+    setMaxBlockSize(PERIOD);
 
     U_Resample = std::make_unique<Resample>(dq);
     D_Resample = std::make_unique<Resample>(uq);
@@ -81,27 +73,56 @@ Harmonizer::cleanup ()
 
 
 void
-Harmonizer::applyfilters (float * smpsl)
+Harmonizer::applyfilters (float * smpsl, int nframes)
 {
-    pl->filterout (smpsl);
+    pl->filterout (smpsl, nframes);
 };
 
+
+int
+Harmonizer::resampledFrames (int nframes) const
+{
+    return (int) lrint ((double) nframes * u_up);
+};
+
+
+void
+Harmonizer::setMaxBlockSize (int maxBlockSize)
+{
+    templ.resize(maxBlockSize);
+    tempr.resize(maxBlockSize);
+
+    const int nrs = resampledFrames(maxBlockSize);
+    outi.resize(nrs);
+    outo.resize(nrs);
+
+    std::fill(outi.begin(), outi.end(), 0.0f);
+    std::fill(outo.begin(), outo.end(), 0.0f);
+};
 
 
 void
 Harmonizer::out (float *smpsl, float *smpsr)
 {
+    out (smpsl, smpsr, PERIOD);
+};
+
+
+void
+Harmonizer::out (float *smpsl, float *smpsr, int nframes)
+{
 
     int i;
+    const int nrs = resampledFrames (nframes);
 
     if((DS_state != 0) && (Pinterval !=12)) {
-        memcpy(templ.data(), smpsl,sizeof(float)*PERIOD);
-        memcpy(tempr.data(), smpsr,sizeof(float)*PERIOD);
-        U_Resample->out(templ.data(),tempr.data(),smpsl,smpsr,PERIOD,u_up);
+        memcpy(templ.data(), smpsl,sizeof(float)*nframes);
+        memcpy(tempr.data(), smpsr,sizeof(float)*nframes);
+        U_Resample->out(templ.data(),tempr.data(),smpsl,smpsr,nframes,u_up);
     }
 
 
-    for (i = 0; i < nPERIOD; i++) {
+    for (i = 0; i < nrs; i++) {
         outi[i] = (smpsl[i] + smpsr[i]) * .5f;
         if (outi[i] > 1.0)
             outi[i] = 1.0f;
@@ -114,19 +135,19 @@ Harmonizer::out (float *smpsl, float *smpsr)
         PS->ratio = r__ratio[0];
 
     if (Pinterval != 12) {
-        PS->smbPitchShift (PS->ratio, nPERIOD, window, hq, nfSAMPLE_RATE, outi.data(), outo.data());
+        PS->smbPitchShift (PS->ratio, nrs, window, hq, nfSAMPLE_RATE, outi.data(), outo.data());
 
         if((DS_state != 0) && (Pinterval != 12)) {
-            D_Resample->mono_out(outo.data(),templ.data(),nPERIOD,u_down,PERIOD);
+            D_Resample->mono_out(outo.data(),templ.data(),nrs,u_down,nframes);
         } else {
-            memcpy(templ.data(), outo.data(),sizeof(float)*PERIOD);
+            memcpy(templ.data(), outo.data(),sizeof(float)*nframes);
         }
 
 
 
-        applyfilters (templ.data());
+        applyfilters (templ.data(), nframes);
 
-        for (i = 0; i < PERIOD; i++) {
+        for (i = 0; i < nframes; i++) {
             smpsl[i] = templ[i] * gain * panning;
             smpsr[i] = templ[i] * gain * (1.0f - panning);
         }

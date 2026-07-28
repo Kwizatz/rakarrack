@@ -39,13 +39,19 @@ class Harmonizer : public Effect
 public:
     Harmonizer (long int Quality, int DS, int uq, int dq);
     ~Harmonizer ();
-    void out (float *smpsl, float *smpsr);
+    void out (float *smpsl, float *smpsr) override;
+    void out (float *smpsl, float *smpsr, int nframes) override;
+    void setMaxBlockSize (int maxBlockSize) override;
     void setpreset (int npreset);
     void changepar (int npar, int value);
     int getpar (int npar);
     void cleanup ();
-    void applyfilters (float * smpsl);
+    void applyfilters (float * smpsl, int nframes);
     void adjust(int DS);
+    /// Internal-rate frames produced from `nframes` host-rate frames.
+    /// Shared by out() and setMaxBlockSize() so the buffers can never be
+    /// sized with a different rounding than the processing loop uses.
+    int resampledFrames (int nframes) const;
 
 
     int Pinterval;
