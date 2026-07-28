@@ -41,7 +41,9 @@ class CompBand : public Effect
 public:
     CompBand ();
     ~CompBand ();
-    void out (float * smpsl, float * smpr);
+    void out (float * smpsl, float * smpr) override;
+    void out (float * smpsl, float * smpr, int nframes) override;
+    void setMaxBlockSize (int maxBlockSize) override;
     void setpreset (int npreset);
     void changepar (int npar, int value);
     int getpar (int npar);

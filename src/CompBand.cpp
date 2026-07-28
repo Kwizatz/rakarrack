@@ -42,16 +42,6 @@
 
 CompBand::CompBand ()
 {
-    lowl.resize(PERIOD);
-    lowr.resize(PERIOD);
-    midll.resize(PERIOD);
-    midlr.resize(PERIOD);
-    midhl.resize(PERIOD);
-    midhr.resize(PERIOD);
-    highl.resize(PERIOD);
-    highr.resize(PERIOD);
-
-
     lpf1l = std::make_unique<AnalogFilter> (2, 500.0f,.7071f, 0);
     lpf1r = std::make_unique<AnalogFilter> (2, 500.0f,.7071f, 0);
     hpf1l = std::make_unique<AnalogFilter> (3, 500.0f,.7071f, 0);
@@ -75,6 +65,9 @@ CompBand::CompBand ()
     CML->Compressor_Change_Preset(0,5);
     CMH->Compressor_Change_Preset(0,5);
     CH->Compressor_Change_Preset(0,5);
+
+    // Sizes the band buffers; must run after the Compressors exist.
+    setMaxBlockSize (PERIOD);
 
 
     //default values
@@ -115,43 +108,67 @@ CompBand::cleanup ()
  * Effect output
  */
 void
+CompBand::setMaxBlockSize (int maxBlockSize)
+{
+    lowl.resize(maxBlockSize);
+    lowr.resize(maxBlockSize);
+    midll.resize(maxBlockSize);
+    midlr.resize(maxBlockSize);
+    midhl.resize(maxBlockSize);
+    midhr.resize(maxBlockSize);
+    highl.resize(maxBlockSize);
+    highr.resize(maxBlockSize);
+
+    CL->setMaxBlockSize(maxBlockSize);
+    CML->setMaxBlockSize(maxBlockSize);
+    CMH->setMaxBlockSize(maxBlockSize);
+    CH->setMaxBlockSize(maxBlockSize);
+}
+
+void
 CompBand::out (float * smpsl, float * smpsr)
+{
+    out (smpsl, smpsr, PERIOD);
+}
+
+void
+CompBand::out (float * smpsl, float * smpsr, int nframes)
 {
     int i;
 
 
-    memcpy(lowl.data(),smpsl,sizeof(float) * PERIOD);
-    memcpy(midll.data(),smpsl,sizeof(float) * PERIOD);
-    memcpy(midhl.data(),smpsl,sizeof(float) * PERIOD);
-    memcpy(highl.data(),smpsl,sizeof(float) * PERIOD);
+    memcpy(lowl.data(),smpsl,sizeof(float) * nframes);
+    memcpy(midll.data(),smpsl,sizeof(float) * nframes);
+    memcpy(midhl.data(),smpsl,sizeof(float) * nframes);
+    memcpy(highl.data(),smpsl,sizeof(float) * nframes);
 
-    lpf1l->filterout(lowl.data());
-    hpf1l->filterout(midll.data());
-    lpf2l->filterout(midll.data());
-    hpf2l->filterout(midhl.data());
-    lpf3l->filterout(midhl.data());
-    hpf3l->filterout(highl.data());
+    lpf1l->filterout(lowl.data(), nframes);
+    hpf1l->filterout(midll.data(), nframes);
+    lpf2l->filterout(midll.data(), nframes);
+    hpf2l->filterout(midhl.data(), nframes);
+    lpf3l->filterout(midhl.data(), nframes);
+    hpf3l->filterout(highl.data(), nframes);
 
-    memcpy(lowr.data(),smpsr,sizeof(float) * PERIOD);
-    memcpy(midlr.data(),smpsr,sizeof(float) * PERIOD);
-    memcpy(midhr.data(),smpsr,sizeof(float) * PERIOD);
-    memcpy(highr.data(),smpsr,sizeof(float) * PERIOD);
+    memcpy(lowr.data(),smpsr,sizeof(float) * nframes);
+    memcpy(midlr.data(),smpsr,sizeof(float) * nframes);
+    memcpy(midhr.data(),smpsr,sizeof(float) * nframes);
+    memcpy(highr.data(),smpsr,sizeof(float) * nframes);
 
-    lpf1r->filterout(lowr.data());
-    hpf1r->filterout(midlr.data());
-    lpf2r->filterout(midlr.data());
-    hpf2r->filterout(midhr.data());
-    lpf3r->filterout(midhr.data());
-    hpf3r->filterout(highr.data());
-
-
-    CL->out(lowl.data(),lowr.data());
-    CML->out(midll.data(),midlr.data());
-    CMH->out(midhl.data(),midhr.data());
-    CH->out(highl.data(),highr.data());
+    lpf1r->filterout(lowr.data(), nframes);
+    hpf1r->filterout(midlr.data(), nframes);
+    lpf2r->filterout(midlr.data(), nframes);
+    hpf2r->filterout(midhr.data(), nframes);
+    lpf3r->filterout(midhr.data(), nframes);
+    hpf3r->filterout(highr.data(), nframes);
 
 
-    for (i = 0; i < PERIOD; i++) {
+    CL->out(lowl.data(),lowr.data(), nframes);
+    CML->out(midll.data(),midlr.data(), nframes);
+    CMH->out(midhl.data(),midhr.data(), nframes);
+    CH->out(highl.data(),highr.data(), nframes);
+
+
+    for (i = 0; i < nframes; i++) {
         smpsl[i]=(lowl[i]+midll[i]+midhl[i]+highl[i])*level;
         smpsr[i]=(lowr[i]+midlr[i]+midhr[i]+highr[i])*level;
     }

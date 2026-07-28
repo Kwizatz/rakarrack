@@ -40,7 +40,8 @@ class Echotron : public Effect
 public:
     Echotron ();
     ~Echotron ();
-    void out (float * smpsl, float * smpr);
+    void out (float * smpsl, float * smpr) override;
+    void out (float * smpsl, float * smpr, int nframes) override;
     void setpreset (int npreset);
     void changepar (int npar, int value);
     int getpar (int npar);
@@ -61,7 +62,7 @@ private:
     void setlpf (int Plpf);
     void setfb(int value);
     void init_params();
-    void modulate_delay();
+    void modulate_delay(int nframes);
     void modulate_filters();
     void loaddefault();
 

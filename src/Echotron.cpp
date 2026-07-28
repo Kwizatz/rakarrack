@@ -109,6 +109,12 @@ Echotron::cleanup ()
 void
 Echotron::out (float * smpsl, float * smpsr)
 {
+    out (smpsl, smpsr, PERIOD);
+};
+
+void
+Echotron::out (float * smpsl, float * smpsr, int nframes)
+{
 
     int i, j, k;
     int length = Plength;
@@ -116,13 +122,13 @@ Echotron::out (float * smpsl, float * smpsr)
     float rxindex,lxindex;
 
 
-    if((Pmoddly)||(Pmodfilts)) modulate_delay();
+    if((Pmoddly)||(Pmodfilts)) modulate_delay(nframes);
     else interpl = interpr = 0;
 
     float tmpmodl = oldldmod;
     float tmpmodr = oldrdmod;
 
-    for (i = 0; i < PERIOD; i++) {
+    for (i = 0; i < nframes; i++) {
         tmpmodl+=interpl;
         tmpmodr+=interpr;
 
@@ -389,14 +395,14 @@ void Echotron::init_params()
 
 };
 
-void Echotron::modulate_delay()
+void Echotron::modulate_delay(int nframes)
 {
 
     float lfmod, rfmod, lfol, lfor, dlfol, dlfor;
-    float fperiod = 1.0f/fPERIOD;
+    float fperiod = 1.0f/(float)nframes;
 
-    lfo.effectlfoout (&lfol, &lfor);
-    dlfo.effectlfoout (&dlfol, &dlfor);
+    lfo.effectlfoout (&lfol, &lfor, nframes);
+    dlfo.effectlfoout (&dlfol, &dlfor, nframes);
     if(Pmodfilts) {
         lfmod = f_pow2((lfol*width + 0.25f + depth)*4.5f);
         rfmod = f_pow2((lfor*width + 0.25f + depth)*4.5f);

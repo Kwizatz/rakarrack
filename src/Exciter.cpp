@@ -65,9 +65,22 @@ Exciter::cleanup ()
  * Effect output
  */
 void
+Exciter::setMaxBlockSize (int maxBlockSize)
+{
+    harm->setMaxBlockSize (maxBlockSize);
+};
+
+void
 Exciter::out (float * smpsl, float * smpsr)
 {
     harm->harm_out(smpsl,smpsr);
+
+};
+
+void
+Exciter::out (float * smpsl, float * smpsr, int nframes)
+{
+    harm->harm_out(smpsl,smpsr, nframes);
 
 };
 
