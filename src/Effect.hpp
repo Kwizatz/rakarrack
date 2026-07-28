@@ -46,6 +46,21 @@ public:
     virtual void out ([[maybe_unused]] float * smpsl, [[maybe_unused]] float * smpsr)
     {
     }
+
+    /// Process `nframes` samples in place.
+    ///
+    /// This is the block-size-aware entry point.  Effects that have been
+    /// migrated off the global PERIOD block size override this and use
+    /// `nframes` throughout, which is what a plugin host (VST3/CLAP/AU/LV2)
+    /// requires since it chooses the block length per process() call.
+    ///
+    /// The default implementation forwards to the legacy fixed-size out(),
+    /// so effects that have not been migrated yet keep working unchanged.
+    virtual void out (float * smpsl, float * smpsr, [[maybe_unused]] int nframes)
+    {
+        out (smpsl, smpsr);
+    }
+
     virtual void cleanup ()
     {
     }

@@ -40,6 +40,9 @@ EffectLFO::EffectLFO ()
     PLFOtype = 0;
     Pstereo = 96;
 
+    nframes_ = PERIOD;
+    fnframes_ = fPERIOD;
+
     iperiod = fPERIOD/fSAMPLE_RATE;
     h = iperiod;
     a = 10.0f;
@@ -63,16 +66,38 @@ EffectLFO::EffectLFO ()
 
 
 /*
+ * Recompute the coefficients that depend on the processing block size.
+ * Kept separate from updateparams() because updateparams() also re-randomizes
+ * the Lorenz fractal seed, which must NOT happen merely because the host
+ * handed us a different block length.
+ */
+void
+EffectLFO::updatetiming ()
+{
+    iperiod = fnframes_ / fSAMPLE_RATE;
+
+    incx = (float)Pfreq * fnframes_ / (fSAMPLE_RATE * 60.0f);
+
+    if (incx > 0.49999999)
+        incx = 0.499999999f;		//Limit the Frequency
+
+    if ((h = incx*ratediv) > 0.02f) h = 0.02f;  //keeps it stable
+
+    float tmp = 6.0f/((float) Pfreq);  //S/H time attack  0.2*60=12.0
+    tca = iperiod/(iperiod + tmp);  //
+    tcb = 1.0f - tca;
+    maxrate = 4.0f*iperiod;
+};
+
+
+/*
  * Update the changed parameters
  */
 void
 EffectLFO::updateparams ()
 {
 
-    incx = (float)Pfreq * fPERIOD / (fSAMPLE_RATE * 60.0f);
-
-    if (incx > 0.49999999)
-        incx = 0.499999999f;		//Limit the Frequency
+    updatetiming ();
 
     lfornd = (float)Prandomness / 127.0f;
     if (lfornd < 0.0)
@@ -86,8 +111,6 @@ EffectLFO::updateparams ()
 
     xr = fmodf (xl + ((float)Pstereo - 64.0f) / 127.0f + 1.0f, 1.0f);
 
-    if ((h = incx*ratediv) > 0.02f) h = 0.02f;  //keeps it stable
-
     a = 10.0f + (((float) RND()) - 0.5f)*8.0f;
     b = 28.0f + (((float) RND()) - 0.5f)*12.0f;
     c = 1.25f + 3.0f * ((float) RND());
@@ -97,11 +120,6 @@ EffectLFO::updateparams ()
     y0 = 0.0f;
     z0 = 0.2f;
     x1 = y1 = z1 = radius = 0.0f;
-
-    float tmp = 6.0f/((float) Pfreq);  //S/H time attack  0.2*60=12.0
-    tca = iperiod/(iperiod + tmp);  //
-    tcb = 1.0f - tca;
-    maxrate = 4.0f*iperiod;
 };
 
 
@@ -241,5 +259,21 @@ EffectLFO::effectlfoout (float * outl, float * outr)
         ampr2 = (1.0f - lfornd) + lfornd * RND();
     };
     *outr = (out + 1.0f) * 0.5f;
+};
+
+
+/*
+ * LFO output, advanced by an explicit block size.
+ */
+void
+EffectLFO::effectlfoout (float * outl, float * outr, int nframes)
+{
+    if (nframes != nframes_) {
+        nframes_ = nframes;
+        fnframes_ = (float) nframes;
+        updatetiming ();
+    }
+
+    effectlfoout (outl, outr);
 };
 

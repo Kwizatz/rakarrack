@@ -34,6 +34,11 @@ public:
     EffectLFO ();
     ~EffectLFO () = default;
     void effectlfoout (float * outl, float * outr);
+    // Block-size-aware variant: advances the LFO by exactly `nframes` samples
+    // worth of phase instead of the global PERIOD.  Recomputes the timing
+    // coefficients only when the block size actually changes, so a host that
+    // varies the block length does not disturb the LFO/fractal state.
+    void effectlfoout (float * outl, float * outr, int nframes);
     void updateparams ();
     int Pfreq;
     int Prandomness;
@@ -41,6 +46,12 @@ public:
     int Pstereo;	//"64"=0
 private:
     float getlfoshape (float x);
+    // Recomputes every coefficient that depends on the processing block size.
+    void updatetiming ();
+
+    // Block size the current timing coefficients were computed for.
+    int nframes_;
+    float fnframes_;
 
     float xl, xr;
     float incx;
