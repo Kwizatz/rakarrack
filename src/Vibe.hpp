@@ -59,29 +59,35 @@ private:
 
     float fwidth;
     float fdepth;
-    float rpanning, lpanning;
-    float flrcross, fcross;
-    float fb;
+    float rpanning{0.0f}, lpanning{0.0f};
+    float flrcross{0.0f}, fcross{0.0f};
+    float fb{0.0f};
     EffectLFO lfo;
 
-    float Ra, Rb, b, dTC, dRCl, dRCr, lampTC, ilampTC, minTC, alphal, alphar, stepl, stepr, oldstepl, oldstepr;
-    float fbr, fbl;
-    float dalphal, dalphar;
-    float lstep,rstep;
-    float cperiod;
-    float gl, oldgl;
-    float gr, oldgr;
+    float Ra{0.0f}, Rb{0.0f}, b{0.0f}, dTC{0.0f}, dRCl{0.0f}, dRCr{0.0f};
+    float lampTC{0.0f}, ilampTC{0.0f}, minTC{0.0f}, alphal{0.0f}, alphar{0.0f};
+    // Same opto smoothing as Opticaltrem: read before written, then fed back
+    // into itself, so a garbage start value does not decay.
+    float stepl{0.0f}, stepr{0.0f}, oldstepl{0.0f}, oldstepr{0.0f};
+    float fbr{0.0f}, fbl{0.0f};
+    float dalphal{0.0f}, dalphar{0.0f};
+    float lstep{0.0f},rstep{0.0f};
+    float cperiod{0.0f};
+    float gl{0.0f}, oldgl{0.0f};
+    float gr{0.0f}, oldgr{0.0f};
 
     class fparams
     {
     public:
-        float x1;
-        float y1;
+        // x1/y1 carry the filter state between samples and are read before
+        // they are first written.
+        float x1{0.0f};
+        float y1{0.0f};
         //filter coefficients
-        float n0;
-        float n1;
-        float d0;
-        float d1;
+        float n0{0.0f};
+        float n1{0.0f};
+        float d0{0.0f};
+        float d1{0.0f};
     } vc[8], vcvo[8], ecvc[8], vevo[8], bootstrap[8];
 
     float vibefilter(float data, fparams *ftype, int stage);
@@ -89,11 +95,11 @@ private:
     void modulate(float ldrl, float ldrr);
     float bjt_shape(float data);
 
-    float R1;
-    float Rv;
-    float C2;
-    float C1[8];
-    float beta;  //transistor forward gain.
+    float R1{0.0f};
+    float Rv{0.0f};
+    float C2{0.0f};
+    float C1[8]{};
+    float beta{0.0f};  //transistor forward gain.
     float gain, k;
     float oldcvolt[8] ;
     float en1[8], en0[8], ed1[8], ed0[8];

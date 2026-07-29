@@ -72,17 +72,17 @@ private:
     void sethpf (int Phpf);
 
 
-    int hold_count;
-    int state;
-    float range;
-    float cut;
-    float t_level;
-    float a_rate;
-    float d_rate;
-    float env;
-    float gate;
-    float fs;
-    float hold;
+    int hold_count{0};
+    int state{0};
+    float range{0.0f};
+    float cut{0.0f};
+    float t_level{0.0f};
+    float a_rate{0.0f};
+    float d_rate{0.0f};
+    float env{0.0f};
+    float gate{0.0f};
+    float fs{0.0f};
+    float hold{0.0f};
 
 
 

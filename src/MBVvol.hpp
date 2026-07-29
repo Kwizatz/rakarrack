@@ -75,12 +75,12 @@ private:
 
     //Parametrii reali
 
-    float coeff;
-    float lfo1l,lfo1r,lfo2l,lfo2r;
-    float v1l,v1r,v2l,v2r;
-    float d1,d2,d3,d4;
-    float volL,volML,volMH,volH;
-    float volLr,volMLr,volMHr,volHr;
+    float coeff{0.0f};
+    float lfo1l{0.0f},lfo1r{0.0f},lfo2l{0.0f},lfo2r{0.0f};
+    float v1l{0.0f},v1r{0.0f},v2l{0.0f},v2r{0.0f};
+    float d1{0.0f},d2{0.0f},d3{0.0f},d4{0.0f};
+    float volL{0.0f},volML{0.0f},volMH{0.0f},volH{0.0f};
+    float volLr{0.0f},volMLr{0.0f},volMHr{0.0f},volHr{0.0f};
     std::unique_ptr<AnalogFilter> lpf1l, lpf1r, hpf1l, hpf1r;
     std::unique_ptr<AnalogFilter> lpf2l, lpf2r, hpf2l, hpf2r;
     std::unique_ptr<AnalogFilter> lpf3l, lpf3r, hpf3l, hpf3r;

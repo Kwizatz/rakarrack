@@ -70,14 +70,15 @@ private:
     int Psubdiv;
     int Pes;
 
-    int maxx_delay;
+    int maxx_delay{0};
 
-    float delay, lrdelay, ltime, rtime;
-    float fdelay, subdiv, pes, pingpong, ipingpong;
-    float rvl, rvr;
-    float rpanning, lpanning, lrcross, fb, hidamp, reverse, ireverse, lfeedback, rfeedback;
-    float oldl, oldr;		//pt. lpf
-    float  Srate_Attack_Coeff;
+    float delay{0.0f}, lrdelay{0.0f}, ltime{0.0f}, rtime{0.0f};
+    float fdelay{0.0f}, subdiv{0.0f}, pes{0.0f}, pingpong{0.0f}, ipingpong{0.0f};
+    float rvl{0.0f}, rvr{0.0f};
+    float rpanning{0.0f}, lpanning{0.0f}, lrcross{0.0f}, fb{0.0f}, hidamp{0.0f};
+    float reverse{0.0f}, ireverse{0.0f}, lfeedback{0.0f}, rfeedback{0.0f};
+    float oldl{0.0f}, oldr{0.0f};		//pt. lpf
+    float  Srate_Attack_Coeff{0.0f};
 
     std::unique_ptr<delayline> ldelay, rdelay;
 };

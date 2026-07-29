@@ -94,15 +94,16 @@ private:
     int kl{0}, kl2{0}, rvkl{0}, rvkl2{0};
     int maxx_delay{0}, fade{0}, dl{1}, dl2{1};
     int first_time1{1}, first_time2{1}, rplaystate{0};
-    int barlen, looper_ts;
+    int barlen{0}, looper_ts{0};
 
     std::vector<float> ldelay, rdelay;
     std::vector<float> t2ldelay, t2rdelay;
 
-    float oldl, oldr;		//pt. lpf
+    float oldl{0.0f}, oldr{0.0f};		//pt. lpf
 
-    float  Srate_Attack_Coeff, track1gain, track2gain, fade1, fade2, pregain1, pregain2;
-    float mvol;
+    float  Srate_Attack_Coeff{0.0f}, track1gain{0.0f}, track2gain{0.0f};
+    float  fade1{0.0f}, fade2{0.0f}, pregain1{0.0f}, pregain2{0.0f};
+    float mvol{0.0f};
     class metronome ticker;
     std::vector<float> ticktock{};
 };

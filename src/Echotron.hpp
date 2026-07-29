@@ -87,23 +87,23 @@ private:
     int Plength;
 
 
-    int offset;
-    int maxx_size;
+    int offset{0};
+    int maxx_size{0};
 
 
     //arrays of parameters from text file:
     float fPan[ECHOTRON_F_SIZE];  //1+Pan from text file
-    float fTime[ECHOTRON_F_SIZE];
-    float fLevel[ECHOTRON_F_SIZE];
-    float fLP[ECHOTRON_F_SIZE];
-    float fBP[ECHOTRON_F_SIZE];
-    float fHP[ECHOTRON_F_SIZE];
-    float fFreq[ECHOTRON_F_SIZE];
-    float fQ[ECHOTRON_F_SIZE];
-    int iStages[ECHOTRON_F_SIZE];
-    float subdiv_dmod;
-    float subdiv_fmod;
-    int f_qmode;
+    float fTime[ECHOTRON_F_SIZE]{};
+    float fLevel[ECHOTRON_F_SIZE]{};
+    float fLP[ECHOTRON_F_SIZE]{};
+    float fBP[ECHOTRON_F_SIZE]{};
+    float fHP[ECHOTRON_F_SIZE]{};
+    float fFreq[ECHOTRON_F_SIZE]{};
+    float fQ[ECHOTRON_F_SIZE]{};
+    int iStages[ECHOTRON_F_SIZE]{};
+    float subdiv_dmod{0.0f};
+    float subdiv_fmod{0.0f};
+    int f_qmode{0};
 
     float rtime[ECHOTRON_F_SIZE];
     float ltime[ECHOTRON_F_SIZE];

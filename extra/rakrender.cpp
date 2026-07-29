@@ -24,8 +24,50 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <memory>
+#include <new>
 #include <string>
 #include <vector>
+
+// ─── Heap fill ─────────────────────────────────────────────────────
+//
+// Fresh heap memory normally holds whatever was there before, which differs
+// from one process to the next. Any effect that reads its own state before
+// writing it therefore produces different audio on every run, and comparing
+// two renders proves nothing.
+//
+// Filling every allocation with a known byte makes that leftover deterministic.
+// Two runs with the same fill must then match; two runs with *different* fills
+// only differ if something is reading memory it never wrote. That difference is
+// the detector, and --only-effect narrows it to a single effect.
+namespace {
+int g_heapFill = -1;    // -1 leaves malloc's memory alone
+
+void* fillingAlloc(std::size_t n)
+{
+    void* p = std::malloc(n ? n : 1);
+    if (p == nullptr)
+        throw std::bad_alloc();
+    if (g_heapFill >= 0)
+        std::memset(p, g_heapFill, n);
+    return p;
+}
+} // namespace
+
+// Replacing global new/delete with malloc/free is exactly the pairing GCC
+// warns about here, and exactly what this needs to do.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmismatched-new-delete"
+
+void* operator new(std::size_t n) { return fillingAlloc(n); }
+void* operator new[](std::size_t n) { return fillingAlloc(n); }
+void operator delete(void* p) noexcept { std::free(p); }
+void operator delete[](void* p) noexcept { std::free(p); }
+void operator delete(void* p, std::size_t) noexcept { std::free(p); }
+void operator delete[](void* p, std::size_t) noexcept { std::free(p); }
+
+#pragma GCC diagnostic pop
+
 
 namespace {
 
@@ -37,6 +79,8 @@ struct Options
     std::string saveBankPath;
     int          preset{0};
     int          period{256};
+    int          onlyEffect{-1};
+    int          heapFill{-1};
     bool         graph{false};
     bool         ab{false};
     unsigned int seed{12345};
@@ -65,6 +109,13 @@ void usage()
         "  --tail SECONDS  extra silence to render, for delay and reverb tails\n"
         "  --graph         use the node graph path instead of the legacy chain\n"
         "  --seed N        PRNG seed (default 12345)\n"
+        "\n"
+        "Diagnostics:\n"
+        "  --only-effect N  run just effect type N, ignoring the preset's chain\n"
+        "  --heap-fill N    fill every allocation with byte N, so leftover heap\n"
+        "                   contents are the same on every run. Renders that\n"
+        "                   differ between two fills are reading uninitialised\n"
+        "                   memory.\n"
         "\n"
         "Effects randomise parameters at construction through the global PRNG,\n"
         "so --ab reseeds before each run to keep the two engines identical.\n");
@@ -117,6 +168,12 @@ bool writeWav(const std::string& path, const Audio& audio)
         std::fprintf(stderr, "cannot write %s: %s\n", path.c_str(), sf_strerror(nullptr));
         return false;
     }
+
+    // libsndfile adds a PEAK chunk to float files, and that chunk carries the
+    // wall-clock time the peaks were measured. Two renders of the same audio
+    // then differ by a few bytes of header, which makes byte comparison of
+    // output files useless. Nothing here needs the chunk.
+    sf_command(file, SFC_SET_ADD_PEAK_CHUNK, nullptr, SF_FALSE);
 
     std::vector<float> interleaved(audio.l.size() * 2);
     for (std::size_t i = 0; i < audio.l.size(); ++i)
@@ -181,6 +238,19 @@ void render(const Options& opt, const Audio& in, Audio& out, bool useGraph, bool
     // Actualizar_Audio() clears the master switch while it applies a preset.
     rkr->Bypass = 1;
     rkr->use_effect_graph = useGraph;
+
+    if (opt.onlyEffect >= 0)
+    {
+        // Replace the preset's chain with a single effect, so a difference in
+        // the output can be attributed to that effect alone.
+        for (int i = 0; i < MAX_EFFECT_SLOTS; ++i)
+            rkr->efx_order[i] = EMPTY_SLOT;
+        rkr->efx_order[0] = opt.onlyEffect;
+
+        for (int type = 0; type < kEffectTypeCount; ++type)
+            if (int* active = bypassByIndex(*rkr, type))
+                *active = (type == opt.onlyEffect) ? 1 : 0;
+    }
 
     if (verbose)
         reportChain(*rkr);
@@ -264,6 +334,8 @@ bool parseArgs(int argc, char** argv, Options& opt)
         else if (arg == "--save-bank" && hasValue) opt.saveBankPath = argv[++i];
         else if (arg == "--preset" && hasValue)   opt.preset   = std::atoi(argv[++i]);
         else if (arg == "--period" && hasValue)   opt.period   = std::atoi(argv[++i]);
+        else if (arg == "--only-effect" && hasValue) opt.onlyEffect = std::atoi(argv[++i]);
+        else if (arg == "--heap-fill" && hasValue)   opt.heapFill   = std::atoi(argv[++i]);
         else if (arg == "--tail" && hasValue)     opt.tail     = std::atof(argv[++i]);
         else if (arg == "--seed" && hasValue)     opt.seed     = static_cast<unsigned>(std::atoi(argv[++i]));
         else if (arg == "--graph")                opt.graph    = true;
@@ -316,6 +388,9 @@ int main(int argc, char** argv)
     }
     if (!parseArgs(argc, argv, opt))
         return 1;
+
+    // Before anything the engine allocates.
+    g_heapFill = opt.heapFill;
 
     if (!opt.saveBankPath.empty())
     {

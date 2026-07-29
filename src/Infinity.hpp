@@ -65,28 +65,28 @@ private:
     int Pstages;        //filter stages
 
     struct filterstate {
-        float sinp;
-        float cosp;      //sinusoid oscillator state variables
-        float ramp;      //frequency oscillator
-        float level;
-        float lfo;
-        float vol;
+        float sinp{0.0f};
+        float cosp{0.0f};      //sinusoid oscillator state variables
+        float ramp{0.0f};      //frequency oscillator
+        float level{0.0f};
+        float lfo{0.0f};
+        float vol{0.0f};
     } rbandstate[NUM_INF_BANDS], lbandstate[NUM_INF_BANDS];
 
     struct phasevars {
-        float yn1[MAX_PHASER_STAGES];
-        float xn1[MAX_PHASER_STAGES];
-        float gain;
+        float yn1[MAX_PHASER_STAGES]{};
+        float xn1[MAX_PHASER_STAGES]{};
+        float gain{0.0f};
     } rphaser[NUM_INF_BANDS], lphaser[NUM_INF_BANDS];
-    float phaserfb;
+    float phaserfb{0.0f};
     float phaser(phasevars *pstruct, float fxn, int j);
     /*
     fconst = freq* 2*pi/fs;
     rampconst = 2*freq/fs;
      */
-    float cfconst, fconst;  //sine wave oscillator frequency constant // 2*pi*freq/fs
-    float rampconst, irampconst, crampconst, cirampconst;  //ramp oscillator constant// 2*freq/SR
-    float alpha, beta;
+    float cfconst{0.0f}, fconst{0.0f};  //sine wave oscillator frequency constant // 2*pi*freq/fs
+    float rampconst{0.0f}, irampconst{0.0f}, crampconst{0.0f}, cirampconst{0.0f};  //ramp oscillator constant// 2*freq/SR
+    float alpha{0.0f}, beta{0.0f};
     float fstart, fend;  //range of filter sweep
     float linconst, logconst;
     float minlevel, maxlevel;

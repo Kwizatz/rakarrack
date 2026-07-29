@@ -71,9 +71,9 @@ private:
     void process_rbuf();
     void UpdateLength ();
 
-    int offset;
-    int maxx_size,maxx_read,real_len,length;
-    int DS_state;
+    int offset{0};
+    int maxx_size{0},maxx_read{0},real_len{0},length{0};
+    int DS_state{0};
     int nPERIOD;
     int nSAMPLE_RATE;
 
@@ -82,12 +82,12 @@ private:
     float nfSAMPLE_RATE;
 
 
-    float lpanning, rpanning, hidamp, alpha_hidamp, convlength, oldl;
+    float lpanning{0.0f}, rpanning{0.0f}, hidamp{0.0f}, alpha_hidamp{0.0f}, convlength{0.0f}, oldl{0.0f};
     std::vector<float> rbuf, buf, lxn;
     std::vector<float> templ, tempr;
 
-    float level,fb, feedback;
-    float levpanl,levpanr;
+    float level{0.0f},fb{0.0f}, feedback{0.0f};
+    float levpanl{0.0f},levpanr{0.0f};
 
     SNDFILE *infile;
     SF_INFO sfinfo;
