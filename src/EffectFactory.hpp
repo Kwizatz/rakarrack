@@ -17,12 +17,11 @@
 
 #pragma once
 
+#include "EffectRegistry.hpp"
+
 #include <memory>
 
 class Effect;
-
-/// Number of distinct effect type indices (0 .. kEffectTypeCount-1).
-inline constexpr int kEffectTypeCount = 47;
 
 /// Options for the effects whose constructors take arguments.
 ///

@@ -45,6 +45,7 @@ set(ENGINE_SOURCES
 	Echotron.cpp
 	EffectFactory.cpp
 	EffectGraph.cpp
+	EffectRegistry.cpp
 	EffectLFO.cpp
 	EngineController.cpp
 	EQ.cpp
@@ -122,6 +123,9 @@ set(ENGINE_HEADERS
 	Echo.hpp
 	Echotron.hpp
 	Effect.hpp
+	EffectFactory.hpp
+	EffectGraph.hpp
+	EffectRegistry.hpp
 	EffectLFO.hpp
 	EQ.hpp
 	Exciter.hpp
