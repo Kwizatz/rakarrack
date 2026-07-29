@@ -762,16 +762,30 @@ void StompBox::init_mode (int value)
 void StompBox::init_tone ()
 {
     float varf;
+
+    // The tone controls carry two different meanings in turn. changepar()
+    // sets highb/midb/lowb to a normalised control position, this function
+    // uses that position to place the filter frequencies, and then rescales
+    // them into gains for the processing loop.
+    //
+    // Reading highb directly to compute varf therefore only works the first
+    // time: init_tone() runs at the end of every changepar(), so the second
+    // call placed the filter using a gain rather than a control position, and
+    // the tone drifted with the number of parameter changes made. Deriving the
+    // position from the parameter, the way case 7 below already did, gives the
+    // same result on the first call and a stable one afterwards.
+    const float hpos = (Phigh < 0) ? ((float) Phigh)/64.0f : ((float) Phigh)/32.0f;
+
     switch (Pmode) {
     case 0:
-        varf = 2533.0f + highb*1733.0f;  //High tone ranges from 800 to 6000Hz
+        varf = 2533.0f + hpos*1733.0f;  //High tone ranges from 800 to 6000Hz
         rtonehg->setfreq(varf);
         ltonehg->setfreq(varf);
         if (highb > 0.0f) highb = ((float) Phigh)/8.0f;
         break;
 
     case 1:
-        varf = 3333.0f + highb*2500.0f;  //High tone ranges from 833 to 8333Hz
+        varf = 3333.0f + hpos*2500.0f;  //High tone ranges from 833 to 8333Hz
         rtonehg->setfreq(varf);
         ltonehg->setfreq(varf);
 
@@ -781,7 +795,7 @@ void StompBox::init_tone ()
 
     case 2:
     case 3:
-        varf = 3653.0f + highb*3173.0f;  //High tone ranges from ~480 to 10k
+        varf = 3653.0f + hpos*3173.0f;  //High tone ranges from ~480 to 10k
         rtonehg->setfreq(varf);
         ltonehg->setfreq(varf);
         break;
@@ -790,13 +804,13 @@ void StompBox::init_tone ()
         rpre1->setfreq(varf);
         lpre1->setfreq(varf);
         pre1gain = 212.0f;
-        varf = 3653.0f + highb*3173.0f;  //High tone ranges from ~480 to 10k
+        varf = 3653.0f + hpos*3173.0f;  //High tone ranges from ~480 to 10k
         rtonehg->setfreq(varf);
         ltonehg->setfreq(varf);
         break;
     case 5: //Death Metal
     case 6: //Mid Elves Own
-        varf = 3653.0f + highb*3173.0f;  //High tone ranges from ~480 to 10k
+        varf = 3653.0f + hpos*3173.0f;  //High tone ranges from ~480 to 10k
         rtonehg->setfreq(varf);
         ltonehg->setfreq(varf);
 

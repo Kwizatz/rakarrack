@@ -55,11 +55,14 @@ struct EffectSettings
 
 /// Write a configuration back into `effect`.
 ///
-/// Every slot is written, not just the ones present in `params`: a slot that
-/// holds zero is still a real setting, and leaving it out would let the target
-/// keep its own default instead. Slots beyond `params` are written as zero for
-/// the same reason. Applied in ascending index order, which matters for
-/// effects like EQ where a band's type resets the rest of that band.
+/// Replays the stored preset first, then the captured slots, then settles the
+/// effect. Only the captured slots are written: replaying the preset has
+/// already put the effect in the state the source started from, and calling
+/// changepar() for slots an effect does not use is not always free -- StompBox
+/// rewrites its tone coefficients on every call, whatever the parameter.
+///
+/// Applied in ascending index order, which matters for effects like EQ where a
+/// band's type resets the rest of that band.
 void applyEffectSettings(Effect& effect, const EffectSettings& settings);
 
 #endif

@@ -41,6 +41,10 @@ Arpie::Arpie ()
     Phidamp = 60;
     Pharms = 3;
     Psubdiv = 1;
+    // changepar() keeps these in step as subdiv = Psubdiv + 1. Setting only
+    // Psubdiv left subdiv at zero, and setdelay() divides by it, so the delay
+    // length was undefined until something happened to set this parameter.
+    subdiv = Psubdiv + 1;
 
     lrdelay = 0;
     harmonic = 1;

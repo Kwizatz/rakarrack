@@ -30,17 +30,21 @@ EffectSettings captureEffectSettings(Effect& effect)
 void applyEffectSettings(Effect& effect, const EffectSettings& settings)
 {
     // Replay the preset first. Most of what it does is then overwritten by the
-    // swept parameters, but it is the only way to reach state that no
+    // stored parameters, but it is the only way to reach state that no
     // parameter reports -- DynamicFilter's filter definitions, for one.
     effect.setpreset(settings.preset);
 
-    for (int i = 0; i < kEffectParamSlots; ++i)
+    // Only the slots that were captured. Sweeping the whole index space would
+    // mean calling changepar() a hundred-odd extra times, and that is not free:
+    // StompBox runs init_tone() at the end of every changepar(), and that
+    // rewrites the tone coefficients it just read. Replaying the preset above
+    // has already put the effect in the same starting state the source was in,
+    // so the trailing slots trimmed by capture need no writing.
+    for (std::size_t i = 0; i < settings.params.size(); ++i)
     {
-        const auto idx = static_cast<std::size_t>(i);
-        const int value = (idx < settings.params.size()) ? settings.params[idx] : 0;
         // loadpreset() rather than changepar(), so effects whose changepar()
         // is a command rather than a setting restore instead of firing.
-        effect.loadpreset(i, value);
+        effect.loadpreset(static_cast<int>(i), settings.params[i]);
     }
 
     // Most setpreset() implementations end this way, for the same reason:

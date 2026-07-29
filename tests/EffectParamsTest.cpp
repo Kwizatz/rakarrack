@@ -185,27 +185,16 @@ int main()
             renderBlock(*copy, cl, cr);
             if (sl != cl || sr != cr)
             {
-                // Arpie and StompBox hold state that setpreset() establishes
-                // and no parameter reports, so configuring an instance and
-                // restoring one are not quite the same thing. Their captured
-                // parameters do round-trip, and restoring is idempotent -- both
-                // checked above -- so presets load consistently; they just do
-                // not match an instance built by setpreset() to the last bit.
-                // Differences are around 0.001 and 0.015 respectively.
-                const bool known = (type == 24 || type == 39);
+                ++audioMismatch;
+                audioNames += " " + std::to_string(type);
 
                 double worst = 0.0;
                 for (std::size_t i = 0; i < sl.size(); ++i)
                     worst = std::max(worst,
                                      std::fabs(static_cast<double>(sl[i]) - cl[i]));
 
-                if (!known)
-                {
-                    ++audioMismatch;
-                    audioNames += " " + std::to_string(type);
-                    std::printf("    type %d preset %d: worst sample difference %g\n",
-                                type, preset, worst);
-                }
+                std::printf("    type %d preset %d: worst sample difference %g\n",
+                            type, preset, worst);
                 break;
             }
         }
