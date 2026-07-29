@@ -62,7 +62,12 @@ struct EffectNode
     float x{0.0f};
     float y{0.0f};
 
-    std::unique_ptr<Effect> effect;
+    /// Set only when the graph owns the effect. Nodes added by
+    /// addBorrowedNode() leave this null and the owner outlives the graph.
+    std::unique_ptr<Effect> owned;
+
+    /// The effect to run. Never null for a node built by either add call.
+    Effect* effect{nullptr};
 };
 
 /// A directed edge. `from`/`to` are node ids, or the reserved endpoint ids.
@@ -88,6 +93,12 @@ public:
     /// Take ownership of `effect` as a new node of the given type.
     /// Returns the new node id.
     int addNode(int type, std::unique_ptr<Effect> effect, float x = 0.0f, float y = 0.0f);
+
+    /// Add a node that runs an effect owned by someone else, which must outlive
+    /// the graph. This exists so the graph can mirror the engine's long-lived
+    /// per-type effect instances while the two signal paths coexist; a graph
+    /// built from a preset owns its effects via addNode() instead.
+    int addBorrowedNode(int type, Effect* effect, float x = 0.0f, float y = 0.0f);
 
     /// Remove a node and every connection touching it. Returns false if absent.
     bool removeNode(int id);

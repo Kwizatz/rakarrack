@@ -94,6 +94,16 @@ const EffectNode* EffectGraph::findNode(int id) const
 
 int EffectGraph::addNode(int type, std::unique_ptr<Effect> effect, float x, float y)
 {
+    // Register it as a borrowed node first, then hand the ownership over, so
+    // there is only one copy of the node setup logic.
+    Effect* raw = effect.get();
+    const int id = addBorrowedNode(type, raw, x, y);
+    m_nodes.back().owned = std::move(effect);
+    return id;
+}
+
+int EffectGraph::addBorrowedNode(int type, Effect* effect, float x, float y)
+{
     EffectNode node;
     node.id       = m_nextId++;
     node.type     = type;
@@ -101,7 +111,7 @@ int EffectGraph::addNode(int type, std::unique_ptr<Effect> effect, float x, floa
     node.mix      = defaultMixModeForType(type);
     node.x        = x;
     node.y        = y;
-    node.effect   = std::move(effect);
+    node.effect   = effect;
 
     if (node.effect && m_maxBlockSize > 0)
         node.effect->setMaxBlockSize(m_maxBlockSize);

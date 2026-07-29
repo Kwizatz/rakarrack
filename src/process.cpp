@@ -30,6 +30,7 @@
 #include "Preferences.hpp"
 #include "global.hpp"
 #include "AllEffects.hpp"
+#include "EffectRegistry.hpp"
 #include "EmbeddedResource.hpp"
 #include "portable_crt.hpp"
 #ifdef ENABLE_MIDI
@@ -78,6 +79,14 @@ RKR::RKR ()
     char temp[256];
     ML_filter=0;
     error_num = 0;
+
+    // Transitional opt-in for the node-graph signal path. Deliberately an
+    // environment variable rather than a preference: it is a development
+    // switch for comparing the graph against the legacy chain, not something
+    // to persist in a preset. Remove once the graph is the only path.
+    if (const char *env = getenv ("RAKARRACK_EFFECT_GRAPH"))
+        use_effect_graph = (atoi (env) != 0);
+
     eff_filter = 0;
     OnOffC = 0;
     config.flpos = 0;
@@ -1186,6 +1195,37 @@ RKR::Vol_Efx (int NumEffect, float volume)
 
 
 void
+RKR::rebuildEffectGraph ()
+{
+    // Mirrors the legacy chain: the slots in efx_order, in order, wired
+    // input -> ... -> output. Nodes borrow the engine's per-type instances, so
+    // parameter edits, presets and MIDI keep working on both paths untouched.
+    efx_graph.clear ();
+
+    int previous = kInputNodeId;
+    for (int i = 0; i < MAX_EFFECT_SLOTS; i++) {
+        const int type = efx_order[i];
+        if (type == EMPTY_SLOT)
+            continue;
+
+        Effect *efx = effectByIndex (*this, type);
+        if (efx == nullptr)
+            continue;
+
+        const int node = efx_graph.addBorrowedNode (type, efx);
+        efx_graph.connect (previous, node);
+        previous = node;
+    }
+    efx_graph.connect (previous, kOutputNodeId);
+
+    efx_graph.setMaxBlockSize (PERIOD);
+
+    efx_graph_order = efx_order;
+    efx_graph_built = true;
+}
+
+
+void
 RKR::calculavol (int i)
 {
 
@@ -1531,6 +1571,26 @@ RKR::Alg (float *inl1, float *inr1, float *origl, float *origr, void *)
 
         if(ponlast) last=reconota;
 
+        if (use_effect_graph) {
+            if (!efx_graph_built || efx_graph_order != efx_order)
+                rebuildEffectGraph ();
+
+            // The per-type flags stay authoritative while both paths coexist,
+            // so mirror them onto the nodes. Mind the inversion: a non-zero
+            // X_Bypass means the effect is ACTIVE.
+            for (const EffectNode &node : efx_graph.nodes ()) {
+                const int *bp = bypassByIndex (*this, node.type);
+                efx_graph.setNodeBypassed (node.id, bp == nullptr || *bp == 0);
+            }
+
+            // process() writes its outputs only after every node has read its
+            // inputs, so running in place on the bus is safe.
+            efx_graph.process (efxoutl.data (), efxoutr.data (),
+                               efxoutl.data (), efxoutr.data (), PERIOD);
+        }
+        else
+        // Legacy path. Left unbraced so the switch keeps its original
+        // indentation and stays readable in diffs.
         for (i = 0; i < MAX_EFFECT_SLOTS; i++) {
             if (efx_order[i] == EMPTY_SLOT)
                 continue;

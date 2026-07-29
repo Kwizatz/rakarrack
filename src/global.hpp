@@ -28,6 +28,7 @@
 #include "PresetBank.hpp"
 #include "AppConfig.hpp"
 #include "compat_time.hpp"
+#include "EffectGraph.hpp"
 
 #include <string>
 #include <signal.h>
@@ -165,6 +166,27 @@ public:
     void Vol_Efx (int NumEffect, float volume);
     void Vol2_Efx ();
     void Vol3_Efx ();
+
+    /// Rebuild efx_graph as a series chain mirroring efx_order. The nodes
+    /// borrow the engine's per-type effect instances rather than owning them,
+    /// so both signal paths drive exactly the same objects and state.
+    void rebuildEffectGraph ();
+
+    /// Run the effect chain through efx_graph instead of the hand-written
+    /// switch in Alg(). Both paths are meant to produce identical audio; the
+    /// graph is what the node editor will drive, and this toggle exists so the
+    /// two can be compared on real material before the switch is retired.
+    bool use_effect_graph{false};
+
+    /// The graph form of the effect chain.
+    EffectGraph efx_graph;
+
+    /// efx_order as of the last rebuild, so Alg() can spot a changed chain.
+    /// efx_order is written from several places (preset load, bank load,
+    /// defaults, the GUI order dialog); comparing here means the graph cannot
+    /// silently go stale if another write site is added later.
+    std::array<int, 16> efx_graph_order{};
+    bool efx_graph_built{false};
     void cleanup_efx ();
     void midievents();
     void miramidi ();
