@@ -51,6 +51,8 @@ public:
 
 
 private:
+    /// Recompute the zero-reference delay length, clamped to the buffer.
+    void update_zcenter ();
     //Parameters
     int Pwetdry;		// 0 //Wet/Dry mix.  Range -64 to 64
     int Ppanning;		// 1 //Panning.  Range -64 to 64
@@ -83,7 +85,7 @@ private:
 
     //Internally used variables
     int maxx_delay;
-    int kl, kr, zl, zr;
+    int kl{0}, kr{0}, zl{0}, zr{0};
     int zcenter;
 
     float l, r, ldl, rdl, zdr, zdl;

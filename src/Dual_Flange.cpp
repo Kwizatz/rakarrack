@@ -63,7 +63,7 @@ Dflange::Dflange ()
     fhidamp = 1.0f;
     fwidth = 800;
     fdepth = 50;
-    zcenter = static_cast<int>(fSAMPLE_RATE/floorf(0.5f * (fdepth + fwidth)));
+    update_zcenter ();
     base = 7.0f;		//sets curve of modulation to frequency relationship
     ibase = 1.0f/base;
     //default values
@@ -81,6 +81,30 @@ Dflange::Dflange ()
 Dflange::~Dflange () = default;
 
 /*
+ * Zero-reference delay length.
+ *
+ * A small depth plus width asks for a delay far longer than the buffer that
+ * holds it -- at 44.1 kHz the divisor can fall to 1, requesting a full second
+ * from a 55 ms buffer -- and a divisor of zero makes the conversion undefined
+ * outright. Both used to run straight into zldelay/zrdelay and corrupt the
+ * heap, so the result is clamped to something the buffer can actually hold.
+ */
+void
+Dflange::update_zcenter ()
+{
+    const float divisor = floorf (0.5f * (fdepth + fwidth));
+
+    zcenter = (divisor >= 1.0f)
+                  ? static_cast<int>(fSAMPLE_RATE / divisor)
+                  : maxx_delay - 1;
+
+    if (zcenter > maxx_delay - 1)
+        zcenter = maxx_delay - 1;
+    if (zcenter < 0)
+        zcenter = 0;
+}
+
+/*
  * Cleanup the effect
  */
 void
@@ -93,6 +117,13 @@ Dflange::cleanup ()
         zldelay[i] = 0.0;
         zrdelay[i] = 0.0;
     };
+
+    // Delay line read/write positions. These index the buffers above on the
+    // very first sample, so they have to start somewhere valid.
+    kl = 0;
+    kr = 0;
+    zl = 0;
+    zr = 0;
 
     //loop variables
     l = 0.0f;
@@ -348,9 +379,9 @@ Dflange::out (float * smpsl, float * smpsr, int nframes)
 
 
             if (--kl < 0)   //Cycle delay buffer in reverse so delay time can be indexed directly with addition
-                kl =  maxx_delay;
+                kl =  maxx_delay - 1;
             if (--kr < 0)
-                kr =  maxx_delay;
+                kr =  maxx_delay - 1;
 
 
 
@@ -412,13 +443,13 @@ Dflange::changepar (int npar, int value)
     case 3:
         Pdepth = value;
         fdepth =  (float) Pdepth;
-        zcenter = static_cast<int>(fSAMPLE_RATE/floorf(0.5f * (fdepth + fwidth)));
+        update_zcenter ();
         logmax = logf( (fdepth + fwidth)/fdepth )/LOG_2;
         break;
     case 4:
         Pwidth = value;
         fwidth = (float) Pwidth;
-        zcenter = static_cast<int>(fSAMPLE_RATE/floorf(0.5f * (fdepth + fwidth)));
+        update_zcenter ();
         logmax = logf( (fdepth + fwidth)/fdepth )/LOG_2;
         break;
     case 5:

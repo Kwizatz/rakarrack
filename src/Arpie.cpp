@@ -90,12 +90,19 @@ Arpie::initdelays ()
     kl = 0;
     kr = 0;
 
+    // A slow tempo asks for a delay far longer than the buffer holding it --
+    // at 44.1 kHz the request can exceed a million samples against a two
+    // second buffer -- and kl/kr walk up to these bounds while indexing it.
     dl = delay - lrdelay;
     if (dl < 1)
         dl = 1;
+    if (dl > maxx_delay)
+        dl = maxx_delay;
     dr = delay + lrdelay;
     if (dr < 1)
         dr = 1;
+    if (dr > maxx_delay)
+        dr = maxx_delay;
 
     rvkl = 0;
     rvkr = 0;
