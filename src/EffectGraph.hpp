@@ -33,12 +33,29 @@ inline constexpr int kInputNodeId = -1;
 /// The signal leaving the graph.
 inline constexpr int kOutputNodeId = -2;
 
+/// How a node's processed signal is combined with the signal that entered it.
+///
+/// These mirror the gain staging the legacy chain applied after each effect:
+/// Vol2_Efx (use the output as-is), Vol3_Efx (double it) and Vol_Efx
+/// (crossfade against the pre-effect signal using the effect's outvolume).
+/// Keeping the distinction means a graph reproduces the old rack exactly.
+enum class MixMode
+{
+    Replace,   ///< legacy Vol2_Efx: effect output used unchanged
+    Gain2x,    ///< legacy Vol3_Efx: effect output doubled
+    WetDry,    ///< legacy Vol_Efx: crossfade dry/wet by Effect::outvolume
+};
+
+/// The mix mode the legacy chain used for a given effect type index.
+[[nodiscard]] MixMode defaultMixModeForType(int type);
+
 /// One effect instance placed on the board.
 struct EffectNode
 {
     int  id{0};
     int  type{0};                     ///< Effect type index (0..46)
     bool bypassed{false};
+    MixMode mix{MixMode::Replace};
 
     /// Canvas position. Carried here so it round-trips with the preset;
     /// the engine itself never reads it.
@@ -107,6 +124,7 @@ public:
     [[nodiscard]] bool isFullyConnected() const;
 
     void setNodeBypassed(int id, bool bypassed);
+    void setNodeMixMode(int id, MixMode mix);
 
     // ─── Audio ─────────────────────────────────────────────────────
 
@@ -139,6 +157,11 @@ private:
     /// Accumulator for the output node.
     std::vector<float> m_outAccumL;
     std::vector<float> m_outAccumR;
+
+    /// Holds a node's input while its effect overwrites the working buffer,
+    /// so a WetDry node can crossfade against it. Reused across nodes.
+    std::vector<float> m_dryL;
+    std::vector<float> m_dryR;
 
     int m_nextId{1};
     int m_maxBlockSize{0};

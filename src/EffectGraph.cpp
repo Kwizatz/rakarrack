@@ -14,6 +14,62 @@
 EffectGraph::EffectGraph() = default;
 EffectGraph::~EffectGraph() = default;
 
+// ─── Mix modes ─────────────────────────────────────────────────────
+
+MixMode defaultMixModeForType(int type)
+{
+    // Transcribed from the legacy switch in RKR::Alg(). Everything not listed
+    // here crossfaded against the pre-effect signal via Vol_Efx().
+    switch (type)
+    {
+    // Vol2_Efx(): output used unchanged.
+    case  0: case  1: case  9: case 16: case 20: case 22:
+    case 25: case 33: case 34: case 36: case 39: case 44:
+        return MixMode::Replace;
+
+    // Vol3_Efx(): Cabinet is the only effect that doubled its output.
+    case 12:
+        return MixMode::Gain2x;
+
+    default:
+        return MixMode::WetDry;
+    }
+}
+
+namespace {
+
+/// Reproduces RKR::Vol_Efx()'s crossfade for one node.
+void applyWetDry(int type, float outvolume,
+                 const float* dryL, const float* dryR,
+                 float* wetL, float* wetR, std::size_t frames)
+{
+    float v1 = 0.0f;
+    float v2 = 0.0f;
+    if (outvolume < 0.5f)
+    {
+        v1 = 1.0f;
+        v2 = outvolume * 2.0f;
+    }
+    else
+    {
+        v1 = (1.0f - outvolume) * 2.0f;
+        v2 = 1.0f;
+    }
+
+    // Reverb (8) and MusicDelay (15) square the dry coefficient. Preserved
+    // from the legacy Vol_Efx() so those two sound unchanged.
+    if (type == 8 || type == 15)
+        v2 *= v2;
+
+    for (std::size_t i = 0; i < frames; ++i)
+    {
+        wetL[i] = dryL[i] * v2 + wetL[i] * v1;
+        wetR[i] = dryR[i] * v2 + wetR[i] * v1;
+    }
+}
+
+} // namespace
+
 // ─── Topology ──────────────────────────────────────────────────────
 
 int EffectGraph::indexOf(int id) const
@@ -42,6 +98,7 @@ int EffectGraph::addNode(int type, std::unique_ptr<Effect> effect, float x, floa
     node.id       = m_nextId++;
     node.type     = type;
     node.bypassed = false;
+    node.mix      = defaultMixModeForType(type);
     node.x        = x;
     node.y        = y;
     node.effect   = std::move(effect);
@@ -175,6 +232,12 @@ void EffectGraph::setNodeBypassed(int id, bool bypassed)
         node->bypassed = bypassed;
 }
 
+void EffectGraph::setNodeMixMode(int id, MixMode mix)
+{
+    if (EffectNode* node = findNode(id))
+        node->mix = mix;
+}
+
 bool EffectGraph::isFullyConnected() const
 {
     for (const EffectNode& node : m_nodes)
@@ -251,6 +314,8 @@ void EffectGraph::setMaxBlockSize(int maxBlockSize)
     for (auto& b : m_bufR) b.assign(n, 0.0f);
     m_outAccumL.assign(n, 0.0f);
     m_outAccumR.assign(n, 0.0f);
+    m_dryL.assign(n, 0.0f);
+    m_dryR.assign(n, 0.0f);
 
     for (EffectNode& node : m_nodes)
         if (node.effect)
@@ -318,10 +383,36 @@ void EffectGraph::process(const float* inL, const float* inR,
         }
 
         // Effects transform in place; a bypassed node just passes its input on.
-        if (!m_nodes[static_cast<std::size_t>(idx)].bypassed
-            && m_nodes[static_cast<std::size_t>(idx)].effect)
+        EffectNode& node = m_nodes[static_cast<std::size_t>(idx)];
+        if (!node.bypassed && node.effect)
         {
-            m_nodes[static_cast<std::size_t>(idx)].effect->out(bufL.data(), bufR.data(), nframes);
+            // A crossfading node needs its input kept aside, since out() is
+            // destructive.
+            if (node.mix == MixMode::WetDry)
+            {
+                std::memcpy(m_dryL.data(), bufL.data(), frames * sizeof(float));
+                std::memcpy(m_dryR.data(), bufR.data(), frames * sizeof(float));
+            }
+
+            node.effect->out(bufL.data(), bufR.data(), nframes);
+
+            switch (node.mix)
+            {
+            case MixMode::Replace:
+                break;
+            case MixMode::Gain2x:
+                for (std::size_t i = 0; i < frames; ++i)
+                {
+                    bufL[i] *= 2.0f;
+                    bufR[i] *= 2.0f;
+                }
+                break;
+            case MixMode::WetDry:
+                applyWetDry(node.type, node.effect->outvolume,
+                            m_dryL.data(), m_dryR.data(),
+                            bufL.data(), bufR.data(), frames);
+                break;
+            }
         }
     }
 
