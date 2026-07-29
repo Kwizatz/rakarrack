@@ -23,6 +23,11 @@ target_link_libraries(rakverb_lib PUBLIC PkgConfig::SNDFILE)
 
 add_subdirectory(rakplay)
 
+# Offline renderer. Links the engine so it exercises the real effect chain,
+# and needs no JACK server because RKR has an offline constructor.
+add_executable(rakrender rakrender.cpp)
+target_link_libraries(rakrender PRIVATE rakarrack_engine PkgConfig::SNDFILE)
+
 # --- Standalone command-line tools (POSIX only, require getopt.h) ---
 
 if(NOT MSVC)

@@ -71,7 +71,12 @@ std::string banktoload;
 Preferences rakarrack (Preferences::USER, WEBSITE, PACKAGE);
 MessageCallback gui_message_handler = nullptr;
 
-RKR::RKR ()
+RKR::RKR () : RKR (0, 0)
+{
+}
+
+
+RKR::RKR (unsigned int offlineSampleRate, unsigned int offlinePeriod)
 {
     db6booster=0;
     jdis=0;
@@ -112,20 +117,30 @@ RKR::RKR ()
 
     snprintf (temp, sizeof(temp), "rakarrack");
 
-    jack.client = jack_client_open (temp, jack.options, &jack.status, nullptr);
+    if (offlinePeriod > 0) {
+        // Offline: no server to ask, so the caller's format is authoritative.
+        // jack.client stays null; nothing below this point uses it, and the
+        // JACK callbacks that would are never registered.
+        jack.client = nullptr;
+        snprintf (jack.name.data(), jack.name.size(), "%s", "rakarrack-offline");
+        jack.sample_rate = offlineSampleRate;
+        jack.period = offlinePeriod;
+    } else {
+        jack.client = jack_client_open (temp, jack.options, &jack.status, nullptr);
 
-    if (jack.client == nullptr) {
-        fprintf (stderr, "Cannot make a jack client, is jackd running?\n");
-        nojack = 1;
-        exitwithhelp = 1;
-        return;
+        if (jack.client == nullptr) {
+            fprintf (stderr, "Cannot make a jack client, is jackd running?\n");
+            nojack = 1;
+            exitwithhelp = 1;
+            return;
 
+        }
+
+        snprintf (jack.name.data(), jack.name.size(), "%s", jack_get_client_name (jack.client));
+
+        jack.sample_rate = jack_get_sample_rate (jack.client);
+        jack.period = jack_get_buffer_size (jack.client);
     }
-
-    snprintf (jack.name.data(), jack.name.size(), "%s", jack_get_client_name (jack.client));
-
-    jack.sample_rate = jack_get_sample_rate (jack.client);
-    jack.period = jack_get_buffer_size (jack.client);
 
     rakarrack.get(PrefNom("Disable Warnings"),mess_dis,0);
     rakarrack.get (PrefNom ("Filter DC Offset"), DC_Offset, 0);

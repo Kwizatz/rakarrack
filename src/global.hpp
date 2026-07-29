@@ -157,6 +157,13 @@ class RKR
 public:
 
     RKR ();
+
+    /// Construct without connecting to JACK, for offline rendering and tests.
+    /// The caller dictates the audio format instead of it being queried from a
+    /// server. Everything downstream -- buffer sizes, effect construction,
+    /// resampler ratios -- derives from these exactly as it would from JACK.
+    RKR (unsigned int sampleRate, unsigned int period);
+
     ~RKR ();
 
     void Alg (float *inl, float *inr,float *origl, float *origr ,void *);
