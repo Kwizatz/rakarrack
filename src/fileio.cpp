@@ -33,6 +33,7 @@
 #include <type_traits>
 #include "global.hpp"
 #include "AllEffects.hpp"
+#include "BankJson.hpp"
 #include "EmbeddedResource.hpp"
 #include "rakconvert_lib.hpp"
 #include "rakverb_lib.hpp"
@@ -1817,6 +1818,52 @@ RKR::loadnames()
 
 }
 
+bool
+RKR::loadbank_json (const char *filename, const char *meslabel, int &result)
+{
+    FILE *fn = portable_fopen (filename, "rb");
+    if (fn == nullptr)
+        return false;           // missing or unreadable: let the old path report it
+
+    // Read straight into the string. RKR is around a megabyte of Bank[] and is
+    // routinely a stack local, so there is no room here for a scratch buffer.
+    std::string text;
+    if (fseek (fn, 0L, SEEK_END) == 0) {
+        const long length = ftell (fn);
+        if (length > 0) {
+            text.resize (static_cast<size_t> (length));
+            rewind (fn);
+            const size_t got = fread (text.data(), 1, text.size(), fn);
+            text.resize (got);
+        }
+    }
+    fclose (fn);
+
+    if (!looksLikeJsonBank (text.data(), text.size()))
+        return false;           // a binary bank, so fall through to the old reader
+
+    // Seed defaults first, matching the binary path: a bank that defines
+    // fewer than the full set of slots leaves the rest as new presets rather
+    // than as blanks.
+    New_Bank();
+
+    std::string error;
+    if (!bankFromJson (text, presets.Bank, kBankPresetCount, error)) {
+        std::string message{"Can not load bank file "};
+        message += filename;
+        message += ":\n";
+        message += error;
+        Message (1, meslabel, message.c_str());
+        result = 0;
+        return true;
+    }
+
+    modified = 0;
+    presets.new_bank_loaded = 1;
+    result = 1;
+    return true;
+}
+
 int
 RKR::loadbank (char *filename)
 {
@@ -1829,6 +1876,11 @@ RKR::loadbank (char *filename)
     memset(meslabel,0, sizeof(meslabel));
     snprintf(meslabel, sizeof(meslabel), "%s %s",jack.name.data(),VERSION);
 
+    // JSON is the current format; the binary reader below stays for banks
+    // written by earlier versions. Detected by content rather than extension
+    // so both can be opened without the user having to care which is which.
+    if (loadbank_json (filename, meslabel, err_message))
+        return err_message;
 
     err_message = CheckOldBank(filename);
 
@@ -1871,6 +1923,21 @@ RKR::loadbank (char *filename)
 int
 RKR::loadbank_from_memory(const unsigned char* data, unsigned int len)
 {
+    // The compiled-in banks are still binary, but they go through the same
+    // format check as files so they can be regenerated as JSON without this
+    // path quietly reinterpreting them as a struct dump.
+    if (looksLikeJsonBank(reinterpret_cast<const char*>(data), len)) {
+        New_Bank();
+        std::string error;
+        if (!bankFromJson(std::string(reinterpret_cast<const char*>(data), len),
+                          presets.Bank, kBankPresetCount, error)) {
+            return 0;
+        }
+        modified=0;
+        presets.new_bank_loaded=1;
+        return 1;
+    }
+
     if(len < sizeof(presets.Bank)) return 0;
     New_Bank();
     memcpy(&presets.Bank, data, sizeof(presets.Bank));
@@ -1889,11 +1956,15 @@ RKR::savebank (char *filename)
     FILE *fn;
 
     if ((fn = portable_fopen (filename, "wb")) != nullptr) {
-        copy_IO();
-        if(BigEndian()) fix_endianess();
-        fwrite (&presets.Bank, sizeof(presets.Bank), 1, fn);
-        if(BigEndian()) fix_endianess();
+        const std::string text = bankToJson (presets.Bank, kBankPresetCount);
+        const size_t written = fwrite (text.data(), 1, text.size(), fn);
         fclose (fn);
+
+        if (written != text.size()) {
+            Error_Handle(3);
+            return (0);
+        }
+
         modified=0;
         return(1);
     }

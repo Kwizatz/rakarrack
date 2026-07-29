@@ -113,7 +113,11 @@ int main(int argc, char* argv[])
     }
 
     // ── Engine init ────────────────────────────────────────────────
-    RKR rkr;
+    // RKR holds the preset bank by value, close to a megabyte, which is most
+    // of a default 1 MB stack. Heap-allocated and referenced so it cannot
+    // overflow; the reference keeps the rest of this function unchanged.
+    auto engine = std::make_unique<RKR>();
+    RKR& rkr = *engine;
 
     if (nojack)
     {

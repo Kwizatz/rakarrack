@@ -34,6 +34,7 @@ struct Options
     std::string inPath;
     std::string outPath;
     std::string bankPath;
+    std::string saveBankPath;
     int          preset{0};
     int          period{256};
     bool         graph{false};
@@ -55,6 +56,7 @@ void usage()
         "Usage:\n"
         "  rakrender --in FILE --out FILE [options]   render once\n"
         "  rakrender --in FILE --ab [options]         render both paths, compare\n"
+        "  rakrender --bank FILE --save-bank FILE     rewrite a bank as JSON\n"
         "\n"
         "Options:\n"
         "  --bank FILE     bank to load (e.g. data/Default.rkrb)\n"
@@ -161,25 +163,27 @@ void render(const Options& opt, const Audio& in, Audio& out, bool useGraph, bool
     // start from the same seed.
     std::srand(opt.seed);
 
-    RKR rkr(static_cast<unsigned int>(in.sampleRate),
-            static_cast<unsigned int>(opt.period));
+    // RKR carries the whole preset bank by value, close to a megabyte, which
+    // does not belong on a 1 MB stack.
+    auto rkr = std::make_unique<RKR>(static_cast<unsigned int>(in.sampleRate),
+                                     static_cast<unsigned int>(opt.period));
 
     if (!opt.bankPath.empty())
     {
         std::vector<char> mutablePath(opt.bankPath.begin(), opt.bankPath.end());
         mutablePath.push_back('\0');
-        if (rkr.loadbank(mutablePath.data()) == 0)
+        if (rkr->loadbank(mutablePath.data()) == 0)
             std::fprintf(stderr, "warning: could not load bank %s\n", opt.bankPath.c_str());
         else
-            rkr.Bank_to_Preset(opt.preset);
+            rkr->Bank_to_Preset(opt.preset);
     }
 
     // Actualizar_Audio() clears the master switch while it applies a preset.
-    rkr.Bypass = 1;
-    rkr.use_effect_graph = useGraph;
+    rkr->Bypass = 1;
+    rkr->use_effect_graph = useGraph;
 
     if (verbose)
-        reportChain(rkr);
+        reportChain(*rkr);
 
     const std::size_t period = static_cast<std::size_t>(opt.period);
     std::vector<float> dryL(period, 0.0f);
@@ -199,16 +203,16 @@ void render(const Options& opt, const Audio& in, Audio& out, bool useGraph, bool
             dryR[i] = inRange ? in.r[src] : 0.0f;
         }
 
-        std::memcpy(rkr.efxoutl.data(), dryL.data(), period * sizeof(float));
-        std::memcpy(rkr.efxoutr.data(), dryR.data(), period * sizeof(float));
+        std::memcpy(rkr->efxoutl.data(), dryL.data(), period * sizeof(float));
+        std::memcpy(rkr->efxoutr.data(), dryR.data(), period * sizeof(float));
 
         // Matches the JACK callback: the bus carries the input in, the result
         // back out, and the untouched input is passed alongside for the
         // global dry/wet control.
-        rkr.Alg(rkr.efxoutl.data(), rkr.efxoutr.data(), dryL.data(), dryR.data(), nullptr);
+        rkr->Alg(rkr->efxoutl.data(), rkr->efxoutr.data(), dryL.data(), dryR.data(), nullptr);
 
-        std::memcpy(out.l.data() + pos, rkr.efxoutl.data(), n * sizeof(float));
-        std::memcpy(out.r.data() + pos, rkr.efxoutr.data(), n * sizeof(float));
+        std::memcpy(out.l.data() + pos, rkr->efxoutl.data(), n * sizeof(float));
+        std::memcpy(out.r.data() + pos, rkr->efxoutr.data(), n * sizeof(float));
     }
 }
 
@@ -257,6 +261,7 @@ bool parseArgs(int argc, char** argv, Options& opt)
         if (arg == "--in" && hasValue)            opt.inPath   = argv[++i];
         else if (arg == "--out" && hasValue)      opt.outPath  = argv[++i];
         else if (arg == "--bank" && hasValue)     opt.bankPath = argv[++i];
+        else if (arg == "--save-bank" && hasValue) opt.saveBankPath = argv[++i];
         else if (arg == "--preset" && hasValue)   opt.preset   = std::atoi(argv[++i]);
         else if (arg == "--period" && hasValue)   opt.period   = std::atoi(argv[++i]);
         else if (arg == "--tail" && hasValue)     opt.tail     = std::atof(argv[++i]);
@@ -271,6 +276,17 @@ bool parseArgs(int argc, char** argv, Options& opt)
         }
     }
 
+    if (!opt.saveBankPath.empty())
+    {
+        // Conversion is a standalone mode; it renders nothing.
+        if (opt.bankPath.empty())
+        {
+            std::fprintf(stderr, "--save-bank needs --bank to convert from\n");
+            return false;
+        }
+        return true;
+    }
+
     if (opt.inPath.empty())
     {
         std::fprintf(stderr, "--in is required\n");
@@ -280,8 +296,7 @@ bool parseArgs(int argc, char** argv, Options& opt)
     {
         std::fprintf(stderr, "--out is required unless --ab is given\n");
         return false;
-    }
-    if (opt.period <= 0)
+    }    if (opt.period <= 0)
     {
         std::fprintf(stderr, "--period must be positive\n");
         return false;
@@ -301,6 +316,32 @@ int main(int argc, char** argv)
     }
     if (!parseArgs(argc, argv, opt))
         return 1;
+
+    if (!opt.saveBankPath.empty())
+    {
+        // Loading accepts either format and saving always writes JSON, so a
+        // load/save pair is the conversion.
+        auto rkr = std::make_unique<RKR>(44100u, static_cast<unsigned int>(opt.period));
+
+        std::vector<char> from(opt.bankPath.begin(), opt.bankPath.end());
+        from.push_back('\0');
+        if (rkr->loadbank(from.data()) == 0)
+        {
+            std::fprintf(stderr, "could not load bank %s\n", opt.bankPath.c_str());
+            return 1;
+        }
+
+        std::vector<char> to(opt.saveBankPath.begin(), opt.saveBankPath.end());
+        to.push_back('\0');
+        if (rkr->savebank(to.data()) == 0)
+        {
+            std::fprintf(stderr, "could not write bank %s\n", opt.saveBankPath.c_str());
+            return 1;
+        }
+
+        std::printf("converted %s -> %s\n", opt.bankPath.c_str(), opt.saveBankPath.c_str());
+        return 0;
+    }
 
     Audio in;
     if (!readWav(opt.inPath, in))

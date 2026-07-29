@@ -246,6 +246,11 @@ public:
     void copy_IO();
     void convert_IO();
     int CheckOldBank(char *filename);
+
+    /// Try to read `filename` as a JSON bank. Returns true when the file was
+    /// JSON -- successfully loaded or not -- and `result` is then what
+    /// loadbank() should return. False means it is a legacy binary bank.
+    bool loadbank_json(const char *filename, const char *meslabel, int &result);
     int Get_Bogomips();
     int checkonoff(int value);
     int TapTempo();

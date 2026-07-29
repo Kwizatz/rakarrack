@@ -29,6 +29,7 @@ endif()
 set(ENGINE_SOURCES
 	Alienwah.cpp
 	AnalogFilter.cpp
+	BankJson.cpp
 	APhaser.cpp
 	Arpie.cpp
 	beattracker.cpp
@@ -104,6 +105,7 @@ set(ENGINE_HEADERS
 	AllEffects.hpp
 	Alienwah.hpp
 	AnalogFilter.hpp
+	BankJson.hpp
 	AppConfig.hpp
 	EmbeddedResource.hpp
 	EngineController.hpp
