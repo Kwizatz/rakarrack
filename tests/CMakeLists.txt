@@ -32,3 +32,20 @@ target_include_directories(bank_json_test PRIVATE
 target_link_libraries(bank_json_test PRIVATE nlohmann_json::nlohmann_json)
 
 add_test(NAME BankJson COMMAND bank_json_test)
+
+# The graph serialiser works on layouts rather than live effects, so this needs
+# only EffectGraph and nlohmann -- no engine, no audio device.
+add_executable(graph_json_test
+	GraphJsonTest.cpp
+	${CMAKE_SOURCE_DIR}/src/GraphJson.cpp
+	${CMAKE_SOURCE_DIR}/src/EffectGraph.cpp
+)
+
+target_include_directories(graph_json_test PRIVATE
+	${CMAKE_SOURCE_DIR}/src
+	${CMAKE_BINARY_DIR}/src
+)
+
+target_link_libraries(graph_json_test PRIVATE nlohmann_json::nlohmann_json)
+
+add_test(NAME GraphJson COMMAND graph_json_test)

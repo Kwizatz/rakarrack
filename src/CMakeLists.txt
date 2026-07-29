@@ -58,6 +58,7 @@ set(ENGINE_SOURCES
 	FormantFilter.cpp
 	FPreset.cpp
 	Gate.cpp
+	GraphJson.cpp
 	HarmonicEnhancer.cpp
 	Harmonizer.cpp
 	Infinity.cpp
@@ -139,6 +140,7 @@ set(ENGINE_HEADERS
 	FormantFilter.hpp
 	FPreset.hpp
 	Gate.hpp
+	GraphJson.hpp
 	global.hpp
 	HarmonicEnhancer.hpp
 	Harmonizer.hpp

@@ -248,6 +248,79 @@ void EffectGraph::setNodeMixMode(int id, MixMode mix)
         node->mix = mix;
 }
 
+GraphLayout EffectGraph::layout() const
+{
+    GraphLayout out;
+    out.nodes.reserve(m_nodes.size());
+
+    for (const EffectNode& node : m_nodes)
+    {
+        GraphNodeLayout n;
+        n.id       = node.id;
+        n.type     = node.type;
+        n.bypassed = node.bypassed;
+        n.mix      = node.mix;
+        n.x        = node.x;
+        n.y        = node.y;
+        out.nodes.push_back(n);
+    }
+
+    out.connections = m_connections;
+    return out;
+}
+
+bool EffectGraph::build(const GraphLayout& layout,
+                        const std::function<std::unique_ptr<Effect>(int)>& make)
+{
+    clear();
+
+    for (const GraphNodeLayout& n : layout.nodes)
+    {
+        std::unique_ptr<Effect> effect = make ? make(n.type) : nullptr;
+        if (!effect)
+        {
+            // An unknown effect type would silently change the signal path.
+            clear();
+            return false;
+        }
+
+        EffectNode node;
+        node.id       = n.id;
+        node.type     = n.type;
+        node.bypassed = n.bypassed;
+        node.mix      = n.mix;
+        node.x        = n.x;
+        node.y        = n.y;
+        node.owned    = std::move(effect);
+        node.effect   = node.owned.get();
+
+        if (m_maxBlockSize > 0)
+            node.effect->setMaxBlockSize(m_maxBlockSize);
+
+        m_nodes.push_back(std::move(node));
+        m_bufL.emplace_back(static_cast<std::size_t>(std::max(m_maxBlockSize, 0)), 0.0f);
+        m_bufR.emplace_back(static_cast<std::size_t>(std::max(m_maxBlockSize, 0)), 0.0f);
+
+        // Keep handing out ids above anything the file used.
+        if (n.id >= m_nextId)
+            m_nextId = n.id + 1;
+    }
+
+    // connect() re-checks endpoints, duplicates and cycles, so a hand-edited
+    // file cannot produce a graph the evaluator would not accept.
+    for (const Connection& c : layout.connections)
+    {
+        if (!connect(c.from, c.to))
+        {
+            clear();
+            return false;
+        }
+    }
+
+    rebuildOrder();
+    return true;
+}
+
 bool EffectGraph::isFullyConnected() const
 {
     for (const EffectNode& node : m_nodes)

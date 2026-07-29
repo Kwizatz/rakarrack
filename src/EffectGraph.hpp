@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <functional>
 #include <memory>
 #include <string>
 #include <vector>
@@ -77,6 +78,30 @@ struct Connection
     int to{kOutputNodeId};
 
     friend bool operator==(const Connection&, const Connection&) = default;
+};
+
+/// A node stripped of its effect instance: everything about it that belongs in
+/// a preset. Kept separate from EffectNode so the graph can be saved, loaded
+/// and compared without constructing any audio effects.
+struct GraphNodeLayout
+{
+    int  id{0};
+    int  type{0};
+    bool bypassed{false};
+    MixMode mix{MixMode::Replace};
+    float x{0.0f};
+    float y{0.0f};
+
+    friend bool operator==(const GraphNodeLayout&, const GraphNodeLayout&) = default;
+};
+
+/// The saveable shape of a graph.
+struct GraphLayout
+{
+    std::vector<GraphNodeLayout> nodes;
+    std::vector<Connection> connections;
+
+    friend bool operator==(const GraphLayout&, const GraphLayout&) = default;
 };
 
 class EffectGraph
@@ -137,13 +162,25 @@ public:
     void setNodeBypassed(int id, bool bypassed);
     void setNodeMixMode(int id, MixMode mix);
 
+    /// The graph's shape without its effects, for saving or comparing.
+    [[nodiscard]] GraphLayout layout() const;
+
+    /// Rebuild the graph from a layout, asking `make` for an effect per node.
+    /// Node ids are preserved so the connections in the layout still apply.
+    /// Returns false and leaves the graph empty if an effect cannot be made or
+    /// a connection is invalid, rather than loading something half-formed.
+    bool build(const GraphLayout& layout,
+               const std::function<std::unique_ptr<Effect>(int type)>& make);
+
     // ─── Audio ─────────────────────────────────────────────────────
 
     /// Size the per-node buffers. Must be called before process(), and again
     /// whenever the host block size grows.
     void setMaxBlockSize(int maxBlockSize);
 
-    /// Run one block through the graph. Input and output may not overlap.
+    /// Run one block through the graph. `outL`/`outR` are written only after
+    /// every node has read its inputs, so they may alias `inL`/`inR`, which is
+    /// how the engine runs it on the shared bus.
     /// Allocation-free provided setMaxBlockSize() covered `nframes`.
     void process(const float* inL, const float* inR,
                  float* outL, float* outR, int nframes);
