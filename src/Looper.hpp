@@ -88,7 +88,12 @@ private:
     int Pmetro;
     int Pms;
 
-    int kl, kl2, rvkl, rvkl2, maxx_delay, fade, dl, dl2, first_time1, first_time2, rplaystate;
+    // Loop positions and lengths. The constructor never called initdelays(),
+    // so these reached out() holding whatever was on the heap; kl2 in
+    // particular is a direct subscript into t2ldelay/t2rdelay.
+    int kl{0}, kl2{0}, rvkl{0}, rvkl2{0};
+    int maxx_delay{0}, fade{0}, dl{1}, dl2{1};
+    int first_time1{1}, first_time2{1}, rplaystate{0};
     int barlen, looper_ts;
 
     std::vector<float> ldelay, rdelay;

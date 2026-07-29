@@ -420,7 +420,12 @@ void Reverbtron::convert_time()
     if(hrtf_tmp>data_length) hrtf_tmp = data_length -1;
     if(hlength>data_length) hlength =  data_length -1;
     for (i =0; i<hrtf_tmp; i++) {
-        tmptime = (int) (RND() * hrtf_size);
+        // hrtf_size is half the internal sample rate; it says nothing about how
+        // many samples this impulse actually holds, and data tops out at
+        // data_length. Drawing the index from the full hrtf_size read well past
+        // the end -- typically index ~5000 into 2000 entries.
+        const int span = (hrtf_size < data_length) ? hrtf_size : data_length;
+        tmptime = (span > 0) ? (int) (RND() * (float) span) : 0;
         rndtime[i] = tmptime;  //randomly jumble the head of the transfer function
         rnddata[i] = 3.0f*(0.5f - RND())*data[tmptime];
     }

@@ -53,7 +53,12 @@ private:
     int Ppanning;
     int Pinvert;  //Invert the opto and resistor relationship
  
-    float Ra, Rb, R1, Rp, b, dTC, dRCl, dRCr, minTC, alphal, alphar, stepl, stepr, oldstepl, oldstepr, fdepth;
+    float Ra, Rb, R1, Rp, b, dTC, dRCl, dRCr, minTC, alphal, alphar;
+    // The opto smoothing filter reads oldstepl/oldstepr before it writes them
+    // and then feeds the result back in, so a garbage start value does not
+    // decay -- it propagates out of the effect and into whatever follows.
+    float stepl{0.0f}, stepr{0.0f}, oldstepl{0.0f}, oldstepr{0.0f};
+    float fdepth;
     float lstep,rstep;
     float cperiod;
     float gl, oldgl;

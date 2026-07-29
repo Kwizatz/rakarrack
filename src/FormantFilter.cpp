@@ -111,6 +111,13 @@ FormantFilter::setpos (float input)
         pos += 1.0f;
 
     F2I (pos * (float)sequencesize, p2);
+    // A non-finite input -- an upstream filter blowing up to infinity will do
+    // it -- leaves pos as NaN, every comparison above false, and the conversion
+    // undefined, which used to subscript sequence[] with whatever fell out.
+    // The frequency is unusable either way; what matters is not reading wild
+    // memory because of it.
+    if (p2 < 0 || p2 >= sequencesize)
+        p2 = 0;
     p1 = p2 - 1;
     if (p1 < 0)
         p1 += sequencesize;

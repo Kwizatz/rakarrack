@@ -89,10 +89,14 @@ private:
     int zcenter;
 
     float l, r, ldl, rdl, zdr, zdl;
-    float rflange0, rflange1, lflange0, lflange1, oldrflange0, oldrflange1, oldlflange0, oldlflange1;
+    float rflange0{0.0f}, rflange1{0.0f}, lflange0{0.0f}, lflange1{0.0f};
+    // Previous block's delay lengths. out() seeds its per-sample LFO from
+    // these before assigning them, so they must never hold garbage: they end
+    // up inside a delay-buffer subscript.
+    float oldrflange0{0.0f}, oldrflange1{0.0f}, oldlflange0{0.0f}, oldlflange1{0.0f};
     float period_const, base, ibase;
     std::vector<float> ldelay, rdelay, zldelay, zrdelay;
-    float oldl, oldr;		//pt. lpf
+    float oldl{0.0f}, oldr{0.0f};		//pt. lpf
     float rsA, rsB, lsA, lsB;	//Audio sample at given delay
 
     std::unique_ptr<delayline> ldelayline0, rdelayline0, ldelayline1, rdelayline1;

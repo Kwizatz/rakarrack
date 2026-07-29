@@ -135,6 +135,17 @@ Dflange::cleanup ()
     rflange1 = 0.0f;
     lflange1 = 0.0f;
 
+    // out() reads these before it writes them: the per-sample delay LFO starts
+    // at the previous block's value, and the lowpass carries the previous
+    // sample. Leaving them stale is how a garbage delay length reached a
+    // buffer subscript.
+    oldrflange0 = 0.0f;
+    oldrflange1 = 0.0f;
+    oldlflange0 = 0.0f;
+    oldlflange1 = 0.0f;
+    oldl = 0.0f;
+    oldr = 0.0f;
+
 };
 
 

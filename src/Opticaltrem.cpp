@@ -63,7 +63,18 @@ Opticaltrem::~Opticaltrem () = default;
 void
 Opticaltrem::cleanup ()
 {
-
+    // Was empty. The opto smoothing filter carries state between blocks, so a
+    // reset has to clear it or the effect resumes from wherever it left off.
+    stepl = 0.0f;
+    stepr = 0.0f;
+    oldstepl = 0.0f;
+    oldstepr = 0.0f;
+    lstep = 0.0f;
+    rstep = 0.0f;
+    gl = 0.0f;
+    gr = 0.0f;
+    oldgl = 0.0f;
+    oldgr = 0.0f;
 
 };
 

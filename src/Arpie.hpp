@@ -70,14 +70,17 @@ private:
     //Parametrii reali
     void initdelays ();
 
-    int dl, dr, delay, lrdelay;
-    int kl, kr, rvkl, rvkr, rvfl, rvfr, maxx_delay, fade, harmonic, envcnt, invattack;
+    int dl{0}, dr{0}, delay{0}, lrdelay{0};
+    // rvfl/rvfr are subscripted at the top of the sample loop but only assigned
+    // at the bottom, so the first sample of a session reads whatever they hold.
+    int kl{0}, kr{0}, rvkl{0}, rvkr{0}, rvfl{0}, rvfr{0};
+    int maxx_delay{0}, fade{0}, harmonic{0}, envcnt{0}, invattack{1};
     int subdiv{};
     std::vector<int> pattern;
 
     float panning, lrcross, fb, hidamp, reverse;
     std::vector<float> ldelay, rdelay;
-    float oldl, oldr;		//pt. lpf
+    float oldl{0.0f}, oldr{0.0f};		//pt. lpf
     float  Srate_Attack_Coeff, envattack, envswell;
 };
 

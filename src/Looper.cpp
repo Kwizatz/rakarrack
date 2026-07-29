@@ -78,6 +78,12 @@ Looper::cleanuppt1 ()
         rdelay[i] = 0.0f;
     }
 
+    // Track 1 position and length, matching what initdelays() sets. out() can
+    // run before initdelays() ever does, and kl subscripts the buffers above.
+    kl = 0;
+    dl = maxx_delay;
+    rvkl = (maxx_delay > 0) ? maxx_delay - 1 : 0;
+
 };
 void
 Looper::cleanuppt2 ()
@@ -87,6 +93,11 @@ Looper::cleanuppt2 ()
         t2ldelay[i] = 0.0f;
         t2rdelay[i] = 0.0f;
     }
+
+    // Track 2 position and length.
+    kl2 = 0;
+    dl2 = maxx_delay;
+    rvkl2 = (maxx_delay > 0) ? maxx_delay - 1 : 0;
 
 };
 

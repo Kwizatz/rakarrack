@@ -73,6 +73,9 @@ Arpie::cleanup ()
     oldr = 0.0;
     rvkl = 0;
     rvkr = 0;
+    rvfl = 0;
+    rvfr = 0;
+    envcnt = 0;
     kl = 0;
     kr = 0;
     harmonic = 1;
@@ -371,7 +374,10 @@ Arpie::changepar (int npar, int value)
         break;
     case 8:
         Pharms = value;
-        if ( (Pharms < 2) && (Pharms >= MAXHARMS)) {
+        // Was &&, which can never hold: a value cannot be both below 2 and at
+        // or above MAXHARMS, so the clamp never fired. harmonic then counts up
+        // to Pharms-1 and subscripts pattern, which holds MAXHARMS entries.
+        if ( (Pharms < 2) || (Pharms >= MAXHARMS)) {
             Pharms = 2;
         }
         break;
