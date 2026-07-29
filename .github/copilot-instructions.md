@@ -147,7 +147,9 @@ When `ENABLE_MIDI=ON`:
 
 ## Development Notes
 
-- **No test suite exists** - testing requires manual verification with JACK and audio input
+- **Tests**: `ctest --test-dir build --output-on-failure`. Coverage is currently
+  limited to `tests/EffectGraphTest.cpp` (effect routing graph); everything else
+  still requires manual verification with JACK and audio input.
 - No linting configuration present
 - Code originally from ZynAddSubFX effects engine (see `Effect.hpp` header)
 - Fork purpose: Fix modern compiler compatibility issues from original stalled development

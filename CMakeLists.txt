@@ -65,6 +65,7 @@ configure_file(cmake/config.hpp.in src/config.hpp)
 
 add_subdirectory(extra)
 add_subdirectory(src)
+add_subdirectory(tests)
 
 include(vscode)
 

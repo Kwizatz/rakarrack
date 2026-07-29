@@ -33,6 +33,16 @@ cmake --build build
 cmake --install build
 ```
 
+Running The Tests
+-----------------
+
+```bash
+ctest --test-dir build --output-on-failure
+```
+
+The tests cover the effect routing graph and need no JACK server or audio
+hardware, so they can run anywhere the project builds.
+
 Building For Linux (Arch, Manjaro)
 ----------------------------------
 
