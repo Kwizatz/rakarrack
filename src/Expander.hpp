@@ -51,6 +51,12 @@ public:
     void cleanup ();
     int getpar (int npar);
 
+    // Predates the Effect parameter interface and named its own methods, so
+    // generic drivers -- preset save/load, the node graph -- saw a no-op.
+    // Forwarded rather than renamed; the originals are called elsewhere.
+    void changepar (int npar, int value) override { Expander_Change (npar, value); }
+    void setpreset (int npreset) override { Expander_Change_Preset (npreset); }
+
 
 
 

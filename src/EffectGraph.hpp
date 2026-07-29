@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include "EffectParams.hpp"
+
 #include <functional>
 #include <memory>
 #include <string>
@@ -91,6 +93,11 @@ struct GraphNodeLayout
     MixMode mix{MixMode::Replace};
     float x{0.0f};
     float y{0.0f};
+
+    /// This node's own settings. The point of the graph is that two nodes of
+    /// the same type can differ, which the type-keyed legacy preset could not
+    /// express.
+    EffectSettings settings;
 
     friend bool operator==(const GraphNodeLayout&, const GraphNodeLayout&) = default;
 };

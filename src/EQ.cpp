@@ -119,6 +119,14 @@ EQ::setpreset (int npreset)
         {67}
     };
 
+    // Every other effect range-checks here. Without it presets[npreset] reads
+    // past the end of the array above and the garbage becomes the output
+    // volume, which is how EQ ended up emitting NaN.
+    if (npreset < 0)
+        npreset = 0;
+    if (npreset > NUM_PRESETS - 1)
+        npreset = NUM_PRESETS - 1;
+
     for (int n = 0; n < PRESET_SIZE; n++)
         changepar (n, presets[npreset][n]);
     Ppreset = npreset;

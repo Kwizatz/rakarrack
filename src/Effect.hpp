@@ -39,6 +39,19 @@ public:
     virtual void changepar ([[maybe_unused]] int npar, [[maybe_unused]] int value)
     {
     }
+
+    /// Apply a value that came from a stored preset.
+    ///
+    /// Defaults to changepar(), which is right for almost every effect. It is
+    /// not right where changepar() does something other than store the value:
+    /// Looper's play parameter is a toggle that ignores the value it is given,
+    /// and Echotron recomputes its length from the impulse it has loaded. Those
+    /// effects override this so a saved preset can be restored exactly rather
+    /// than replayed as a series of commands.
+    virtual void loadpreset (int npar, int value)
+    {
+        changepar (npar, value);
+    }
     virtual int getpar ([[maybe_unused]] int npar) 
     {
         return (0);

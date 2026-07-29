@@ -263,6 +263,13 @@ Echo::setpreset (int npreset)
         {62, 64, 456, 64, 100, 90, 55, 0, 0}
     };
 
+    // Unguarded, presets[npreset] reads past the end of the array above and
+    // the garbage becomes real parameters. Reachable now that presets store a
+    // preset index and replay it.
+    if (npreset < 0)
+        npreset = 0;
+    if (npreset > NUM_PRESETS - 1)
+        npreset = NUM_PRESETS - 1;
 
     for (int n = 0; n < PRESET_SIZE; n++)
         changepar (n, presets[npreset][n]);

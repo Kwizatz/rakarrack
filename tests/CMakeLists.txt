@@ -8,6 +8,7 @@
 add_executable(effect_graph_test
 	EffectGraphTest.cpp
 	${CMAKE_SOURCE_DIR}/src/EffectGraph.cpp
+	${CMAKE_SOURCE_DIR}/src/EffectParams.cpp
 )
 
 target_include_directories(effect_graph_test PRIVATE
@@ -39,6 +40,7 @@ add_executable(graph_json_test
 	GraphJsonTest.cpp
 	${CMAKE_SOURCE_DIR}/src/GraphJson.cpp
 	${CMAKE_SOURCE_DIR}/src/EffectGraph.cpp
+	${CMAKE_SOURCE_DIR}/src/EffectParams.cpp
 )
 
 target_include_directories(graph_json_test PRIVATE
@@ -49,3 +51,12 @@ target_include_directories(graph_json_test PRIVATE
 target_link_libraries(graph_json_test PRIVATE nlohmann_json::nlohmann_json)
 
 add_test(NAME GraphJson COMMAND graph_json_test)
+
+# This one does link the engine: it has to exercise the real effects to prove
+# that capturing parameters through getpar() loses nothing. Still needs no
+# JACK server, because it never constructs RKR.
+add_executable(effect_params_test EffectParamsTest.cpp)
+
+target_link_libraries(effect_params_test PRIVATE rakarrack_engine)
+
+add_test(NAME EffectParams COMMAND effect_params_test)

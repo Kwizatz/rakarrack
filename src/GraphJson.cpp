@@ -86,6 +86,13 @@ std::string graphToJson(const GraphLayout& layout)
             node["bypassed"] = true;
         node["x"] = n.x;
         node["y"] = n.y;
+
+        // The node's own settings, which is what lets two nodes of the same
+        // type differ. Written even when empty so a hand-edited file has an
+        // obvious place to put them.
+        node["preset"] = n.settings.preset;
+        node["params"] = n.settings.params;
+
         nodes.push_back(std::move(node));
     }
     j["nodes"] = std::move(nodes);
@@ -189,6 +196,27 @@ bool graphFromJson(const std::string& text, GraphLayout& layout, std::string& er
             n.x = it->get<float>();
         if (auto it = node.find("y"); it != node.end() && it->is_number())
             n.y = it->get<float>();
+
+        if (auto it = node.find("preset"); it != node.end() && it->is_number_integer())
+            n.settings.preset = it->get<int>();
+
+        if (auto it = node.find("params"); it != node.end())
+        {
+            if (!it->is_array())
+            {
+                error = "a node's parameters are not a list";
+                return false;
+            }
+            for (const json& value : *it)
+            {
+                if (!value.is_number_integer())
+                {
+                    error = "a node has a non-integer parameter";
+                    return false;
+                }
+                n.settings.params.push_back(value.get<int>());
+            }
+        }
 
         for (const GraphNodeLayout& seen : parsed.nodes)
         {

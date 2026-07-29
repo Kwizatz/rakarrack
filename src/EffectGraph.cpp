@@ -262,7 +262,9 @@ GraphLayout EffectGraph::layout() const
         n.mix      = node.mix;
         n.x        = node.x;
         n.y        = node.y;
-        out.nodes.push_back(n);
+        if (node.effect)
+            n.settings = captureEffectSettings(*node.effect);
+        out.nodes.push_back(std::move(n));
     }
 
     out.connections = m_connections;
@@ -293,6 +295,8 @@ bool EffectGraph::build(const GraphLayout& layout,
         node.y        = n.y;
         node.owned    = std::move(effect);
         node.effect   = node.owned.get();
+
+        applyEffectSettings(*node.effect, n.settings);
 
         if (m_maxBlockSize > 0)
             node.effect->setMaxBlockSize(m_maxBlockSize);

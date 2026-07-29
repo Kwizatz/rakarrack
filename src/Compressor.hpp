@@ -45,6 +45,13 @@ public:
     void Compressor_Change (int np, int value);
     void Compressor_Change_Preset (int dgui,int npreset);
     int getpar (int npar);
+
+    // This effect predates the Effect parameter interface and named its own
+    // methods instead, so anything driving effects generically -- preset
+    // save/load, the node graph -- saw a no-op. Forwarded rather than renamed,
+    // because the original names are called from the engine and the GUI.
+    void changepar (int npar, int value) override { Compressor_Change (npar, value); }
+    void setpreset (int npreset) override { Compressor_Change_Preset (0, npreset); }
     void cleanup ();
 
 

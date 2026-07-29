@@ -878,18 +878,21 @@ StompBox::changepar (int npar, int value)
         break;
     case 1:
         Phigh = value;
+        // Neither branch used to run at zero, so a tone control set to the
+        // centre kept whatever the previous setting had left behind. Both
+        // expressions give 0.0f there, so an else covers it.
         if( value < 0) highb = ((float) value)/64.0f;
-        if( value > 0) highb = ((float) value)/32.0f;
+        else highb = ((float) value)/32.0f;
         break;
     case 2:
         Pmid = value;
         if( value < 0) midb = ((float) value)/64.0f;
-        if( value > 0) midb = ((float) value)/32.0f;
+        else midb = ((float) value)/32.0f;
         break;
     case 3:
         Plow = value;
         if( value < 0) lowb = ((float) value)/64.0f;
-        if( value > 0) lowb = ((float) value)/32.0f;
+        else lowb = ((float) value)/32.0f;
         break;
     case 4:
         Pgain = value;

@@ -48,7 +48,7 @@ public:
     void cleanup ();
     int setfile (int value);
 
-    int Pchange;
+    int Pchange{0};
 
 
     std::array<char, 128> Filename{};

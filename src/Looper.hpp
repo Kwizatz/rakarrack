@@ -39,7 +39,7 @@ public:
     void out (float * smpsl, float * smpr, int nframes) override;
     void setMaxBlockSize (int maxBlockSize) override;
     void setpreset (int npreset);
-    void loadpreset (int npar, int value);  // to set one from a preset
+    void loadpreset (int npar, int value) override;  // to set one from a preset
     void changepar (int npar, int value);
     int getpar (int npar);
     void cleanuppt1 ();

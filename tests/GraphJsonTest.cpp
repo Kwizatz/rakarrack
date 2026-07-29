@@ -48,8 +48,20 @@ public:
         for (int i = 0; i < n; ++i) { l[i] += m_v; r[i] += m_v; }
     }
     void out(float* l, float* r) override { out(l, r, PERIOD); }
+
+    // A settable parameter, so per-node settings can be exercised: two nodes
+    // of the same type have to be able to hold different values.
+    void changepar(int npar, int value) override
+    {
+        if (npar == 0) m_offset = value;
+    }
+    int getpar(int npar) override { return (npar == 0) ? m_offset : 0; }
+
+    [[nodiscard]] int offset() const { return m_offset; }
+
 private:
     float m_v;
+    int m_offset{0};
 };
 
 /// Effect type index stands in for the amount added, so the value arriving at
@@ -143,7 +155,7 @@ int main()
     // ---- bad input is refused, and refused whole
     {
         GraphLayout layout;
-        layout.nodes.push_back({7, 3, false, MixMode::Replace, 0.0f, 0.0f});
+        layout.nodes.push_back({7, 3, false, MixMode::Replace, 0.0f, 0.0f, {}});
         const GraphLayout before = layout;
         std::string error;
 
@@ -183,8 +195,8 @@ int main()
     // ---- building refuses layouts the evaluator would not accept
     {
         GraphLayout cyclic;
-        cyclic.nodes.push_back({1, 0, false, MixMode::Replace, 0.0f, 0.0f});
-        cyclic.nodes.push_back({2, 0, false, MixMode::Replace, 0.0f, 0.0f});
+        cyclic.nodes.push_back({1, 0, false, MixMode::Replace, 0.0f, 0.0f, {}});
+        cyclic.nodes.push_back({2, 0, false, MixMode::Replace, 0.0f, 0.0f, {}});
         cyclic.connections.push_back({1, 2});
         cyclic.connections.push_back({2, 1});
 
@@ -193,7 +205,7 @@ int main()
         check(g.nodes().empty(), "a refused build leaves the graph empty");
 
         GraphLayout unknown;
-        unknown.nodes.push_back({1, 999, false, MixMode::Replace, 0.0f, 0.0f});
+        unknown.nodes.push_back({1, 999, false, MixMode::Replace, 0.0f, 0.0f, {}});
         check(!g.build(unknown, makeEffect), "an unknown effect type is refused");
         check(g.nodes().empty(), "a refused build leaves nothing behind");
     }
@@ -201,12 +213,41 @@ int main()
     // ---- ids from a file do not collide with ids handed out afterwards
     {
         GraphLayout layout;
-        layout.nodes.push_back({42, 0, false, MixMode::Replace, 0.0f, 0.0f});
+        layout.nodes.push_back({42, 0, false, MixMode::Replace, 0.0f, 0.0f, {}});
 
         EffectGraph g;
         check(g.build(layout, makeEffect), "layout with a high id builds");
         const int added = g.addNode(1, makeEffect(1));
         check(added > 42, "new nodes get ids above anything the file used");
+    }
+
+    // ---- two nodes of the same type keep their own settings
+    //
+    // This is the whole point of per-node settings: the legacy preset stored
+    // parameters against the effect type, so a second Chorus was impossible.
+    {
+        EffectGraph g;
+        g.setMaxBlockSize(N);
+        const int first  = g.addNode(5, makeEffect(5));
+        const int second = g.addNode(5, makeEffect(5));   // same type
+        g.connect(kInputNodeId, first);
+        g.connect(first, second);
+        g.connect(second, kOutputNodeId);
+
+        g.findNode(first)->effect->changepar(0, 11);
+        g.findNode(second)->effect->changepar(0, 22);
+
+        const std::string text = graphToJson(g.layout());
+        GraphLayout loaded;
+        std::string error;
+        check(graphFromJson(text, loaded, error), "two same-type nodes parse");
+
+        EffectGraph rebuilt;
+        rebuilt.setMaxBlockSize(N);
+        check(rebuilt.build(loaded, makeEffect), "two same-type nodes rebuild");
+        check(rebuilt.findNode(first)->effect->getpar(0) == 11
+              && rebuilt.findNode(second)->effect->getpar(0) == 22,
+              "each node keeps its own parameter value");
     }
 
     std::printf("\n%d checks, %d failed\n", g_checks, g_failures);
