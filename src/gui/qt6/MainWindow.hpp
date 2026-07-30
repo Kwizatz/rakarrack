@@ -59,6 +59,7 @@ private Q_SLOTS:
     // Dialog launchers
     void showBankDialog();
     void showOrderDialog();
+    void showNodeEditorDialog();
     void showSettingsDialog();
     void showMidiLearnDialog();
     void showAboutDialog();

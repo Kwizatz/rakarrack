@@ -19,6 +19,7 @@
 #include "dialogs/HelpBrowser.hpp"
 #include "dialogs/MidiLearnDialog.hpp"
 #include "dialogs/OrderDialog.hpp"
+#include "dialogs/NodeEditorDialog.hpp"
 #include "dialogs/SettingsDialog.hpp"
 #include "dialogs/TriggerDialog.hpp"
 
@@ -145,6 +146,8 @@ void MainWindow::setupMenuBar()
                            this, &MainWindow::showBankDialog);
     windowsMenu->addAction(tr("Effect &Order"), QKeySequence(Qt::CTRL | Qt::Key_O),
                            this, &MainWindow::showOrderDialog);
+    windowsMenu->addAction(tr("&Node Editor"), QKeySequence(Qt::CTRL | Qt::Key_N),
+                           this, &MainWindow::showNodeEditorDialog);
     windowsMenu->addAction(tr("&MIDI Learn"),
                            this, &MainWindow::showMidiLearnDialog);
     windowsMenu->addAction(tr("&Trigger (ACI)"),
@@ -413,6 +416,18 @@ void MainWindow::showOrderDialog()
         createEffectPanels();
         m_slotBar->syncFromEngine();
     }
+}
+
+void MainWindow::showNodeEditorDialog()
+{
+    // Applying rewrites the effect order, so the panels and slot bar have to
+    // be rebuilt exactly as they are for the order dialog.
+    NodeEditorDialog dlg(m_engine, this);
+    connect(&dlg, &NodeEditorDialog::applied, this, [this] {
+        createEffectPanels();
+        m_slotBar->syncFromEngine();
+    });
+    dlg.exec();
 }
 
 void MainWindow::showSettingsDialog()

@@ -334,6 +334,44 @@ int main()
         check(busL[0] == 111.0f, "in place: input and output may be the same buffer");
     }
 
+    // ---- layoutCanConnect applies the same rules without any effects
+    //
+    // The node editor asks this before allowing a wire, so it has to agree
+    // with what connect() would accept. Two sets of rules that could drift
+    // apart would mean an editor that draws a patch the evaluator rejects.
+    {
+        GraphLayout layout;
+        layout.nodes.push_back({1, 0, false, MixMode::Replace, 0.0f, 0.0f, {}});
+        layout.nodes.push_back({2, 0, false, MixMode::Replace, 0.0f, 0.0f, {}});
+        layout.nodes.push_back({3, 0, false, MixMode::Replace, 0.0f, 0.0f, {}});
+        layout.connections.push_back({kInputNodeId, 1});
+        layout.connections.push_back({1, 2});
+
+        check(layoutCanConnect(layout, 2, 3), "layout: a new forward edge is allowed");
+        check(layoutCanConnect(layout, 1, 3), "layout: a split is allowed");
+        check(layoutCanConnect(layout, 2, kOutputNodeId), "layout: reaching the output is allowed");
+
+        check(!layoutCanConnect(layout, 1, 2), "layout: a duplicate edge is refused");
+        check(!layoutCanConnect(layout, 2, 1), "layout: a back edge is refused");
+        check(!layoutCanConnect(layout, 1, 1), "layout: a self connection is refused");
+        check(!layoutCanConnect(layout, 1, kInputNodeId), "layout: nothing may feed the input");
+        check(!layoutCanConnect(layout, kOutputNodeId, 1), "layout: nothing may leave the output");
+        check(!layoutCanConnect(layout, 1, 99), "layout: an unknown node is refused");
+
+        // A longer cycle, which a naive one-step check would miss.
+        layout.connections.push_back({2, 3});
+        check(!layoutCanConnect(layout, 3, 1), "layout: an indirect cycle is refused");
+
+        // And it must agree with the graph itself.
+        EffectGraph g;
+        const int a = g.addNode(0, std::make_unique<AddConst>(0.0f));
+        const int b = g.addNode(0, std::make_unique<AddConst>(0.0f));
+        g.connect(a, b);
+        const GraphLayout mirrored = g.layout();
+        check(layoutCanConnect(mirrored, b, a) == g.connect(b, a),
+              "layout: agrees with EffectGraph::connect on a back edge");
+    }
+
     std::printf("\n%d checks, %d failed\n", g_checks, g_failures);
     return g_failures == 0 ? 0 : 1;
 }

@@ -111,6 +111,13 @@ struct GraphLayout
     friend bool operator==(const GraphLayout&, const GraphLayout&) = default;
 };
 
+/// Whether `from` -> `to` may be added to `layout`.
+///
+/// The same rules EffectGraph::connect() applies, but on a layout, so an
+/// editor can decide whether to allow a connection without having to build
+/// the effects behind it.
+[[nodiscard]] bool layoutCanConnect(const GraphLayout& layout, int from, int to);
+
 class EffectGraph
 {
 public:

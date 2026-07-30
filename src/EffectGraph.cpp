@@ -14,6 +14,54 @@
 EffectGraph::EffectGraph() = default;
 EffectGraph::~EffectGraph() = default;
 
+// ─── Layout-level validation ───────────────────────────────────────
+
+bool layoutCanConnect(const GraphLayout& layout, int from, int to)
+{
+    // Signal only ever leaves the input and only ever enters the output.
+    if (to == kInputNodeId || from == kOutputNodeId)
+        return false;
+    if (from == to)
+        return false;
+
+    const auto known = [&layout](int id) {
+        if (id == kInputNodeId || id == kOutputNodeId)
+            return true;
+        for (const GraphNodeLayout& n : layout.nodes)
+            if (n.id == id)
+                return true;
+        return false;
+    };
+    if (!known(from) || !known(to))
+        return false;
+
+    for (const Connection& c : layout.connections)
+        if (c.from == from && c.to == to)
+            return false;
+
+    // A cycle exists if `to` already reaches `from`. Walk forwards from `to`;
+    // the endpoints are not nodes, so nothing leaves the output and the search
+    // terminates there.
+    std::vector<int> pending{to};
+    std::vector<int> seen;
+    while (!pending.empty())
+    {
+        const int at = pending.back();
+        pending.pop_back();
+        if (at == from)
+            return false;
+        if (std::find(seen.begin(), seen.end(), at) != seen.end())
+            continue;
+        seen.push_back(at);
+
+        for (const Connection& c : layout.connections)
+            if (c.from == at)
+                pending.push_back(c.to);
+    }
+
+    return true;
+}
+
 // ─── Mix modes ─────────────────────────────────────────────────────
 
 MixMode defaultMixModeForType(int type)

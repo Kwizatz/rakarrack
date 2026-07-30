@@ -38,6 +38,8 @@ set(QT6_GUI_SOURCES
     widgets/SpectrumAnalyzer.cpp
     widgets/Oscilloscope.cpp
     widgets/TunerDisplay.cpp
+    widgets/GraphCanvas.cpp
+    dialogs/NodeEditorDialog.cpp
 )
 
 set(QT6_GUI_HEADERS
@@ -69,6 +71,8 @@ set(QT6_GUI_HEADERS
     widgets/SpectrumAnalyzer.hpp
     widgets/Oscilloscope.hpp
     widgets/TunerDisplay.hpp
+    widgets/GraphCanvas.hpp
+    dialogs/NodeEditorDialog.hpp
 )
 
 set(QT6_RESOURCES
