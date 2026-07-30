@@ -34,21 +34,36 @@ void applyEffectSettings(Effect& effect, const EffectSettings& settings)
     // parameter reports -- DynamicFilter's filter definitions, for one.
     effect.setpreset(settings.preset);
 
-    // Only the slots that were captured. Sweeping the whole index space would
-    // mean calling changepar() a hundred-odd extra times, and that is not free:
-    // StompBox runs init_tone() at the end of every changepar(), and that
-    // rewrites the tone coefficients it just read. Replaying the preset above
-    // has already put the effect in the same starting state the source was in,
-    // so the trailing slots trimmed by capture need no writing.
-    for (std::size_t i = 0; i < settings.params.size(); ++i)
+    // Settle here rather than at the end. Changing a filter's frequency or
+    // gain leaves it interpolating towards the new value, and cleanup() clears
+    // that pending interpolation -- so clearing last would skip a crossfade
+    // the engine does perform. The engine's own preset loader clears state and
+    // then writes the parameters; a distortion stage never forgets a
+    // difference in its starting state, so restoring in that order is what
+    // makes a rebuilt effect sound like the one it was captured from.
+    effect.cleanup();
+
+    // Every slot, not just the ones capture kept. Trailing zeros are trimmed
+    // for storage, but they are still values the source held: replaying the
+    // preset above may have put something non-zero in those slots, and the
+    // engine's own loader writes the full range. Skipping them would leave a
+    // rebuilt effect carrying settings from the preset rather than from the
+    // patch. Indices past an effect's range fall through changepar()'s switch
+    // and cost nothing.
+    //
+    // No parameters at all means something different from "all zero": a
+    // hand-written layout that names only a preset should get that preset,
+    // not a silenced effect.
+    if (settings.params.empty())
+        return;
+
+    for (int i = 0; i < kEffectParamSlots; ++i)
     {
+        const std::size_t slot = static_cast<std::size_t>(i);
+        const int value = (slot < settings.params.size()) ? settings.params[slot] : 0;
+
         // loadpreset() rather than changepar(), so effects whose changepar()
         // is a command rather than a setting restore instead of firing.
-        effect.loadpreset(static_cast<int>(i), settings.params[i]);
+        effect.loadpreset(i, value);
     }
-
-    // Most setpreset() implementations end this way, for the same reason:
-    // changing a filter's frequency or gain leaves it interpolating towards
-    // the new value, and a restored effect should start settled.
-    effect.cleanup();
 }

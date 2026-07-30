@@ -114,6 +114,28 @@ public:
     /// Get effect preset.
     [[nodiscard]] int getEffectPreset(int effectIndex) const;
 
+    // ─── Per-node Parameter Access (GUI thread) ────────────────────
+    //
+    // The calls above address an effect by TYPE, which is also its identity in
+    // the legacy engine. A staged graph gives every node its own instance, so
+    // these address one node instead and are the only way to reach the second
+    // Chorus in a patch. They do nothing unless a layout has been staged.
+
+    /// True once a layout has been staged, i.e. nodes own their effects and
+    /// the per-type calls above no longer describe what is being heard.
+    [[nodiscard]] bool hasNodeInstances() const;
+
+    void setNodeParameter(int nodeId, int paramId, int value);
+    [[nodiscard]] int getNodeParameter(int nodeId, int paramId) const;
+    void setNodePreset(int nodeId, int preset);
+    [[nodiscard]] int getNodePreset(int nodeId) const;
+
+    /// Effect type behind a node, or -1 if there is no such node.
+    [[nodiscard]] int getNodeType(int nodeId) const;
+
+    void setNodeBypassed(int nodeId, bool bypassed);
+    [[nodiscard]] bool isNodeBypassed(int nodeId) const;
+
     // ─── Effect Chain (GUI thread) ──────────────────────────────────
 
     /// Set the effect processing order (10 slots).

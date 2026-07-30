@@ -320,36 +320,51 @@ GraphLayout EffectGraph::layout() const
 }
 
 bool EffectGraph::build(const GraphLayout& layout,
-                        const std::function<std::unique_ptr<Effect>(int)>& make)
+                        const std::function<NodeEffect(const GraphNodeLayout&)>& make)
 {
-    return buildFrom(layout, [&make](const GraphNodeLayout& n, EffectNode& node) {
-        std::unique_ptr<Effect> effect = make ? make(n.type) : nullptr;
-        if (!effect)
+    return buildFrom(layout, [&make](const GraphNodeLayout& n, EffectNode& node,
+                                     bool& settingsWanted) {
+        if (!make)
             return false;
-        node.owned  = std::move(effect);
-        node.effect = node.owned.get();
-        applyEffectSettings(*node.effect, n.settings);
+        NodeEffect made = make(n);
+        if (!made.effect)
+            return false;
+        node.owned      = std::move(made.effect);
+        node.effect     = node.owned.get();
+        settingsWanted  = made.needsSettings;
         return true;
     });
+}
+
+std::unique_ptr<Effect> EffectGraph::takeOwnedEffect(int id, int type)
+{
+    EffectNode* node = findNode(id);
+    if (node == nullptr || node->type != type || !node->owned)
+        return nullptr;
+
+    // node->effect deliberately keeps pointing at it: this graph may still be
+    // processing on the audio thread until the caller's graph replaces it.
+    return std::move(node->owned);
 }
 
 bool EffectGraph::buildBorrowed(const GraphLayout& layout,
                                 const std::function<Effect*(int)>& lookup)
 {
-    return buildFrom(layout, [&lookup](const GraphNodeLayout& n, EffectNode& node) {
+    return buildFrom(layout, [&lookup](const GraphNodeLayout& n, EffectNode& node,
+                                       bool& settingsWanted) {
         Effect* effect = lookup ? lookup(n.type) : nullptr;
         if (effect == nullptr)
             return false;
         node.effect = effect;
-        // Deliberately not applying settings: the effect is shared with the
-        // rest of the engine, which owns its configuration.
+        // The effect is shared with the engine, which owns its configuration.
+        settingsWanted = false;
         return true;
     });
 }
 
 bool EffectGraph::buildFrom(
     const GraphLayout& layout,
-    const std::function<bool(const GraphNodeLayout&, EffectNode&)>& attach)
+    const std::function<bool(const GraphNodeLayout&, EffectNode&, bool&)>& attach)
 {
     clear();
 
@@ -363,7 +378,8 @@ bool EffectGraph::buildFrom(
         node.x        = n.x;
         node.y        = n.y;
 
-        if (!attach(n, node))
+        bool settingsWanted = false;
+        if (!attach(n, node, settingsWanted))
         {
             // An unknown effect type would silently change the signal path.
             clear();
@@ -372,6 +388,13 @@ bool EffectGraph::buildFrom(
 
         if (m_maxBlockSize > 0)
             node.effect->setMaxBlockSize(m_maxBlockSize);
+
+        // Configure only once the effect is sized. setpreset() and changepar()
+        // derive values from the block size, and setMaxBlockSize() may hand
+        // out fresh scratch buffers, so doing it the other way round leaves an
+        // effect holding numbers computed for a different size.
+        if (settingsWanted)
+            applyEffectSettings(*node.effect, n.settings);
 
         m_nodes.push_back(std::move(node));
         m_bufL.emplace_back(static_cast<std::size_t>(std::max(m_maxBlockSize, 0)), 0.0f);

@@ -138,10 +138,6 @@ int main()
             if (!source)
                 continue;
             source->setpreset(preset);
-            // applyEffectSettings() leaves the effect settled, and several
-            // setpreset() implementations do not. Settle both, or this
-            // measures that difference rather than the settings.
-            source->cleanup();
 
             const EffectSettings settings = captureEffectSettings(*source);
 
@@ -180,6 +176,15 @@ int main()
 
             // And the copy must actually sound like the source, which catches
             // anything changepar() applies but getpar() does not report.
+            //
+            // Settle both first. Writing a filter's frequency leaves it
+            // interpolating towards the new value, and the two were configured
+            // by different routes, so without this the comparison measures how
+            // far through that crossfade each one is rather than whether they
+            // hold the same settings.
+            source->cleanup();
+            copy->cleanup();
+
             std::vector<float> sl, sr, cl, cr;
             renderBlock(*source, sl, sr);
             renderBlock(*copy, cl, cr);

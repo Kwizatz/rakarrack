@@ -179,12 +179,38 @@ public:
     /// The graph's shape without its effects, for saving or comparing.
     [[nodiscard]] GraphLayout layout() const;
 
+    /// What a build() maker hands back for one node.
+    struct NodeEffect
+    {
+        std::unique_ptr<Effect> effect;
+
+        /// False when the effect is one the caller carried over from an
+        /// earlier graph. It is already configured and, more to the point,
+        /// still holds live state -- a reverb tail, a looper recording -- that
+        /// re-applying the node's settings would clear.
+        bool needsSettings{true};
+    };
+
     /// Rebuild the graph from a layout, asking `make` for an effect per node.
     /// Node ids are preserved so the connections in the layout still apply.
     /// Returns false and leaves the graph empty if an effect cannot be made or
     /// a connection is invalid, rather than loading something half-formed.
+    ///
+    /// `make` receives the whole node, not just its type, so a caller
+    /// rebuilding an existing graph can hand back the instance that node was
+    /// already using instead of a fresh one.
     bool build(const GraphLayout& layout,
-               const std::function<std::unique_ptr<Effect>(int type)>& make);
+               const std::function<NodeEffect(const GraphNodeLayout&)>& make);
+
+    /// Give up ownership of the effect behind node `id` so a replacement graph
+    /// can carry on using it -- that is what keeps a reverb tail or a looper
+    /// recording alive across an edit.
+    ///
+    /// Returns nullptr if the node is missing, is of a different type, or
+    /// borrows its effect. The node keeps its raw pointer and stays playable:
+    /// the caller is building the graph that supersedes this one, so the
+    /// object outlives whatever is left running here.
+    [[nodiscard]] std::unique_ptr<Effect> takeOwnedEffect(int id, int type);
 
     /// Like build(), but the effects belong to someone else and must outlive
     /// the graph. Used while the graph and the legacy chain share the engine's
@@ -209,9 +235,10 @@ public:
 
 private:
     /// Shared by build() and buildBorrowed(). `attach` supplies the effect for
-    /// one node and reports whether it could.
+    /// one node and reports whether it could, setting `settingsWanted` if the
+    /// node's stored settings still have to be applied.
     bool buildFrom(const GraphLayout& layout,
-                   const std::function<bool(const GraphNodeLayout&, EffectNode&)>& attach);
+                   const std::function<bool(const GraphNodeLayout&, EffectNode&, bool&)>& attach);
 
     /// Recompute m_order (Kahn's algorithm). Called on any topology change.
     void rebuildOrder();

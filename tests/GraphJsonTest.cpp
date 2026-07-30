@@ -73,6 +73,13 @@ std::unique_ptr<Effect> makeEffect(int type)
     return std::make_unique<AddConst>(static_cast<float>(type));
 }
 
+/// build() hands the maker the whole node so a caller can reuse instances;
+/// this suite always wants a fresh one, configured from the node's settings.
+EffectGraph::NodeEffect makeEffectForNode(const GraphNodeLayout& n)
+{
+    return { makeEffect(n.type), true };
+}
+
 } // namespace
 
 int main()
@@ -103,7 +110,7 @@ int main()
 
         EffectGraph rebuilt;
         rebuilt.setMaxBlockSize(N);
-        check(rebuilt.build(loaded, makeEffect), "graph rebuilds from the layout");
+        check(rebuilt.build(loaded, makeEffectForNode), "graph rebuilds from the layout");
         check(rebuilt.layout() == original.layout(), "rebuilt graph has the same layout");
 
         // Positions are presentation, but they still have to round-trip.
@@ -201,12 +208,12 @@ int main()
         cyclic.connections.push_back({2, 1});
 
         EffectGraph g;
-        check(!g.build(cyclic, makeEffect), "a cyclic layout is refused");
+        check(!g.build(cyclic, makeEffectForNode), "a cyclic layout is refused");
         check(g.nodes().empty(), "a refused build leaves the graph empty");
 
         GraphLayout unknown;
         unknown.nodes.push_back({1, 999, false, MixMode::Replace, 0.0f, 0.0f, {}});
-        check(!g.build(unknown, makeEffect), "an unknown effect type is refused");
+        check(!g.build(unknown, makeEffectForNode), "an unknown effect type is refused");
         check(g.nodes().empty(), "a refused build leaves nothing behind");
     }
 
@@ -216,7 +223,7 @@ int main()
         layout.nodes.push_back({42, 0, false, MixMode::Replace, 0.0f, 0.0f, {}});
 
         EffectGraph g;
-        check(g.build(layout, makeEffect), "layout with a high id builds");
+        check(g.build(layout, makeEffectForNode), "layout with a high id builds");
         const int added = g.addNode(1, makeEffect(1));
         check(added > 42, "new nodes get ids above anything the file used");
     }
@@ -244,7 +251,7 @@ int main()
 
         EffectGraph rebuilt;
         rebuilt.setMaxBlockSize(N);
-        check(rebuilt.build(loaded, makeEffect), "two same-type nodes rebuild");
+        check(rebuilt.build(loaded, makeEffectForNode), "two same-type nodes rebuild");
         check(rebuilt.findNode(first)->effect->getpar(0) == 11
               && rebuilt.findNode(second)->effect->getpar(0) == 22,
               "each node keeps its own parameter value");

@@ -79,6 +79,7 @@ struct Options
     std::string bankPath;
     std::string saveBankPath;
     std::string graphPath;
+    std::string saveGraphPath;
     int          preset{0};
     int          period{256};
     int          onlyEffect{-1};
@@ -114,7 +115,9 @@ void usage()
         "\n"
         "Diagnostics:\n"
         "  --graph-layout F run the graph described by a JSON layout, which\n"
-        "                   may branch. Implies --graph.\n"
+        "                   may branch. Nodes own their effects, so two of a\n"
+        "                   type keep separate settings. Implies --graph.\n"
+        "  --save-graph F   write the preset's chain out as a JSON layout\n"
         "  --only-effect N  run just effect type N, ignoring the preset's chain\n"
         "  --heap-fill N    fill every allocation with byte N, so leftover heap\n"
         "                   contents are the same on every run. Renders that\n"
@@ -286,15 +289,27 @@ void render(const Options& opt, const Audio& in, Audio& out, bool useGraph, bool
             std::exit(1);
         }
         rkr->stageEffectGraph(std::move(graph));
+    }
 
-        // Every effect the layout mentions has to be active, or the node would
-        // pass its input straight through.
-        for (int type = 0; type < kEffectTypeCount; ++type)
-            if (int* active = bypassByIndex(*rkr, type))
-                *active = 0;
-        for (const GraphNodeLayout& n : layout.nodes)
-            if (int* active = bypassByIndex(*rkr, n.type))
-                *active = n.bypassed ? 0 : 1;
+    if (!opt.saveGraphPath.empty())
+    {
+        // Snapshot the chain as a layout. With --graph-layout there is already
+        // a staged graph to capture -- dumping that instead is what lets the
+        // two be diffed, showing which settings survived the round trip.
+        // Otherwise rebuildEffectGraph() normally runs on the first block, so
+        // ask for it now to have something to capture.
+        if (opt.graphPath.empty())
+            rkr->rebuildEffectGraph();
+        const std::string text = graphToJson(rkr->effectGraphLayout());
+
+        FILE* fn = std::fopen(opt.saveGraphPath.c_str(), "wb");
+        if (fn == nullptr)
+        {
+            std::fprintf(stderr, "cannot write %s\n", opt.saveGraphPath.c_str());
+            std::exit(1);
+        }
+        std::fwrite(text.data(), 1, text.size(), fn);
+        std::fclose(fn);
     }
 
     if (verbose)
@@ -378,6 +393,7 @@ bool parseArgs(int argc, char** argv, Options& opt)
         else if (arg == "--bank" && hasValue)     opt.bankPath = argv[++i];
         else if (arg == "--save-bank" && hasValue) opt.saveBankPath = argv[++i];
         else if (arg == "--graph-layout" && hasValue) opt.graphPath = argv[++i];
+        else if (arg == "--save-graph" && hasValue) opt.saveGraphPath = argv[++i];
         else if (arg == "--preset" && hasValue)   opt.preset   = std::atoi(argv[++i]);
         else if (arg == "--period" && hasValue)   opt.period   = std::atoi(argv[++i]);
         else if (arg == "--only-effect" && hasValue) opt.onlyEffect = std::atoi(argv[++i]);

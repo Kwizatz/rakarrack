@@ -29,6 +29,7 @@
 #include "AppConfig.hpp"
 #include "compat_time.hpp"
 #include "EffectGraph.hpp"
+#include "EffectFactory.hpp"
 
 #include <atomic>
 #include <string>
@@ -180,11 +181,22 @@ public:
     /// so both signal paths drive exactly the same objects and state.
     void rebuildEffectGraph ();
 
-    /// Build a graph from `layout`, wiring in the engine's per-type effect
-    /// instances. Returns null if the layout names an effect that does not
-    /// exist. Safe to call from any thread: it touches nothing the audio
-    /// thread is using.
+    /// Build a graph from `layout`, with each node owning its own effect so
+    /// two nodes of the same type can hold different settings. Instances are
+    /// carried over from the graph the GUI last staged wherever the node id
+    /// and type still match, so editing a patch does not restart every
+    /// effect. Returns null if the layout names an effect that does not
+    /// exist. Call from the GUI thread only: it allocates, and it moves
+    /// ownership out of the staged graph.
     [[nodiscard]] std::unique_ptr<EffectGraph> buildEffectGraph (const GraphLayout &layout);
+
+    /// The effect settings the factory needs, mirroring the engine's own.
+    [[nodiscard]] EffectFactoryConfig effectFactoryConfig () const;
+
+    /// The effect behind a node of the graph the GUI last staged, for the
+    /// panels to edit. Null before any layout is staged, or for an unknown
+    /// node. GUI thread only.
+    [[nodiscard]] Effect *effectForNode (int nodeId);
 
     /// Hand a graph to the audio thread.
     ///
@@ -218,6 +230,12 @@ public:
     /// stageEffectGraph(). Freeing it on the audio thread would mean
     /// deallocating in the middle of a block.
     std::atomic<EffectGraph*> efx_graph_retired{nullptr};
+
+    /// The graph the GUI last staged. The GUI cannot read efx_graph, which the
+    /// audio thread reseats, but it may hold this: only stageEffectGraph()
+    /// replaces it, and only from the GUI thread. Used to reach a node's
+    /// effect for editing and to carry instances across a rebuild.
+    EffectGraph *efx_graph_gui{nullptr};
 
     /// efx_order as of the last rebuild, so Alg() can spot a changed chain.
     /// efx_order is written from several places (preset load, bank load,

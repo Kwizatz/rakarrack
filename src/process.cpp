@@ -166,6 +166,15 @@ RKR::RKR (unsigned int offlineSampleRate, unsigned int offlinePeriod)
     Input_Gain = 0.50f;
     Cabinet_Preset = 0;
 
+    // Log_I_Gain and Log_M_Volume are what the audio path actually multiplies
+    // by, and only calculavol() derives them from the two values above. Until
+    // something called it the input gain was zero, so Control_Gain() scaled
+    // the whole effect bus to silence: every effect ran on nothing. The GUI
+    // hid this because its sliders call calculavol() as they are built, but
+    // nothing else did -- an offline render heard only the dry path.
+    calculavol (1);
+    calculavol (2);
+
     rakarrack.get (PrefNom("Harmonizer Downsample"),Har_Down,5);
     rakarrack.get (PrefNom("Harmonizer Up Quality"),Har_U_Q,4);
     rakarrack.get (PrefNom("Harmonizer Down Quality"),Har_D_Q,2);
@@ -1236,6 +1245,11 @@ RKR::rebuildEffectGraph ()
             continue;
 
         const int node = efx_graph->addBorrowedNode (type, efx);
+        // Mind the inversion: a non-zero X_Bypass means ACTIVE. Alg() refreshes
+        // this every block, but setting it here means a layout snapshotted
+        // before the first block still says which effects were switched on.
+        const int *bp = bypassByIndex (*this, type);
+        efx_graph->setNodeBypassed (node, bp == nullptr || *bp == 0);
         efx_graph->connect (previous, node);
         previous = node;
     }
@@ -1248,6 +1262,28 @@ RKR::rebuildEffectGraph ()
 }
 
 
+EffectFactoryConfig
+RKR::effectFactoryConfig () const
+{
+    // Mirrors the arguments the constructors above are given, so a node's
+    // effect comes up configured exactly like the engine's own instance.
+    EffectFactoryConfig cfg;
+    cfg.harQuality = HarQual;
+    cfg.steQuality = SteQual;
+    cfg.harDown = Har_Down; cfg.harUpQ = Har_U_Q; cfg.harDownQ = Har_D_Q;
+    cfg.revDown = Rev_Down; cfg.revUpQ = Rev_U_Q; cfg.revDownQ = Rev_D_Q;
+    cfg.conDown = Con_Down; cfg.conUpQ = Con_U_Q; cfg.conDownQ = Con_D_Q;
+    cfg.shiDown = Shi_Down; cfg.shiUpQ = Shi_U_Q; cfg.shiDownQ = Shi_D_Q;
+    cfg.seqDown = Seq_Down; cfg.seqUpQ = Seq_U_Q; cfg.seqDownQ = Seq_D_Q;
+    cfg.vocDown = Voc_Down; cfg.vocUpQ = Voc_U_Q; cfg.vocDownQ = Voc_D_Q;
+    cfg.steDown = Ste_Down; cfg.steUpQ = Ste_U_Q; cfg.steDownQ = Ste_D_Q;
+    cfg.vocBands = VocBands;
+    cfg.looperSize = looper_size;
+    cfg.auxResampled = const_cast<float *> (auxresampled.data ());
+    return cfg;
+}
+
+
 std::unique_ptr<EffectGraph>
 RKR::buildEffectGraph (const GraphLayout &layout)
 {
@@ -1257,14 +1293,36 @@ RKR::buildEffectGraph (const GraphLayout &layout)
     // nothing but a pointer swap.
     graph->setMaxBlockSize (PERIOD);
 
-    if (!graph->buildBorrowed (layout, [this] (int type) {
-            return effectByIndex (*this, type);
+    const EffectFactoryConfig cfg = effectFactoryConfig ();
+    EffectGraph *previous = efx_graph_gui;
+
+    if (!graph->build (layout, [&] (const GraphNodeLayout &n) {
+            // Keep the instance this node was already using where we can, so
+            // an edit elsewhere in the patch does not cut its reverb tail or
+            // wipe its looper. Such an effect is left exactly as it is: it is
+            // already configured, and re-applying the node's settings would
+            // clear the very state we are preserving.
+            if (previous != nullptr) {
+                if (auto existing = previous->takeOwnedEffect (n.id, n.type))
+                    return EffectGraph::NodeEffect{ std::move (existing), false };
+            }
+            return EffectGraph::NodeEffect{ createEffect (n.type, cfg), true };
         })) {
         return nullptr;
     }
 
-    graph->setMaxBlockSize (PERIOD);
     return graph;
+}
+
+
+Effect *
+RKR::effectForNode (int nodeId)
+{
+    if (efx_graph_gui == nullptr)
+        return nullptr;
+
+    const EffectNode *node = efx_graph_gui->findNode (nodeId);
+    return node ? node->effect : nullptr;
 }
 
 
@@ -1273,6 +1331,10 @@ RKR::stageEffectGraph (std::unique_ptr<EffectGraph> graph)
 {
     if (!graph)
         return;
+
+    // Take the GUI's view to the new graph first: the frees below may release
+    // the graph it was pointing at.
+    efx_graph_gui = graph.get ();
 
     // Release whatever the audio thread handed back last time. It has long
     // since moved on, and doing it here keeps deallocation off that thread.
@@ -1290,6 +1352,11 @@ RKR::stageEffectGraph (std::unique_ptr<EffectGraph> graph)
 GraphLayout
 RKR::effectGraphLayout () const
 {
+    // The GUI's graph is the authority once one has been staged; efx_graph is
+    // the audio thread's and may not have caught up yet.
+    if (efx_graph_gui != nullptr)
+        return efx_graph_gui->layout ();
+
     return efx_graph ? efx_graph->layout () : GraphLayout{};
 }
 
@@ -1666,9 +1733,14 @@ RKR::Alg (float *inl1, float *inr1, float *origl, float *origr, void *)
             // The per-type flags stay authoritative while both paths coexist,
             // so mirror them onto the nodes. Mind the inversion: a non-zero
             // X_Bypass means the effect is ACTIVE.
-            for (const EffectNode &node : efx_graph->nodes ()) {
-                const int *bp = bypassByIndex (*this, node.type);
-                efx_graph->setNodeBypassed (node.id, bp == nullptr || *bp == 0);
+            //
+            // A staged layout is exempt: its nodes own their bypass state, and
+            // two nodes of one type must be switchable independently.
+            if (!efx_graph_custom) {
+                for (const EffectNode &node : efx_graph->nodes ()) {
+                    const int *bp = bypassByIndex (*this, node.type);
+                    efx_graph->setNodeBypassed (node.id, bp == nullptr || *bp == 0);
+                }
             }
 
             // process() writes its outputs only after every node has read its

@@ -45,6 +45,61 @@ int EngineController::getEffectPreset(int effectIndex) const
     return 0;
 }
 
+// ─── Per-node Parameter Access ─────────────────────────────────────
+
+bool EngineController::hasNodeInstances() const
+{
+    return m_engine.efx_graph_gui != nullptr;
+}
+
+void EngineController::setNodeParameter(int nodeId, int paramId, int value)
+{
+    if (auto* efx = m_engine.effectForNode(nodeId))
+        efx->changepar(paramId, value);
+}
+
+int EngineController::getNodeParameter(int nodeId, int paramId) const
+{
+    if (auto* efx = const_cast<RKR&>(m_engine).effectForNode(nodeId))
+        return efx->getpar(paramId);
+    return 0;
+}
+
+void EngineController::setNodePreset(int nodeId, int preset)
+{
+    if (auto* efx = m_engine.effectForNode(nodeId))
+        efx->setpreset(preset);
+}
+
+int EngineController::getNodePreset(int nodeId) const
+{
+    if (auto* efx = const_cast<RKR&>(m_engine).effectForNode(nodeId))
+        return efx->Ppreset;
+    return 0;
+}
+
+int EngineController::getNodeType(int nodeId) const
+{
+    if (m_engine.efx_graph_gui == nullptr)
+        return -1;
+    const EffectNode* node = m_engine.efx_graph_gui->findNode(nodeId);
+    return node ? node->type : -1;
+}
+
+void EngineController::setNodeBypassed(int nodeId, bool bypassed)
+{
+    if (m_engine.efx_graph_gui != nullptr)
+        m_engine.efx_graph_gui->setNodeBypassed(nodeId, bypassed);
+}
+
+bool EngineController::isNodeBypassed(int nodeId) const
+{
+    if (m_engine.efx_graph_gui == nullptr)
+        return true;
+    const EffectNode* node = m_engine.efx_graph_gui->findNode(nodeId);
+    return node == nullptr || node->bypassed;
+}
+
 // ─── Effect Chain ──────────────────────────────────────────────────
 
 void EngineController::setEffectOrder(std::span<const int> order)

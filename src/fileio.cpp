@@ -2420,6 +2420,13 @@ RKR::Bank_to_Preset (int i)
         Input_Gain = presets.Bank[i].Input_Gain;
         Master_Volume = presets.Bank[i].Master_Volume;
         Fraction_Bypass = presets.Bank[i].Balance;
+
+        // The audio path multiplies by Log_I_Gain / Log_M_Volume, and only
+        // calculavol() derives those from the two values above. Without this a
+        // preset's gain and volume did not take effect until something else
+        // moved the sliders.
+        calculavol (1);
+        calculavol (2);
     }
 
     if((Tap_Updated) && (Tap_Bypass) && (Tap_TempoSet>0) && (Tap_TempoSet<601)) Update_tempo();
