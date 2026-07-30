@@ -34,7 +34,13 @@ NodeEditorDialog::NodeEditorDialog(EngineController& engine, QWidget* parent)
         types.push_back(t);
     m_canvas->setAvailableTypes(std::move(types));
 
-    m_canvas->setLayout(layoutFromEngine());
+    // Open on whatever the engine is actually running. With the graph active
+    // that is the graph itself, which may already branch; otherwise the fixed
+    // chain converted to a series of nodes.
+    GraphLayout opening = m_engine.getGraphLayout();
+    if (!m_engine.isGraphPathActive() || opening.nodes.empty())
+        opening = layoutFromEngine();
+    m_canvas->setLayout(opening);
     updateStatus();
 }
 
@@ -149,13 +155,27 @@ void NodeEditorDialog::updateStatus()
 {
     const GraphLayout& layout = m_canvas->layout();
     const std::vector<int> chain = seriesChainTypes();
+    const bool branching = chain.empty() && !layout.nodes.empty();
 
-    if (chain.empty() && !layout.nodes.empty())
+    if (m_engine.isGraphPathActive())
     {
         m_status->setText(
-            tr("This patch branches, so it cannot be applied to the effect "
-               "chain yet — the chain is a plain series of up to %1 slots. "
-               "Straighten it into a single path to apply it.")
+            branching
+                ? tr("%1 effects, routed as a graph. Right-click to add, drag "
+                     "from a green port to connect, Delete to remove.")
+                      .arg(layout.nodes.size())
+                : tr("%1 effects in series. Right-click to add, drag from a "
+                     "green port to connect, Delete to remove.")
+                      .arg(chain.size()));
+        return;
+    }
+
+    if (branching)
+    {
+        m_status->setText(
+            tr("This patch branches. Turn on the graph signal path to run it, "
+               "or straighten it into a single path to apply it to the "
+               "%1-slot chain.")
                 .arg(kMaxEffectSlots));
         return;
     }
@@ -180,8 +200,25 @@ void NodeEditorDialog::onLayoutEdited()
 
 void NodeEditorDialog::onApply()
 {
+    const GraphLayout& layout = m_canvas->layout();
+
+    // With the graph running the audio, the patch goes across as it is --
+    // splits, merges and all.
+    if (m_engine.isGraphPathActive())
+    {
+        if (!m_engine.setGraphLayout(layout))
+        {
+            m_status->setText(tr("That patch could not be applied: it uses an "
+                                 "effect this build does not have."));
+            return;
+        }
+        Q_EMIT applied();
+        return;
+    }
+
+    // Otherwise only what the fixed chain can hold.
     const std::vector<int> chain = seriesChainTypes();
-    if (chain.empty() && !m_canvas->layout().nodes.empty())
+    if (chain.empty() && !layout.nodes.empty())
         return;                        // updateStatus() has already explained why
     if (chain.size() > static_cast<std::size_t>(kMaxEffectSlots))
         return;
@@ -193,7 +230,7 @@ void NodeEditorDialog::onApply()
 
     m_engine.setEffectOrder(order);
 
-    for (const GraphNodeLayout& n : m_canvas->layout().nodes)
+    for (const GraphNodeLayout& n : layout.nodes)
         m_engine.setEffectEnabled(n.type, !n.bypassed);
 
     Q_EMIT applied();

@@ -13,6 +13,7 @@
 #pragma once
 
 #include "RingBuffer.hpp"
+#include "EffectGraph.hpp"
 #include <array>
 #include <atomic>
 #include <cstdint>
@@ -117,6 +118,21 @@ public:
 
     /// Set the effect processing order (10 slots).
     void setEffectOrder(std::span<const int> order);
+
+    /// The routing the engine is running, for the node editor to open on.
+    [[nodiscard]] GraphLayout getGraphLayout() const;
+
+    /// Replace the routing. Returns false if the layout names an effect that
+    /// does not exist, in which case nothing changes.
+    ///
+    /// The graph is built here and handed to the audio thread as a finished
+    /// object, so applying a patch does not interrupt playback.
+    bool setGraphLayout(const GraphLayout& layout);
+
+    /// Whether the engine is running the graph rather than the fixed chain.
+    /// Only the graph can carry a patch that branches.
+    [[nodiscard]] bool isGraphPathActive() const;
+    void setGraphPathActive(bool active);
 
     /// Get the current effect order.
     [[nodiscard]] std::array<int, kMaxEffectSlots> getEffectOrder() const;

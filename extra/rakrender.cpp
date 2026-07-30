@@ -16,6 +16,7 @@
 #include "AllEffects.hpp"
 #include "EffectRegistry.hpp"
 #include "EngineController.hpp"
+#include "GraphJson.hpp"
 
 #include <sndfile.h>
 
@@ -77,6 +78,7 @@ struct Options
     std::string outPath;
     std::string bankPath;
     std::string saveBankPath;
+    std::string graphPath;
     int          preset{0};
     int          period{256};
     int          onlyEffect{-1};
@@ -111,6 +113,8 @@ void usage()
         "  --seed N        PRNG seed (default 12345)\n"
         "\n"
         "Diagnostics:\n"
+        "  --graph-layout F run the graph described by a JSON layout, which\n"
+        "                   may branch. Implies --graph.\n"
         "  --only-effect N  run just effect type N, ignoring the preset's chain\n"
         "  --heap-fill N    fill every allocation with byte N, so leftover heap\n"
         "                   contents are the same on every run. Renders that\n"
@@ -237,7 +241,7 @@ void render(const Options& opt, const Audio& in, Audio& out, bool useGraph, bool
 
     // Actualizar_Audio() clears the master switch while it applies a preset.
     rkr->Bypass = 1;
-    rkr->use_effect_graph = useGraph;
+    rkr->use_effect_graph = useGraph || !opt.graphPath.empty();
 
     if (opt.onlyEffect >= 0)
     {
@@ -250,6 +254,47 @@ void render(const Options& opt, const Audio& in, Audio& out, bool useGraph, bool
         for (int type = 0; type < kEffectTypeCount; ++type)
             if (int* active = bypassByIndex(*rkr, type))
                 *active = (type == opt.onlyEffect) ? 1 : 0;
+    }
+
+    if (!opt.graphPath.empty())
+    {
+        // A layout can describe routing the effect order cannot, so this is
+        // the only way to render a branching patch.
+        std::string text;
+        if (FILE* fn = std::fopen(opt.graphPath.c_str(), "rb"))
+        {
+            char buf[4096];
+            std::size_t got;
+            while ((got = std::fread(buf, 1, sizeof(buf), fn)) > 0)
+                text.append(buf, got);
+            std::fclose(fn);
+        }
+
+        GraphLayout layout;
+        std::string error;
+        if (!graphFromJson(text, layout, error))
+        {
+            std::fprintf(stderr, "cannot read %s: %s\n",
+                         opt.graphPath.c_str(), error.c_str());
+            std::exit(1);
+        }
+
+        auto graph = rkr->buildEffectGraph(layout);
+        if (!graph)
+        {
+            std::fprintf(stderr, "layout uses an effect this build does not have\n");
+            std::exit(1);
+        }
+        rkr->stageEffectGraph(std::move(graph));
+
+        // Every effect the layout mentions has to be active, or the node would
+        // pass its input straight through.
+        for (int type = 0; type < kEffectTypeCount; ++type)
+            if (int* active = bypassByIndex(*rkr, type))
+                *active = 0;
+        for (const GraphNodeLayout& n : layout.nodes)
+            if (int* active = bypassByIndex(*rkr, n.type))
+                *active = n.bypassed ? 0 : 1;
     }
 
     if (verbose)
@@ -332,6 +377,7 @@ bool parseArgs(int argc, char** argv, Options& opt)
         else if (arg == "--out" && hasValue)      opt.outPath  = argv[++i];
         else if (arg == "--bank" && hasValue)     opt.bankPath = argv[++i];
         else if (arg == "--save-bank" && hasValue) opt.saveBankPath = argv[++i];
+        else if (arg == "--graph-layout" && hasValue) opt.graphPath = argv[++i];
         else if (arg == "--preset" && hasValue)   opt.preset   = std::atoi(argv[++i]);
         else if (arg == "--period" && hasValue)   opt.period   = std::atoi(argv[++i]);
         else if (arg == "--only-effect" && hasValue) opt.onlyEffect = std::atoi(argv[++i]);

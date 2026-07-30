@@ -186,6 +186,14 @@ public:
     bool build(const GraphLayout& layout,
                const std::function<std::unique_ptr<Effect>(int type)>& make);
 
+    /// Like build(), but the effects belong to someone else and must outlive
+    /// the graph. Used while the graph and the legacy chain share the engine's
+    /// long-lived per-type instances: the same effect object can appear in
+    /// more than one node, which is what the old chain did with a repeated
+    /// effect and is harmless because a node runs at most once per block.
+    bool buildBorrowed(const GraphLayout& layout,
+                       const std::function<Effect*(int type)>& lookup);
+
     // ─── Audio ─────────────────────────────────────────────────────
 
     /// Size the per-node buffers. Must be called before process(), and again
@@ -200,6 +208,11 @@ public:
                  float* outL, float* outR, int nframes);
 
 private:
+    /// Shared by build() and buildBorrowed(). `attach` supplies the effect for
+    /// one node and reports whether it could.
+    bool buildFrom(const GraphLayout& layout,
+                   const std::function<bool(const GraphNodeLayout&, EffectNode&)>& attach);
+
     /// Recompute m_order (Kahn's algorithm). Called on any topology change.
     void rebuildOrder();
 

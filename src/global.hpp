@@ -30,6 +30,7 @@
 #include "compat_time.hpp"
 #include "EffectGraph.hpp"
 
+#include <atomic>
 #include <string>
 #include <signal.h>
 #include <jack/jack.h>
@@ -179,14 +180,44 @@ public:
     /// so both signal paths drive exactly the same objects and state.
     void rebuildEffectGraph ();
 
+    /// Build a graph from `layout`, wiring in the engine's per-type effect
+    /// instances. Returns null if the layout names an effect that does not
+    /// exist. Safe to call from any thread: it touches nothing the audio
+    /// thread is using.
+    [[nodiscard]] std::unique_ptr<EffectGraph> buildEffectGraph (const GraphLayout &layout);
+
+    /// Hand a graph to the audio thread.
+    ///
+    /// Building happens on the caller's thread and the result is published
+    /// with one atomic store, so the audio thread never sees a partly rewired
+    /// graph and never allocates to adopt it. The graph being replaced is not
+    /// freed here either -- the audio thread hands it back, and it is released
+    /// on the next call, by which point the audio thread has left it.
+    void stageEffectGraph (std::unique_ptr<EffectGraph> graph);
+
+    /// The layout the engine is currently running, for the editor to open on.
+    [[nodiscard]] GraphLayout effectGraphLayout () const;
+
     /// Run the effect chain through efx_graph instead of the hand-written
-    /// switch in Alg(). Both paths are meant to produce identical audio; the
-    /// graph is what the node editor will drive, and this toggle exists so the
-    /// two can be compared on real material before the switch is retired.
+    /// switch in Alg(). Both paths produce identical audio for a series chain;
+    /// the graph additionally allows splits and merges, which efx_order cannot
+    /// express, so a branching patch requires this.
     bool use_effect_graph{false};
 
-    /// The graph form of the effect chain.
-    EffectGraph efx_graph;
+    /// The graph form of the effect chain, owned so it can be swapped whole.
+    std::unique_ptr<EffectGraph> efx_graph;
+
+    /// Set once a layout has been staged, after which efx_order no longer
+    /// describes the routing and must not be used to rebuild it.
+    bool efx_graph_custom{false};
+
+    /// Published by stageEffectGraph(), adopted by Alg() at a block boundary.
+    std::atomic<EffectGraph*> efx_graph_pending{nullptr};
+
+    /// Handed back by Alg() when it adopts a new graph, and freed by the next
+    /// stageEffectGraph(). Freeing it on the audio thread would mean
+    /// deallocating in the middle of a block.
+    std::atomic<EffectGraph*> efx_graph_retired{nullptr};
 
     /// efx_order as of the last rebuild, so Alg() can spot a changed chain.
     /// efx_order is written from several places (preset load, bank load,

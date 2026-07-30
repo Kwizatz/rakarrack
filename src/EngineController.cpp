@@ -53,6 +53,31 @@ void EngineController::setEffectOrder(std::span<const int> order)
         m_engine.efx_order[i] = order[i];
 }
 
+GraphLayout EngineController::getGraphLayout() const
+{
+    return m_engine.effectGraphLayout();
+}
+
+bool EngineController::setGraphLayout(const GraphLayout& layout)
+{
+    auto graph = m_engine.buildEffectGraph(layout);
+    if (!graph)
+        return false;
+
+    m_engine.stageEffectGraph(std::move(graph));
+    return true;
+}
+
+bool EngineController::isGraphPathActive() const
+{
+    return m_engine.use_effect_graph;
+}
+
+void EngineController::setGraphPathActive(bool active)
+{
+    m_engine.use_effect_graph = active;
+}
+
 std::array<int, kMaxEffectSlots> EngineController::getEffectOrder() const
 {
     std::array<int, kMaxEffectSlots> result{};

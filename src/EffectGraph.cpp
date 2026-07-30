@@ -322,18 +322,39 @@ GraphLayout EffectGraph::layout() const
 bool EffectGraph::build(const GraphLayout& layout,
                         const std::function<std::unique_ptr<Effect>(int)>& make)
 {
+    return buildFrom(layout, [&make](const GraphNodeLayout& n, EffectNode& node) {
+        std::unique_ptr<Effect> effect = make ? make(n.type) : nullptr;
+        if (!effect)
+            return false;
+        node.owned  = std::move(effect);
+        node.effect = node.owned.get();
+        applyEffectSettings(*node.effect, n.settings);
+        return true;
+    });
+}
+
+bool EffectGraph::buildBorrowed(const GraphLayout& layout,
+                                const std::function<Effect*(int)>& lookup)
+{
+    return buildFrom(layout, [&lookup](const GraphNodeLayout& n, EffectNode& node) {
+        Effect* effect = lookup ? lookup(n.type) : nullptr;
+        if (effect == nullptr)
+            return false;
+        node.effect = effect;
+        // Deliberately not applying settings: the effect is shared with the
+        // rest of the engine, which owns its configuration.
+        return true;
+    });
+}
+
+bool EffectGraph::buildFrom(
+    const GraphLayout& layout,
+    const std::function<bool(const GraphNodeLayout&, EffectNode&)>& attach)
+{
     clear();
 
     for (const GraphNodeLayout& n : layout.nodes)
     {
-        std::unique_ptr<Effect> effect = make ? make(n.type) : nullptr;
-        if (!effect)
-        {
-            // An unknown effect type would silently change the signal path.
-            clear();
-            return false;
-        }
-
         EffectNode node;
         node.id       = n.id;
         node.type     = n.type;
@@ -341,10 +362,13 @@ bool EffectGraph::build(const GraphLayout& layout,
         node.mix      = n.mix;
         node.x        = n.x;
         node.y        = n.y;
-        node.owned    = std::move(effect);
-        node.effect   = node.owned.get();
 
-        applyEffectSettings(*node.effect, n.settings);
+        if (!attach(n, node))
+        {
+            // An unknown effect type would silently change the signal path.
+            clear();
+            return false;
+        }
 
         if (m_maxBlockSize > 0)
             node.effect->setMaxBlockSize(m_maxBlockSize);

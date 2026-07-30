@@ -92,6 +92,8 @@ RKR::RKR (unsigned int offlineSampleRate, unsigned int offlinePeriod)
     if (const char *env = getenv ("RAKARRACK_EFFECT_GRAPH"))
         use_effect_graph = (atoi (env) != 0);
 
+    efx_graph = std::make_unique<EffectGraph> ();
+
     eff_filter = 0;
     OnOffC = 0;
     config.flpos = 0;
@@ -799,7 +801,13 @@ RKR::RKR (unsigned int offlineSampleRate, unsigned int offlinePeriod)
 
 
 
-RKR::~RKR () = default;
+RKR::~RKR ()
+{
+    // Anything staged but not yet adopted, and anything the audio thread
+    // handed back, is ours to release.
+    delete efx_graph_pending.exchange (nullptr);
+    delete efx_graph_retired.exchange (nullptr);
+}
 
 
 
@@ -1215,7 +1223,7 @@ RKR::rebuildEffectGraph ()
     // Mirrors the legacy chain: the slots in efx_order, in order, wired
     // input -> ... -> output. Nodes borrow the engine's per-type instances, so
     // parameter edits, presets and MIDI keep working on both paths untouched.
-    efx_graph.clear ();
+    efx_graph->clear ();
 
     int previous = kInputNodeId;
     for (int i = 0; i < MAX_EFFECT_SLOTS; i++) {
@@ -1227,16 +1235,62 @@ RKR::rebuildEffectGraph ()
         if (efx == nullptr)
             continue;
 
-        const int node = efx_graph.addBorrowedNode (type, efx);
-        efx_graph.connect (previous, node);
+        const int node = efx_graph->addBorrowedNode (type, efx);
+        efx_graph->connect (previous, node);
         previous = node;
     }
-    efx_graph.connect (previous, kOutputNodeId);
+    efx_graph->connect (previous, kOutputNodeId);
 
-    efx_graph.setMaxBlockSize (PERIOD);
+    efx_graph->setMaxBlockSize (PERIOD);
 
     efx_graph_order = efx_order;
     efx_graph_built = true;
+}
+
+
+std::unique_ptr<EffectGraph>
+RKR::buildEffectGraph (const GraphLayout &layout)
+{
+    auto graph = std::make_unique<EffectGraph> ();
+
+    // Size the buffers before wiring, so adopting this costs the audio thread
+    // nothing but a pointer swap.
+    graph->setMaxBlockSize (PERIOD);
+
+    if (!graph->buildBorrowed (layout, [this] (int type) {
+            return effectByIndex (*this, type);
+        })) {
+        return nullptr;
+    }
+
+    graph->setMaxBlockSize (PERIOD);
+    return graph;
+}
+
+
+void
+RKR::stageEffectGraph (std::unique_ptr<EffectGraph> graph)
+{
+    if (!graph)
+        return;
+
+    // Release whatever the audio thread handed back last time. It has long
+    // since moved on, and doing it here keeps deallocation off that thread.
+    delete efx_graph_retired.exchange (nullptr, std::memory_order_acquire);
+
+    EffectGraph *previous =
+        efx_graph_pending.exchange (graph.release (), std::memory_order_release);
+
+    // A graph staged but never adopted -- two edits inside one block -- is
+    // ours to free, since the audio thread never saw it.
+    delete previous;
+}
+
+
+GraphLayout
+RKR::effectGraphLayout () const
+{
+    return efx_graph ? efx_graph->layout () : GraphLayout{};
 }
 
 
@@ -1587,21 +1641,40 @@ RKR::Alg (float *inl1, float *inr1, float *origl, float *origr, void *)
         if(ponlast) last=reconota;
 
         if (use_effect_graph) {
-            if (!efx_graph_built || efx_graph_order != efx_order)
+            // Adopt a graph staged by the GUI. One exchange, no allocation.
+            if (EffectGraph *staged =
+                    efx_graph_pending.exchange (nullptr, std::memory_order_acquire)) {
+                EffectGraph *previous = efx_graph.release ();
+                efx_graph.reset (staged);
+                efx_graph_custom = true;
+
+                // Hand the old graph back rather than freeing it here; the
+                // next stageEffectGraph() releases it. The slot is empty at
+                // this point because staging clears it before publishing, so
+                // the delete below only ever runs on a null pointer -- it is
+                // there so a future change cannot turn this into a leak.
+                delete efx_graph_retired.exchange (previous, std::memory_order_release);
+            }
+
+            // Only follow efx_order while it still describes the routing. Once
+            // a layout has been staged the graph may branch, and efx_order
+            // cannot express that.
+            if (!efx_graph_custom
+                && (!efx_graph_built || efx_graph_order != efx_order))
                 rebuildEffectGraph ();
 
             // The per-type flags stay authoritative while both paths coexist,
             // so mirror them onto the nodes. Mind the inversion: a non-zero
             // X_Bypass means the effect is ACTIVE.
-            for (const EffectNode &node : efx_graph.nodes ()) {
+            for (const EffectNode &node : efx_graph->nodes ()) {
                 const int *bp = bypassByIndex (*this, node.type);
-                efx_graph.setNodeBypassed (node.id, bp == nullptr || *bp == 0);
+                efx_graph->setNodeBypassed (node.id, bp == nullptr || *bp == 0);
             }
 
             // process() writes its outputs only after every node has read its
             // inputs, so running in place on the bus is safe.
-            efx_graph.process (efxoutl.data (), efxoutr.data (),
-                               efxoutl.data (), efxoutr.data (), PERIOD);
+            efx_graph->process (efxoutl.data (), efxoutr.data (),
+                                efxoutl.data (), efxoutr.data (), PERIOD);
         }
         else
         // Legacy path. Left unbraced so the switch keeps its original
