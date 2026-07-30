@@ -38,6 +38,16 @@ public:
 
     [[nodiscard]] int effectIndex() const { return m_effectIndex; }
 
+    /// Edit one graph node instead of the engine's per-type instance.
+    ///
+    /// A patch may hold several nodes of the same type, each with its own
+    /// settings, so a panel showing "Chorus" is ambiguous until it is told
+    /// which one it means. Pass kNoNode to go back to addressing the type,
+    /// which is what the main window's panels do.
+    static constexpr int kNoNode = -1;
+    void setTargetNode(int nodeId);
+    [[nodiscard]] int targetNode() const { return m_nodeId; }
+
     /// Pull all parameter values from the engine and update controls.
     virtual void syncFromEngine();
     /// Push all control values to the engine.
@@ -58,8 +68,21 @@ protected:
     /// Returns the QVBoxLayout below the header for subclasses to fill.
     QVBoxLayout* bodyLayout();
 
+    // Parameter access that follows the panel's target. Subclasses use these
+    // rather than talking to the engine directly, so retargeting one panel to
+    // a node does not need every control rewired.
+    void setParam(int paramId, int value);
+    [[nodiscard]] int getParam(int paramId) const;
+    void setPreset(int preset);
+
+    // Named apart from QWidget::setEnabled/isEnabled deliberately: these are
+    // the effect's on/off state, and shadowing the widget's would be a trap.
+    void setEffectActive(bool active);
+    [[nodiscard]] bool isEffectActive() const;
+
     EngineController& m_engine;
     int m_effectIndex;
+    int m_nodeId{kNoNode};
 
 private:
     void setupHeader();

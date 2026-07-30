@@ -21,9 +21,11 @@
 
 #include <QDialog>
 
+class EffectPanel;
 class EngineController;
 class GraphCanvas;
 class QLabel;
+class QVBoxLayout;
 
 class NodeEditorDialog : public QDialog
 {
@@ -41,6 +43,7 @@ Q_SIGNALS:
 private Q_SLOTS:
     void onLayoutEdited();
     void onApply();
+    void onNodeSelected(int nodeId);
 
 private:
     void setupUi();
@@ -53,7 +56,20 @@ private:
 
     void updateStatus();
 
+    /// Show the controls for one node, or a note explaining why there are
+    /// none to show.
+    void showNodeEditor(int nodeId);
+    void clearNodeEditor(const QString& reason);
+
     EngineController& m_engine;
     GraphCanvas*      m_canvas{nullptr};
     QLabel*           m_status{nullptr};
+
+    QVBoxLayout* m_paramLayout{nullptr};
+    QLabel*      m_paramNote{nullptr};
+
+    /// Owned by the layout it is inserted into, like every other widget here.
+    /// Deleting it takes it out of the layout, which is how it gets replaced.
+    EffectPanel* m_paramPanel{nullptr};
+    int          m_paramNodeId{-1};
 };

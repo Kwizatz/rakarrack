@@ -78,7 +78,7 @@ void EffectPanel::setupHeader()
     connect(m_onButton, &QPushButton::toggled, this,
             [this](bool checked)
             {
-                m_engine.setEffectEnabled(m_effectIndex, checked);
+                setEffectActive(checked);
                 updateOnButtonAppearance(checked);
                 emit bypassChanged(m_effectIndex, checked);
             });
@@ -91,7 +91,7 @@ void EffectPanel::setupHeader()
             {
                 if (index >= 0)
                 {
-                    m_engine.setEffectPreset(m_effectIndex, index);
+                    setPreset(index);
                     syncFromEngine();
                 }
             });
@@ -112,13 +112,61 @@ QVBoxLayout* EffectPanel::bodyLayout()
 }
 
 // ---------------------------------------------------------------------------
+// Target — the engine's per-type instance, or one graph node
+// ---------------------------------------------------------------------------
+
+void EffectPanel::setTargetNode(int nodeId)
+{
+    m_nodeId = nodeId;
+    syncFromEngine();
+}
+
+void EffectPanel::setParam(int paramId, int value)
+{
+    if (m_nodeId != kNoNode)
+        m_engine.setNodeParameter(m_nodeId, paramId, value);
+    else
+        m_engine.setEffectParameter(m_effectIndex, paramId, value);
+}
+
+int EffectPanel::getParam(int paramId) const
+{
+    if (m_nodeId != kNoNode)
+        return m_engine.getNodeParameter(m_nodeId, paramId);
+    return m_engine.getEffectParameter(m_effectIndex, paramId);
+}
+
+void EffectPanel::setPreset(int preset)
+{
+    if (m_nodeId != kNoNode)
+        m_engine.setNodePreset(m_nodeId, preset);
+    else
+        m_engine.setEffectPreset(m_effectIndex, preset);
+}
+
+void EffectPanel::setEffectActive(bool active)
+{
+    if (m_nodeId != kNoNode)
+        m_engine.setNodeBypassed(m_nodeId, !active);
+    else
+        m_engine.setEffectEnabled(m_effectIndex, active);
+}
+
+bool EffectPanel::isEffectActive() const
+{
+    if (m_nodeId != kNoNode)
+        return !m_engine.isNodeBypassed(m_nodeId);
+    return m_engine.isEffectEnabled(m_effectIndex);
+}
+
+// ---------------------------------------------------------------------------
 // Default sync — subclasses override
 // ---------------------------------------------------------------------------
 
 void EffectPanel::syncFromEngine()
 {
     // Update on/off button with LED indicator and color
-    const bool active = m_engine.isEffectEnabled(m_effectIndex);
+    const bool active = isEffectActive();
     m_onButton->blockSignals(true);
     m_onButton->setChecked(active);
     updateOnButtonAppearance(active);

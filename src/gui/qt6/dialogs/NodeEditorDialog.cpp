@@ -11,10 +11,14 @@
 #include "EffectRegistry.hpp"
 #include "dsp_constants.hpp"
 #include "../widgets/GraphCanvas.hpp"
+#include "../panels/EffectPanel.hpp"
 
 #include <QDialogButtonBox>
+#include <QGroupBox>
+#include <QHBoxLayout>
 #include <QLabel>
 #include <QPushButton>
+#include <QScrollArea>
 #include <QVBoxLayout>
 
 #include <algorithm>
@@ -42,17 +46,51 @@ NodeEditorDialog::NodeEditorDialog(EngineController& engine, QWidget* parent)
         opening = layoutFromEngine();
     m_canvas->setLayout(opening);
     updateStatus();
+
+    // Open on the first node rather than an empty pane, so the settings are
+    // one click away instead of hidden behind a selection nobody made yet.
+    if (m_engine.hasNodeInstances() && !opening.nodes.empty())
+        onNodeSelected(opening.nodes.front().id);
+    else
+        clearNodeEditor(tr("Select a node to edit its settings."));
 }
 
 void NodeEditorDialog::setupUi()
 {
     setWindowTitle(tr("Node Editor"));
-    resize(1000, 620);
+    resize(1240, 640);
 
     auto* layout = new QVBoxLayout(this);
 
+    auto* split = new QHBoxLayout;
+    layout->addLayout(split, 1);
+
     m_canvas = new GraphCanvas(this);
-    layout->addWidget(m_canvas, 1);
+    split->addWidget(m_canvas, 1);
+
+    // The settings of whichever node is selected. Panels are per effect type,
+    // so this is the only place a second Chorus in a patch can be reached --
+    // the main window's panels address the type, not the node.
+    auto* box = new QGroupBox(tr("Node Settings"), this);
+    box->setMinimumWidth(300);
+    auto* boxLayout = new QVBoxLayout(box);
+
+    auto* scroll = new QScrollArea(box);
+    scroll->setWidgetResizable(true);
+    scroll->setFrameShape(QFrame::NoFrame);
+    boxLayout->addWidget(scroll);
+
+    auto* host = new QWidget(scroll);
+    m_paramLayout = new QVBoxLayout(host);
+    m_paramLayout->setContentsMargins(0, 0, 0, 0);
+
+    m_paramNote = new QLabel(host);
+    m_paramNote->setWordWrap(true);
+    m_paramLayout->addWidget(m_paramNote);
+    m_paramLayout->addStretch(1);
+
+    scroll->setWidget(host);
+    split->addWidget(box);
 
     m_status = new QLabel(this);
     m_status->setWordWrap(true);
@@ -67,6 +105,72 @@ void NodeEditorDialog::setupUi()
     connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
     connect(m_canvas, &GraphCanvas::layoutEdited,
             this, &NodeEditorDialog::onLayoutEdited);
+    connect(m_canvas, &GraphCanvas::nodeSelected,
+            this, &NodeEditorDialog::onNodeSelected);
+}
+
+// ---------------------------------------------------------------------------
+// Per-node settings pane
+// ---------------------------------------------------------------------------
+
+void NodeEditorDialog::clearNodeEditor(const QString& reason)
+{
+    delete m_paramPanel;          // also removes it from the layout
+    m_paramPanel = nullptr;
+    m_paramNodeId = -1;
+    m_paramNote->setText(reason);
+    m_paramNote->setVisible(true);
+}
+
+void NodeEditorDialog::showNodeEditor(int nodeId)
+{
+    if (nodeId == m_paramNodeId && m_paramPanel)
+        return;
+
+    // Settings live on the running instance, so there is nothing to edit until
+    // the patch has been applied and the node exists in the engine.
+    const int liveType = m_engine.getNodeType(nodeId);
+    if (liveType < 0)
+    {
+        clearNodeEditor(tr("This node is not running yet. Apply the patch to "
+                           "edit its settings."));
+        return;
+    }
+
+    auto panel = EffectPanel::create(liveType, m_engine, nullptr);
+    if (!panel)
+    {
+        clearNodeEditor(tr("No controls for this effect."));
+        return;
+    }
+
+    clearNodeEditor(QString());
+    m_paramNote->setVisible(false);
+
+    m_paramPanel = panel.release();
+    m_paramNodeId = nodeId;
+    m_paramPanel->setTargetNode(nodeId);
+    m_paramLayout->insertWidget(0, m_paramPanel);
+    m_paramPanel->show();
+}
+
+void NodeEditorDialog::onNodeSelected(int nodeId)
+{
+    if (nodeId < 0)
+    {
+        clearNodeEditor(tr("Select a node to edit its settings."));
+        return;
+    }
+
+    if (!m_engine.hasNodeInstances())
+    {
+        clearNodeEditor(tr("Nodes get their own settings once a patch has been "
+                           "applied. Until then the panels in the main window "
+                           "edit each effect type."));
+        return;
+    }
+
+    showNodeEditor(nodeId);
 }
 
 GraphLayout NodeEditorDialog::layoutFromEngine() const
@@ -212,6 +316,14 @@ void NodeEditorDialog::onApply()
                                  "effect this build does not have."));
             return;
         }
+
+        // The nodes are running now, so the settings pane has something to
+        // edit. Rebuild it against the instance that was just created.
+        const int shown = m_paramNodeId;
+        clearNodeEditor(tr("Select a node to edit its settings."));
+        if (shown >= 0)
+            showNodeEditor(shown);
+
         Q_EMIT applied();
         return;
     }

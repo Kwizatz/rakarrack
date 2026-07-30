@@ -44,7 +44,7 @@ SliderPanel::SliderPanel(EngineController& engine, int effectIndex,
             slider->setRange(p.minVal, p.maxVal);
             connect(slider, &QSlider::valueChanged, this,
                     [this, id = p.id](int val)
-                    { m_engine.setEffectParameter(m_effectIndex, id, val); });
+                    { setParam(id, val); });
             control = slider;
             break;
         }
@@ -54,8 +54,7 @@ SliderPanel::SliderPanel(EngineController& engine, int effectIndex,
             connect(cb, &QCheckBox::toggled, this,
                     [this, id = p.id](bool checked)
                     {
-                        m_engine.setEffectParameter(
-                            m_effectIndex, id, checked ? 1 : 0);
+                        setParam(id, checked ? 1 : 0);
                     });
             control = cb;
             break;
@@ -76,7 +75,7 @@ SliderPanel::SliderPanel(EngineController& engine, int effectIndex,
             }
             connect(combo, &QComboBox::currentIndexChanged, this,
                     [this, id = p.id, base = p.minVal](int idx)
-                    { m_engine.setEffectParameter(m_effectIndex, id, base + idx); });
+                    { setParam(id, base + idx); });
             control = combo;
             break;
         }
@@ -112,7 +111,7 @@ void SliderPanel::syncFromEngine()
 
     for (const auto& b : m_bindings)
     {
-        const int val = m_engine.getEffectParameter(m_effectIndex, b.paramId);
+        const int val = getParam(b.paramId);
 
         switch (b.type)
         {
@@ -159,22 +158,19 @@ void SliderPanel::syncToEngine()
         case ParamDesc::Slider:
         {
             auto* slider = static_cast<MidiSlider*>(b.widget);
-            m_engine.setEffectParameter(
-                m_effectIndex, b.paramId, slider->value());
+            setParam(b.paramId, slider->value());
             break;
         }
         case ParamDesc::Toggle:
         {
             auto* cb = static_cast<QCheckBox*>(b.widget);
-            m_engine.setEffectParameter(
-                m_effectIndex, b.paramId, cb->isChecked() ? 1 : 0);
+            setParam(b.paramId, cb->isChecked() ? 1 : 0);
             break;
         }
         case ParamDesc::Choice:
         {
             auto* combo = static_cast<QComboBox*>(b.widget);
-            m_engine.setEffectParameter(
-                m_effectIndex, b.paramId,
+            setParam(b.paramId,
                 b.minVal + combo->currentIndex());
             break;
         }
