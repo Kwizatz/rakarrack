@@ -376,11 +376,11 @@ void TopBar::syncFromEngine()
 
     // Volume sliders
     m_inputSlider->blockSignals(true);
-    m_inputSlider->setValue(static_cast<int>(rkr.Input_Gain));
+    m_inputSlider->setValue(m_engine.getInputGain());
     m_inputSlider->blockSignals(false);
 
     m_outputSlider->blockSignals(true);
-    m_outputSlider->setValue(static_cast<int>(rkr.Master_Volume));
+    m_outputSlider->setValue(m_engine.getMasterVolume());
     m_outputSlider->blockSignals(false);
 
     m_balanceSlider->blockSignals(true);

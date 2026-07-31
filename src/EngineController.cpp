@@ -10,6 +10,9 @@
 #include "global.hpp"
 #include "AllEffects.hpp"
 
+#include <algorithm>
+#include <cmath>
+
 // ─── Construction ──────────────────────────────────────────────────
 
 EngineController::EngineController(RKR& engine)
@@ -180,26 +183,44 @@ std::string EngineController::getPresetName([[maybe_unused]] int bankSlot) const
 
 // ─── Global Controls ───────────────────────────────────────────────
 
+// Input_Gain and Master_Volume are normalized 0..1, where 0.5 is unity: see
+// RKR::calculavol(), which raises (value * 2) to the fourth power. Handing it a
+// raw 0..127 slider position instead asks for (value * 2)^4, so slider 11 alone
+// is a gain of 234256, or +107 dB. Divide by 128 rather than 127 so that the
+// centre detent is exactly unity and a slider position matches the same MIDI CC
+// value, which rkrMIDI.cpp scales the same way.
+static constexpr float kControlScale = 128.0F;
+
+static float fromSlider(int value)
+{
+    return static_cast<float>(value) / kControlScale;
+}
+
+static int toSlider(float value)
+{
+    return std::clamp(static_cast<int>(std::lround(value * kControlScale)), 0, 127);
+}
+
 void EngineController::setMasterVolume(int value)
 {
-    m_engine.Master_Volume = static_cast<float>(value);
+    m_engine.Master_Volume = fromSlider(value);
     m_engine.calculavol(2);
 }
 
 int EngineController::getMasterVolume() const
 {
-    return static_cast<int>(m_engine.Master_Volume);
+    return toSlider(m_engine.Master_Volume);
 }
 
 void EngineController::setInputGain(int value)
 {
-    m_engine.Input_Gain = static_cast<float>(value);
+    m_engine.Input_Gain = fromSlider(value);
     m_engine.calculavol(1);
 }
 
 int EngineController::getInputGain() const
 {
-    return static_cast<int>(m_engine.Input_Gain);
+    return toSlider(m_engine.Input_Gain);
 }
 
 void EngineController::setBypass(bool bypass)
