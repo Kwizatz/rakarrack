@@ -868,20 +868,23 @@ RKR::init_rkr ()
     efx_FLimiter->Compressor_Change_Preset(0,3);
 
 
-    old_il_sum = -0.0f;
-    old_ir_sum = -0.0f;
+    // The meters read in dB over a -48..15 scale, so their resting point is
+    // -48, not 0. Starting them at 0 dB put every bar at full scale until the
+    // smoother had wound down.
+    old_il_sum = -48.0f;
+    old_ir_sum = -48.0f;
 
-    old_vl_sum = -0.0f;
-    old_vr_sum = -0.0f;
+    old_vl_sum = -48.0f;
+    old_vr_sum = -48.0f;
 
-    old_a_sum = -0.0f;
-    val_a_sum = -0.0f;
+    old_a_sum = -48.0f;
+    val_a_sum = -48.0f;
 
-    val_il_sum = -0.0f;
-    val_ir_sum = -0.0f;
+    val_il_sum = -48.0f;
+    val_ir_sum = -48.0f;
 
-    val_vl_sum = -0.0f;
-    val_vr_sum = -0.0f;
+    val_vl_sum = -48.0f;
+    val_vr_sum = -48.0f;
 
     last_auxvalue = 0;
     note_old = 0;
@@ -1499,9 +1502,11 @@ RKR::Control_Gain (float *origl, float *origr)
 
     temp_sum = (float)CLAMP (rap2dB (il_sum), -48.0, 15.0);
     val_il_sum = .6f * old_il_sum + .4f * temp_sum;
+    old_il_sum = val_il_sum;
 
     temp_sum = (float)CLAMP (rap2dB (ir_sum), -48.0, 15.0);
     val_ir_sum = .6f * old_ir_sum + .4f * temp_sum;
+    old_ir_sum = val_ir_sum;
 
     val_sum = val_il_sum + val_ir_sum;
 
@@ -1622,8 +1627,10 @@ RKR::Control_Volume (float *origl,float *origr)
 
     temp_sum = (float) CLAMP(rap2dB (il_sum), -48, 15);
     val_vl_sum = .6f * old_vl_sum + .4f * temp_sum;
+    old_vl_sum = val_vl_sum;
     temp_sum = (float) CLAMP(rap2dB (ir_sum), -48, 15);
     val_vr_sum = .6f * old_vr_sum + .4f * temp_sum;
+    old_vr_sum = val_vr_sum;
 
     if ((il_sum+ir_sum) > 0.0004999f)  have_signal = 1;
     else  have_signal = 0;
