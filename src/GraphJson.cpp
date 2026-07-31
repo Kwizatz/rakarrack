@@ -71,9 +71,15 @@ bool endpointFromJson(const json& j, int& out)
 
 std::string graphToJson(const GraphLayout& layout)
 {
-    json j;
+    json j = layoutToJson(layout);
     j["format"]  = kGraphFormatName;
     j["version"] = kGraphFormatVersion;
+    return j.dump(2);
+}
+
+json layoutToJson(const GraphLayout& layout)
+{
+    json j;
 
     json nodes = json::array();
     for (const GraphNodeLayout& n : layout.nodes)
@@ -107,7 +113,7 @@ std::string graphToJson(const GraphLayout& layout)
     }
     j["connections"] = std::move(connections);
 
-    return j.dump(2);
+    return j;
 }
 
 bool graphFromJson(const std::string& text, GraphLayout& layout, std::string& error)
@@ -137,6 +143,11 @@ bool graphFromJson(const std::string& text, GraphLayout& layout, std::string& er
         return false;
     }
 
+    return layoutFromJson(j, layout, error);
+}
+
+bool layoutFromJson(const json& j, GraphLayout& layout, std::string& error)
+{
     auto nodesIt = j.find("nodes");
     if (nodesIt == j.end() || !nodesIt->is_array())
     {

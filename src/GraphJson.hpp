@@ -18,6 +18,8 @@
 
 #include "EffectGraph.hpp"
 
+#include <nlohmann/json_fwd.hpp>
+
 #include <string>
 
 /// Serialise a graph layout as JSON text.
@@ -28,5 +30,15 @@
 [[nodiscard]] bool graphFromJson(const std::string& text,
                                  GraphLayout& layout,
                                  std::string& error);
+
+// The same thing one level down, without the format/version wrapper, so a
+// layout can be embedded in a larger document -- a bank stores one per preset.
+// Declared against the forward header so including this stays cheap.
+
+[[nodiscard]] nlohmann::json layoutToJson(const GraphLayout& layout);
+
+[[nodiscard]] bool layoutFromJson(const nlohmann::json& j,
+                                  GraphLayout& layout,
+                                  std::string& error);
 
 #endif

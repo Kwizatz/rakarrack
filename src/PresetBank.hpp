@@ -1,5 +1,7 @@
 #pragma once
 
+#include "EffectGraph.hpp"
+
 #include <array>
 #include <cstring>
 
@@ -57,4 +59,13 @@ struct PresetBank {
     Preset_Bank_Struct Bank[62]{};
     MIDI_Table_Entry M_table[128]{};
     Bank_Names B_Names[4][62]{};
+
+    /// The node layout of each preset, kept beside Bank[] rather than inside
+    /// it: that struct is written to .rkrb byte for byte and cannot grow.
+    /// A patch that branches has no equivalent in the sixteen-slot effect
+    /// order, so this is the only place it can be stored.
+    ///
+    /// An empty layout means the preset predates the graph, and its chain is
+    /// read from lv[] and the effect order as before.
+    std::array<GraphLayout, 62> BankGraph{};
 };

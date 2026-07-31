@@ -1848,7 +1848,8 @@ RKR::loadbank_json (const char *filename, const char *meslabel, int &result)
     New_Bank();
 
     std::string error;
-    if (!bankFromJson (text, presets.Bank, kBankPresetCount, error)) {
+    if (!bankFromJson (text, presets.Bank, kBankPresetCount, error,
+                       presets.BankGraph.data ())) {
         std::string message{"Can not load bank file "};
         message += filename;
         message += ":\n";
@@ -1930,7 +1931,8 @@ RKR::loadbank_from_memory(const unsigned char* data, unsigned int len)
         New_Bank();
         std::string error;
         if (!bankFromJson(std::string(reinterpret_cast<const char*>(data), len),
-                          presets.Bank, kBankPresetCount, error)) {
+                          presets.Bank, kBankPresetCount, error,
+                          presets.BankGraph.data())) {
             return 0;
         }
         modified=0;
@@ -1956,7 +1958,8 @@ RKR::savebank (char *filename)
     FILE *fn;
 
     if ((fn = portable_fopen (filename, "wb")) != nullptr) {
-        const std::string text = bankToJson (presets.Bank, kBankPresetCount);
+        const std::string text = bankToJson (presets.Bank, kBankPresetCount,
+                                            presets.BankGraph.data ());
         const size_t written = fwrite (text.data(), 1, text.size(), fn);
         fclose (fn);
 
@@ -2320,6 +2323,12 @@ RKR::New_Bank ()
 
         memset(presets.Bank[i].XUserMIDI.data(), 0, sizeof(presets.Bank[i].XUserMIDI));
 
+        // A new preset has no patch of its own; its chain comes from lv[] and
+        // the effect order. Clearing matters on the binary load path too,
+        // which calls this first: an .rkrb cannot carry a layout, and the
+        // slots must not keep the previous bank's.
+        presets.BankGraph[i] = GraphLayout{};
+
     }
 
 
@@ -2431,6 +2440,24 @@ RKR::Bank_to_Preset (int i)
 
     if((Tap_Updated) && (Tap_Bypass) && (Tap_TempoSet>0) && (Tap_TempoSet<601)) Update_tempo();
 
+    // Finally the preset's own patch, if it has one. This has to come after
+    // Actualizar_Audio() above, which writes the effect parameters: the nodes
+    // capture their settings from those instances, and a layout staged first
+    // would be built from the outgoing preset's values.
+    if (use_effect_graph) {
+        if (presets.BankGraph[i].nodes.empty()) {
+            // No patch: fall back to the effect order. Clearing the custom
+            // flag lets Alg() resume mirroring efx_order, so loading a plain
+            // preset after a branching one does not leave the old routing.
+            efx_graph_custom = false;
+            efx_graph_built = false;
+            efx_graph_gui = nullptr;
+        }
+        else if (auto graph = buildEffectGraph (presets.BankGraph[i])) {
+            stageEffectGraph (std::move (graph));
+        }
+    }
+
 };
 
 
@@ -2440,6 +2467,13 @@ RKR::Preset_to_Bank (int i)
 
 
     int j, k;
+
+    // A patch that branches has no equivalent in the effect order, so store
+    // the layout as well. Only once one has actually been staged -- otherwise
+    // the graph is just mirroring efx_order and lv[] already describes it.
+    presets.BankGraph[i] =
+        (use_effect_graph && efx_graph_custom) ? effectGraphLayout () : GraphLayout{};
+
     memset(presets.Bank[i].Preset_Name.data(), 0, presets.Bank[i].Preset_Name.size());
     safe_copy(presets.Bank[i].Preset_Name, presets.Preset_Name);
     memset(presets.Bank[i].Author.data(), 0, presets.Bank[i].Author.size());

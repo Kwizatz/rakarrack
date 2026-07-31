@@ -19,10 +19,14 @@ target_include_directories(effect_graph_test PRIVATE
 add_test(NAME EffectGraph COMMAND effect_graph_test)
 
 # Same reasoning for the bank serialiser: it depends only on the preset
-# structs and nlohmann, so the test does not drag in the engine.
+# structs, the graph layout it now embeds per preset, and nlohmann -- so the
+# test still does not drag in the engine.
 add_executable(bank_json_test
 	BankJsonTest.cpp
 	${CMAKE_SOURCE_DIR}/src/BankJson.cpp
+	${CMAKE_SOURCE_DIR}/src/GraphJson.cpp
+	${CMAKE_SOURCE_DIR}/src/EffectGraph.cpp
+	${CMAKE_SOURCE_DIR}/src/EffectParams.cpp
 )
 
 target_include_directories(bank_json_test PRIVATE

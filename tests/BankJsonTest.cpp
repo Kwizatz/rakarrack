@@ -230,6 +230,75 @@ int main()
         check(bank[0].Balance == 1.0f, "missing balance falls back to 1.0");
     }
 
+    // ---- a preset's node patch travels with it
+    {
+        std::vector<Preset_Bank_Struct> bank(kBankPresetCount);
+        std::vector<GraphLayout> graphs(kBankPresetCount);
+
+        // A split and a merge: routing the sixteen-slot effect order cannot
+        // describe, which is the whole reason presets carry a layout.
+        GraphLayout& patch = graphs[3];
+        for (int i = 0; i < 4; ++i)
+        {
+            GraphNodeLayout n;
+            n.id   = i + 1;
+            n.type = i * 3;
+            n.mix  = MixMode::WetDry;
+            n.x    = 10.0f * static_cast<float>(i);
+            n.y    = 20.0f * static_cast<float>(i);
+            n.settings.preset = i;
+            n.settings.params = {i, i + 1, i + 2};
+            patch.nodes.push_back(n);
+        }
+        patch.nodes[2].bypassed = true;
+        patch.connections = {{kInputNodeId, 1}, {1, 2}, {1, 3},
+                             {2, 4}, {3, 4}, {4, kOutputNodeId}};
+
+        const std::string text =
+            bankToJson(bank.data(), kBankPresetCount, graphs.data());
+
+        std::vector<Preset_Bank_Struct> back(kBankPresetCount);
+        std::vector<GraphLayout> backGraphs(kBankPresetCount);
+        // Seed a patch where the file has none, to prove it gets cleared.
+        backGraphs[4].nodes.push_back(GraphNodeLayout{});
+
+        std::string error;
+        check(bankFromJson(text, back.data(), kBankPresetCount, error,
+                           backGraphs.data()),
+              "a bank carrying a patch parses");
+
+        const GraphLayout& r = backGraphs[3];
+        check(r.nodes.size() == 4, "every node comes back");
+        check(r.connections.size() == 6, "the split and merge come back");
+
+        bool nodesMatch = (r.nodes.size() == patch.nodes.size());
+        for (std::size_t i = 0; nodesMatch && i < r.nodes.size(); ++i)
+            nodesMatch = r.nodes[i].id == patch.nodes[i].id
+                      && r.nodes[i].type == patch.nodes[i].type
+                      && r.nodes[i].mix == patch.nodes[i].mix
+                      && r.nodes[i].bypassed == patch.nodes[i].bypassed
+                      && r.nodes[i].settings.preset == patch.nodes[i].settings.preset
+                      && r.nodes[i].settings.params == patch.nodes[i].settings.params;
+        check(nodesMatch, "node ids, types, mix, bypass and settings survive");
+
+        bool edgesMatch = (r.connections.size() == patch.connections.size());
+        for (std::size_t i = 0; edgesMatch && i < r.connections.size(); ++i)
+            edgesMatch = r.connections[i].from == patch.connections[i].from
+                      && r.connections[i].to == patch.connections[i].to;
+        check(edgesMatch, "the wiring survives, endpoints included");
+
+        check(backGraphs[4].nodes.empty(),
+              "a preset with no patch is cleared, not left holding the old one");
+        check(text.find("\"graph\"") != std::string::npos,
+              "the patch is written under a graph key");
+
+        // Presets without a patch must not grow one, or every existing bank
+        // would gain noise on the next save.
+        const std::string plain = bankToJson(bank.data(), kBankPresetCount, nullptr);
+        check(plain.find("\"graph\"") == std::string::npos,
+              "a bank with no patches writes no graph keys");
+    }
+
     std::printf("\n%d checks, %d failed\n", g_checks, g_failures);
     return g_failures == 0 ? 0 : 1;
 }

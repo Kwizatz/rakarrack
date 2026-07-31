@@ -25,14 +25,23 @@
 inline constexpr std::size_t kBankPresetCount = 62;
 
 /// Serialise `count` presets as JSON text.
-[[nodiscard]] std::string bankToJson(const Preset_Bank_Struct* bank, std::size_t count);
+///
+/// `graphs`, if given, is an array of `count` node layouts written alongside
+/// each preset. A layout with no nodes is omitted, so a bank of plain chains
+/// looks exactly as it did before.
+[[nodiscard]] std::string bankToJson(const Preset_Bank_Struct* bank, std::size_t count,
+                                    const GraphLayout* graphs = nullptr);
 
 /// Parse JSON bank text into `bank`. Returns false and fills `error` on
 /// failure, leaving `bank` untouched so a bad file cannot half-load.
+///
+/// `graphs`, if given, receives `count` layouts; presets without one are
+/// cleared rather than left holding the previous bank's patch.
 [[nodiscard]] bool bankFromJson(const std::string& text,
                                 Preset_Bank_Struct* bank,
                                 std::size_t count,
-                                std::string& error);
+                                std::string& error,
+                                GraphLayout* graphs = nullptr);
 
 /// True when the data looks like a JSON bank rather than the legacy binary
 /// blob. Used to pick a reader, so old and new files can share an extension.

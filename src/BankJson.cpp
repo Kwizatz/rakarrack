@@ -6,6 +6,7 @@
 */
 
 #include "BankJson.hpp"
+#include "GraphJson.hpp"
 
 #include <nlohmann/json.hpp>
 
@@ -188,7 +189,8 @@ Preset_Bank_Struct presetFromJson(const json& j)
 
 } // namespace
 
-std::string bankToJson(const Preset_Bank_Struct* bank, std::size_t count)
+std::string bankToJson(const Preset_Bank_Struct* bank, std::size_t count,
+                       const GraphLayout* graphs)
 {
     json j;
     j["format"]  = kBankFormatName;
@@ -196,7 +198,17 @@ std::string bankToJson(const Preset_Bank_Struct* bank, std::size_t count)
 
     json presets = json::array();
     for (std::size_t i = 0; i < count; ++i)
-        presets.push_back(presetToJson(bank[i]));
+    {
+        json preset = presetToJson(bank[i]);
+
+        // Only when there is one. A preset whose chain the effect order can
+        // already describe is written exactly as it was before, so this does
+        // not churn every existing bank.
+        if (graphs != nullptr && !graphs[i].nodes.empty())
+            preset["graph"] = layoutToJson(graphs[i]);
+
+        presets.push_back(std::move(preset));
+    }
     j["presets"] = std::move(presets);
 
     return j.dump(2);
@@ -205,7 +217,8 @@ std::string bankToJson(const Preset_Bank_Struct* bank, std::size_t count)
 bool bankFromJson(const std::string& text,
                   Preset_Bank_Struct* bank,
                   std::size_t count,
-                  std::string& error)
+                  std::string& error,
+                  GraphLayout* graphs)
 {
     json j;
     try
@@ -245,10 +258,31 @@ bool bankFromJson(const std::string& text,
     // caller seed defaults first.
     const std::size_t n = std::min<std::size_t>(presets->size(), count);
     std::vector<Preset_Bank_Struct> parsed(n);
+    std::vector<GraphLayout> parsedGraphs(n);
     for (std::size_t i = 0; i < n; ++i)
+    {
         parsed[i] = presetFromJson((*presets)[i]);
 
+        if (auto it = (*presets)[i].find("graph");
+            it != (*presets)[i].end() && it->is_object())
+        {
+            std::string graphError;
+            if (!layoutFromJson(*it, parsedGraphs[i], graphError))
+            {
+                error = "preset " + std::to_string(i) + ": " + graphError;
+                return false;
+            }
+        }
+    }
+
     std::copy(parsed.begin(), parsed.end(), bank);
+    if (graphs != nullptr)
+    {
+        // Every slot, not just the ones with a layout: a preset without one
+        // must not inherit the patch left behind by the previous bank.
+        for (std::size_t i = 0; i < count; ++i)
+            graphs[i] = (i < n) ? std::move(parsedGraphs[i]) : GraphLayout{};
+    }
     return true;
 }
 
