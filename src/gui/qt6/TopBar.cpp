@@ -75,8 +75,36 @@ TopBar::TopBar(EngineController& engine, QWidget* parent)
 void TopBar::setupInOutSection(QWidget* container)
 {
     auto* layout = new QHBoxLayout(container);
-    layout->setSpacing(2);
+    layout->setSpacing(6);
     layout->setContentsMargins(4, 16, 4, 4);
+
+    // Every control here used to be an unlabelled vertical strip, identifiable
+    // only by hovering it. The number a slider draws is its own value, which
+    // says nothing about what it controls, and next to a meter it reads like a
+    // level. Group each control with its meters and caption the group.
+    const auto captioned = [container](std::initializer_list<QWidget*> widgets,
+                                       const QString& caption)
+    {
+        auto* box = new QWidget(container);
+        auto* column = new QVBoxLayout(box);
+        column->setSpacing(1);
+        column->setContentsMargins(0, 0, 0, 0);
+
+        auto* row = new QHBoxLayout;
+        row->setSpacing(2);
+        for (QWidget* w : widgets)
+            row->addWidget(w);
+        column->addLayout(row, 1);
+
+        auto* label = new QLabel(caption, box);
+        label->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+        QFont f = label->font();
+        f.setPointSizeF(std::max(6.0, f.pointSizeF() - 1.0));
+        label->setFont(f);
+        column->addWidget(label);
+
+        return box;
+    };
 
     // FX On toggle
     //
@@ -117,43 +145,51 @@ void TopBar::setupInOutSection(QWidget* container)
     m_balanceSlider = new MidiSlider(Qt::Vertical, container);
     m_balanceSlider->setRange(0, 127);
     m_balanceSlider->setValue(64);
-    m_balanceSlider->setToolTip(tr("Dry/Wet Balance"));
+    m_balanceSlider->setToolTip(tr("Dry/wet balance: 0 is the untouched input, "
+                                   "127 is the effect chain alone"));
     m_balanceSlider->setFixedWidth(22);
     connect(m_balanceSlider, &QSlider::valueChanged, this,
             [this](int v) { m_engine.setBalance(v); });
-    layout->addWidget(m_balanceSlider);
 
     // Input gain
     m_inputSlider = new MidiSlider(Qt::Vertical, container);
     m_inputSlider->setRange(0, 127);
     m_inputSlider->setValue(64);
-    m_inputSlider->setToolTip(tr("Input Gain"));
+    m_inputSlider->setToolTip(tr("Input gain, applied before the effects"));
     m_inputSlider->setFixedWidth(22);
     connect(m_inputSlider, &QSlider::valueChanged, this,
             [this](int v) { m_engine.setInputGain(v); });
-    layout->addWidget(m_inputSlider);
 
     // Input VU L/R
     m_inputVuL = new VUMeter(container);
     m_inputVuR = new VUMeter(container);
-    layout->addWidget(m_inputVuL);
-    layout->addWidget(m_inputVuR);
+    m_inputVuL->setToolTip(tr("Input level, left \u2014 the scale runs "
+                              "-48 dB at the bottom to +15 dB at the top"));
+    m_inputVuR->setToolTip(tr("Input level, right \u2014 the scale runs "
+                              "-48 dB at the bottom to +15 dB at the top"));
 
     // Output volume
     m_outputSlider = new MidiSlider(Qt::Vertical, container);
     m_outputSlider->setRange(0, 127);
     m_outputSlider->setValue(64);
-    m_outputSlider->setToolTip(tr("Master Volume"));
+    m_outputSlider->setToolTip(tr("Master volume, applied after the effects"));
     m_outputSlider->setFixedWidth(22);
     connect(m_outputSlider, &QSlider::valueChanged, this,
             [this](int v) { m_engine.setMasterVolume(v); });
-    layout->addWidget(m_outputSlider);
 
     // Output VU L/R
     m_outputVuL = new VUMeter(container);
     m_outputVuR = new VUMeter(container);
-    layout->addWidget(m_outputVuL);
-    layout->addWidget(m_outputVuR);
+    m_outputVuL->setToolTip(tr("Output level, left \u2014 the scale runs "
+                               "-48 dB at the bottom to +15 dB at the top"));
+    m_outputVuR->setToolTip(tr("Output level, right \u2014 the scale runs "
+                               "-48 dB at the bottom to +15 dB at the top"));
+
+    layout->addWidget(captioned({m_balanceSlider}, tr("Dry/Wet")));
+    layout->addWidget(captioned({m_inputSlider, m_inputVuL, m_inputVuR},
+                                tr("In  \u2502 L R")));
+    layout->addWidget(captioned({m_outputSlider, m_outputVuL, m_outputVuR},
+                                tr("Out \u2502 L R")));
 }
 
 // ---------------------------------------------------------------------------
