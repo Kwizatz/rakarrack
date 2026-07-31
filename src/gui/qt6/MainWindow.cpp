@@ -30,6 +30,7 @@
 #include <QIcon>
 #include <QMenuBar>
 #include <QShortcut>
+#include <QLabel>
 #include <QStackedWidget>
 #include <QStatusBar>
 #include <QVBoxLayout>
@@ -100,6 +101,17 @@ void MainWindow::setupUi()
     mainLayout->addWidget(m_slotBar);
 
     // --- Effect Panel Stack ---
+    // A node patch gives every node its own effect, so these per-type panels
+    // are no longer what is being heard. Saying so beats leaving the user to
+    // wonder why a slider does nothing.
+    m_patchNotice = new QLabel(
+        tr("A node patch is running. These panels edit the built-in effects, "
+           "not the patch \u2014 open Windows > Node Editor to change it."),
+        m_centralWidget);
+    m_patchNotice->setWordWrap(true);
+    m_patchNotice->setVisible(false);
+    mainLayout->addWidget(m_patchNotice);
+
     m_panelStack = new QStackedWidget(m_centralWidget);
     createEffectPanels();
     mainLayout->addWidget(m_panelStack, 1);  // stretch factor 1
@@ -255,6 +267,17 @@ void MainWindow::onGuiTick()
 {
     // Delegate level/tuner/tap updates to the TopBar
     m_topBar->updateFromEngine();
+
+    // Disabled rather than merely annotated: with a patch running these
+    // controls reach effects that are not in the signal path, so letting them
+    // be moved would only mislead.
+    const bool patchRunning = m_engine.hasNodeInstances();
+    if (patchRunning != m_patchNotice->isVisible())
+    {
+        m_patchNotice->setVisible(patchRunning);
+        m_panelStack->setEnabled(!patchRunning);
+        m_slotBar->setEnabled(!patchRunning);
+    }
 
     // Update status bar with signal presence
     AudioLevels levels;

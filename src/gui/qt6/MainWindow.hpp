@@ -20,6 +20,7 @@ class EffectPanel;
 class ThemeManager;
 class SystemTray;
 class QStackedWidget;
+class QLabel;
 
 // Dialogs
 class BankDialog;
@@ -86,6 +87,7 @@ private:
     TopBar*           m_topBar{nullptr};
     EffectSlotBar*    m_slotBar{nullptr};
     QStackedWidget*   m_panelStack{nullptr};
+    QLabel*           m_patchNotice{nullptr};
     QWidget*          m_centralWidget{nullptr};
 
     // Effect panels (one per slot)
