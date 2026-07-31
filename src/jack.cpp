@@ -38,6 +38,57 @@
 #include "MIDIConverter.hpp"
 #endif
 
+#include <sndfile.h>
+
+#include <atomic>
+#include <cstdlib>
+#include <vector>
+
+// Diagnostic tap. Set RAKARRACK_CAPTURE to a number of seconds to record what
+// the process callback is handed and what it hands back, written out at
+// shutdown. This distinguishes a bad input from bad processing, which is not
+// something the meters can tell you, and counts the xruns and short buffers
+// that would show up as gaps in the sound rather than as a level problem.
+namespace
+{
+struct CaptureTap
+{
+    std::vector<float> in;      ///< interleaved stereo, as received
+    std::vector<float> out;     ///< interleaved stereo, as returned
+    std::size_t frames = 0;     ///< frames stored so far
+    std::size_t capacity = 0;   ///< frames the buffers can hold
+    bool active = false;
+};
+
+CaptureTap g_capture;
+std::atomic<int> g_xruns{0};
+std::atomic<unsigned> g_shortBlocks{0};
+std::atomic<unsigned> g_expectedFrames{0};
+
+int countXrun(void*)
+{
+    g_xruns.fetch_add(1, std::memory_order_relaxed);
+    return 0;
+}
+
+void writeTap(const char* path, const std::vector<float>& data, std::size_t frames,
+              int rate)
+{
+    if (frames == 0)
+        return;
+    SF_INFO info{};
+    info.samplerate = rate;
+    info.channels = 2;
+    info.format = SF_FORMAT_WAV | SF_FORMAT_FLOAT;
+    if (SNDFILE* f = sf_open(path, SFM_WRITE, &info))
+    {
+        sf_writef_float(f, data.data(), static_cast<sf_count_t>(frames));
+        sf_close(f);
+        printf("capture: wrote %s (%zu frames)\n", path, frames);
+    }
+}
+} // namespace
+
 
 RKR *JackOUT;
 
@@ -61,6 +112,25 @@ JACKstart (RKR * rkr_, jack_client_t * jackclient_)
     jack_set_process_callback (jackclient, jackprocess, 0);
 
     jack_on_shutdown (jackclient, jackshutdown, 0);
+
+    jack_set_xrun_callback (jackclient, countXrun, 0);
+
+    if (const char* secs = getenv("RAKARRACK_CAPTURE"))
+    {
+        const int seconds = atoi(secs);
+        if (seconds > 0)
+        {
+            const auto rate = static_cast<std::size_t>(jack_get_sample_rate(jackclient));
+            g_capture.capacity = rate * static_cast<std::size_t>(seconds);
+            g_capture.in.assign(g_capture.capacity * 2, 0.0F);
+            g_capture.out.assign(g_capture.capacity * 2, 0.0F);
+            g_capture.active = true;
+            printf("capture: recording %d s of input and output\n", seconds);
+        }
+    }
+
+    g_expectedFrames.store(static_cast<unsigned>(jack_get_buffer_size(jackclient)),
+                           std::memory_order_relaxed);
 
 
 
@@ -296,7 +366,24 @@ jackprocess (jack_nframes_t nframes, [[maybe_unused]] void *arg)
     memcpy (outr, JackOUT->efxoutr.data(),
             sizeof (jack_default_audio_sample_t) * nframes);
 
+    if (nframes != g_expectedFrames.load(std::memory_order_relaxed))
+        g_shortBlocks.fetch_add(1, std::memory_order_relaxed);
 
+    if (g_capture.active && g_capture.frames < g_capture.capacity)
+    {
+        const std::size_t room = g_capture.capacity - g_capture.frames;
+        const std::size_t take = nframes < room ? nframes : room;
+        float* dstIn = g_capture.in.data() + g_capture.frames * 2;
+        float* dstOut = g_capture.out.data() + g_capture.frames * 2;
+        for (std::size_t i = 0; i < take; ++i)
+        {
+            dstIn[i * 2]      = inl[i];
+            dstIn[i * 2 + 1]  = inr[i];
+            dstOut[i * 2]     = outl[i];
+            dstOut[i * 2 + 1] = outr[i];
+        }
+        g_capture.frames += take;
+    }
 
     return 0;
 
@@ -306,6 +393,15 @@ jackprocess (jack_nframes_t nframes, [[maybe_unused]] void *arg)
 void
 JACKfinish ()
 {
+    printf("jack: %d xruns, %u odd-sized blocks (buffer size %u)\n",
+           g_xruns.load(), g_shortBlocks.load(), g_expectedFrames.load());
+
+    if (g_capture.active)
+    {
+        const int rate = static_cast<int>(jack_get_sample_rate(jackclient));
+        writeTap("capture_in.wav", g_capture.in, g_capture.frames, rate);
+        writeTap("capture_out.wav", g_capture.out, g_capture.frames, rate);
+    }
 
     jack_client_close (jackclient);
     std::this_thread::sleep_for(std::chrono::microseconds(1000));
