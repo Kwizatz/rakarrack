@@ -47,4 +47,27 @@ inline constexpr std::size_t kBankPresetCount = 62;
 /// blob. Used to pick a reader, so old and new files can share an extension.
 [[nodiscard]] bool looksLikeJsonBank(const char* data, std::size_t len);
 
+// ─── Single presets ────────────────────────────────────────────────
+//
+// One preset in a file of its own, written with the same field names as a
+// preset inside a bank so the two cannot drift apart. The format it replaces
+// was a sequence of unlabelled CSV lines whose reader had to know how many
+// there would be, which it worked out by assuming a fixed number of active
+// effects.
+
+/// Serialise one preset, with its node layout if it has one.
+[[nodiscard]] std::string singlePresetToJson(const Preset_Bank_Struct& preset,
+                                             const GraphLayout* graph = nullptr);
+
+/// Parse a single-preset document. Returns false and fills `error` on
+/// failure, leaving both outputs untouched.
+[[nodiscard]] bool singlePresetFromJson(const std::string& text,
+                                        Preset_Bank_Struct& preset,
+                                        std::string& error,
+                                        GraphLayout* graph = nullptr);
+
+/// True when the data looks like a JSON single preset rather than the legacy
+/// line-based one.
+[[nodiscard]] bool looksLikeJsonPreset(const char* data, std::size_t len);
+
 #endif

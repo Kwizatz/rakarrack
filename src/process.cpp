@@ -1368,13 +1368,12 @@ RKR::effectGraphLayout () const
 
 
 void
-RKR::applyPresetGraph (int i)
+RKR::applyPresetGraph (const GraphLayout &layout)
 {
     if (!use_effect_graph)
         return;
 
-    const bool valid = (i >= 0 && i < (int) presets.BankGraph.size ());
-    if (!valid || presets.BankGraph[i].nodes.empty ()) {
+    if (layout.nodes.empty ()) {
         // No patch: fall back to the effect order. Clearing the custom flag
         // lets Alg() resume mirroring efx_order, so loading a plain preset
         // after a branching one does not leave the old routing behind.
@@ -1384,7 +1383,7 @@ RKR::applyPresetGraph (int i)
         return;
     }
 
-    if (auto graph = buildEffectGraph (presets.BankGraph[i]))
+    if (auto graph = buildEffectGraph (layout))
         stageEffectGraph (std::move (graph));
 }
 

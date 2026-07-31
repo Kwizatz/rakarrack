@@ -299,6 +299,62 @@ int main()
               "a bank with no patches writes no graph keys");
     }
 
+    // ---- one preset in a file of its own
+    {
+        Preset_Bank_Struct preset{};
+        setText(preset.Preset_Name, "alone");
+        setText(preset.Author, "somebody");
+        preset.Input_Gain = 0.25f;
+        preset.Master_Volume = 0.75f;
+        preset.Balance = 0.5f;
+        preset.lv[3][4] = -17;
+        // The slot the old line-based writer dropped: it wrote index 10 twice
+        // and never index 11, so this value could not survive a save.
+        for (int i = 0; i < 128; ++i)
+            preset.XUserMIDI[i][11] = 77;
+
+        GraphLayout patch;
+        GraphNodeLayout n;
+        n.id   = 1;
+        n.type = 5;
+        n.mix  = MixMode::WetDry;
+        n.settings.params = {1, 2, 3};
+        patch.nodes.push_back(n);
+        patch.connections = {{kInputNodeId, 1}, {1, kOutputNodeId}};
+
+        const std::string text = singlePresetToJson(preset, &patch);
+        check(looksLikeJsonPreset(text.data(), text.size()),
+              "a written preset is recognised as JSON");
+
+        Preset_Bank_Struct back{};
+        GraphLayout backPatch;
+        std::string error;
+        check(singlePresetFromJson(text, back, error, &backPatch),
+              "a single preset parses");
+        check(std::strcmp(back.Preset_Name.data(), "alone") == 0, "the name survives");
+        check(back.Input_Gain == 0.25f && back.Master_Volume == 0.75f
+              && back.Balance == 0.5f, "the levels survive");
+        check(back.lv[3][4] == -17, "a negative parameter survives");
+        check(back.XUserMIDI[7][11] == 77,
+              "MIDI slot 11 survives, which the old format dropped");
+        check(backPatch.nodes.size() == 1 && backPatch.connections.size() == 2,
+              "the node patch travels with the preset");
+
+        // A bank must not be mistaken for a preset, or loading one as the
+        // other would silently produce an empty preset.
+        Preset_Bank_Struct bank[1]{};
+        const std::string bankText = bankToJson(bank, 1, nullptr);
+        Preset_Bank_Struct ignored{};
+        error.clear();
+        check(!singlePresetFromJson(bankText, ignored, error),
+              "a bank is refused as a single preset");
+
+        error.clear();
+        check(!singlePresetFromJson("{", ignored, error),
+              "a truncated preset is refused");
+        check(!error.empty(), "and says why");
+    }
+
     std::printf("\n%d checks, %d failed\n", g_checks, g_failures);
     return g_failures == 0 ? 0 : 1;
 }

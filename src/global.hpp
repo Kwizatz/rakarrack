@@ -210,10 +210,10 @@ public:
     /// The layout the engine is currently running, for the editor to open on.
     [[nodiscard]] GraphLayout effectGraphLayout () const;
 
-    /// The layout of preset `i`, staged so it becomes the live routing. A
-    /// preset without one falls back to the effect order. Does nothing while
-    /// the graph path is off.
-    void applyPresetGraph (int i);
+    /// The layout to run, staged so it becomes the live routing. An empty one
+    /// falls back to the effect order. Does nothing while the graph path is
+    /// off.
+    void applyPresetGraph (const GraphLayout &layout);
 
     /// Turn the node-graph signal path on or off.
     ///
@@ -261,11 +261,21 @@ public:
     void calculavol (int i);
     void Bank_to_Preset (int Num);
     void Preset_to_Bank (int i);
+
+    /// The same, against a preset held anywhere rather than in a bank slot --
+    /// a single-preset file, for one. The slot versions above are thin
+    /// wrappers, so both formats capture and apply exactly the same state and
+    /// cannot drift apart.
+    void Bank_to_Preset (const Preset_Bank_Struct &src, const GraphLayout &srcGraph);
+    void Preset_to_Bank (Preset_Bank_Struct &dst, GraphLayout &dstGraph);
     void Actualizar_Audio ();
     void loadfile (char *filename);
     void getbuf (char *buf, int j);
     void putbuf (char *buf, int j);
     void savefile (char *filename);
+
+    /// Read a preset written by an earlier version: unlabelled CSV lines.
+    void loadfile_legacy (char *filename);
     void SaveIntPreset(int num, char *name);
     void DelIntPreset(int num, char *name);
     void MergeIntPreset(char *filename);

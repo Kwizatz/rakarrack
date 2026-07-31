@@ -22,6 +22,7 @@ namespace {
 /// guessed at from the file size the way the binary format had to.
 constexpr int kBankFormatVersion = 1;
 constexpr const char* kBankFormatName = "rakarrack-bank";
+constexpr const char* kPresetFormatName = "rakarrack-preset";
 
 /// The fixed-size char arrays are C strings padded with NULs; JSON carries
 /// just the text.
@@ -296,4 +297,75 @@ bool looksLikeJsonBank(const char* data, std::size_t len)
         return c == '{';
     }
     return false;
+}
+
+// ─── Single presets ──────────────────────────────────────────────────
+
+std::string singlePresetToJson(const Preset_Bank_Struct& preset,
+                               const GraphLayout* graph)
+{
+    json j = presetToJson(preset);
+    j["format"]  = kPresetFormatName;
+    j["version"] = kBankFormatVersion;
+
+    if (graph != nullptr && !graph->nodes.empty())
+        j["graph"] = layoutToJson(*graph);
+
+    return j.dump(2);
+}
+
+bool singlePresetFromJson(const std::string& text,
+                          Preset_Bank_Struct& preset,
+                          std::string& error,
+                          GraphLayout* graph)
+{
+    json j;
+    try
+    {
+        j = json::parse(text);
+    }
+    catch (const json::parse_error& e)
+    {
+        error = std::string("not valid JSON: ") + e.what();
+        return false;
+    }
+
+    if (auto it = j.find("format"); it != j.end() && it->is_string()
+        && it->get<std::string>() != kPresetFormatName)
+    {
+        error = "not a rakarrack preset: format is \"" + it->get<std::string>() + "\"";
+        return false;
+    }
+
+    if (auto it = j.find("version"); it != j.end() && it->is_number_integer()
+        && it->get<int>() > kBankFormatVersion)
+    {
+        error = "preset was written by a newer version of rakarrack";
+        return false;
+    }
+
+    // Parsed aside and only committed once the whole document has been read,
+    // so a bad file cannot leave the caller with half a preset.
+    Preset_Bank_Struct parsed = presetFromJson(j);
+    GraphLayout parsedGraph;
+
+    if (auto it = j.find("graph"); it != j.end() && it->is_object())
+    {
+        std::string graphError;
+        if (!layoutFromJson(*it, parsedGraph, graphError))
+        {
+            error = graphError;
+            return false;
+        }
+    }
+
+    preset = parsed;
+    if (graph != nullptr)
+        *graph = std::move(parsedGraph);
+    return true;
+}
+
+bool looksLikeJsonPreset(const char* data, std::size_t len)
+{
+    return looksLikeJsonBank(data, len);
 }

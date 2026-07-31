@@ -1109,97 +1109,43 @@ void RKR::getbuf(char *buf, int j)
 void
 RKR::savefile (char *filename)
 {
+    // The same preset a bank slot holds, in a file of its own. Capturing
+    // through Preset_to_Bank() means a single-preset file carries everything
+    // a bank does -- the whole MIDI table, and a node patch if one is
+    // running -- rather than the subset the old line-based writer knew about.
+    auto preset = std::make_unique<Preset_Bank_Struct> ();
+    GraphLayout graph;
+    Preset_to_Bank (*preset, graph);
 
-    int i, j;
-    FILE *fn;
-    char buf[256];
-    fn = portable_fopen (filename, "w");
-    if(fn == nullptr) {
-        if(errno == EACCES)
-            Error_Handle(3);
+    // Author falls back the way the old writer's did.
+    if (preset->Author[0] == 0) {
+        if (presets.UserRealName[0] != 0)
+            safe_copy (preset->Author, presets.UserRealName);
+        else
+            snprintf (preset->Author.data (), preset->Author.size (), "%s",
+                      portable_getenv ("USER").c_str ());
+    }
+
+    FILE *fn = portable_fopen (filename, "wb");
+    if (fn == nullptr) {
+        if (errno == EACCES)
+            Error_Handle (3);
         return;
     }
 
-    memset (buf, 0, sizeof (buf));
-    copy_line(buf, sizeof(buf), VERSION);
-    fputs (buf, fn);
-
-
-    //Autor
-
-    memset (buf, 0, sizeof (buf));
-    if (presets.Author[0] != 0){
-        snprintf (buf, sizeof(buf), "%s\n", presets.Author.data());
-    }
-    else {
-        if (presets.UserRealName[0] != 0)
-            snprintf (buf, sizeof(buf), "%s\n", presets.UserRealName.data());
-        else
-            snprintf (buf, sizeof(buf), "%s\n", portable_getenv("USER").c_str());
-    }
-    fputs (buf, fn);
-
-    //Preset Name
-
-    memset (buf, 0, sizeof (buf));
-    fputs (presets.Preset_Name.data(), fn);
-    fputs ("\n", fn);
-
-
-    //General
-    memset (buf, 0, sizeof (buf));
-    format_csv(buf, sizeof(buf), Input_Gain, Master_Volume, Fraction_Bypass, Bypass);
-    fputs (buf, fn);
-
-
-    for (i = 0; i < MAX_EFFECT_SLOTS; i++) {
-        if (efx_order[i] == EMPTY_SLOT)
-            continue;
-        j = efx_order[i];
-        memset (buf, 0, sizeof (buf));
-        getbuf(buf,j);
-        fputs (buf, fn);
-
-    }
-
-
-
-    // Order
-    memset (buf, 0, sizeof (buf));
-    format_csv(buf, sizeof(buf),
-             efx_order[0], efx_order[1], efx_order[2], efx_order[3],
-             efx_order[4], efx_order[5], efx_order[6], efx_order[7],
-             efx_order[8], efx_order[9], efx_order[10], efx_order[11],
-             efx_order[12], efx_order[13], efx_order[14], efx_order[15]);
-
-    fputs (buf, fn);
-
-
-    for(i=0; i<128; i++) {
-        memset(buf,0, sizeof(buf));
-        format_csv(buf, sizeof(buf),
-                XUserMIDI[i][0], XUserMIDI[i][1], XUserMIDI[i][2], XUserMIDI[i][3], XUserMIDI[i][4],
-                XUserMIDI[i][5], XUserMIDI[i][6], XUserMIDI[i][7], XUserMIDI[i][8], XUserMIDI[i][9],
-                XUserMIDI[i][10], XUserMIDI[i][10], XUserMIDI[i][12], XUserMIDI[i][13], XUserMIDI[i][14],
-                XUserMIDI[i][15], XUserMIDI[i][16], XUserMIDI[i][17], XUserMIDI[i][18], XUserMIDI[i][19]);
-
-        fputs (buf, fn);
-
-    }
-
-
-
-
-
+    const std::string text = singlePresetToJson (*preset, &graph);
+    const size_t written = fwrite (text.data (), 1, text.size (), fn);
     fclose (fn);
 
+    if (written != text.size ())
+        Error_Handle (3);
 }
 
 
-
-
+/// Read a preset written by an earlier version: a sequence of unlabelled CSV
+/// lines. Kept so existing files still open.
 void
-RKR::loadfile (char *filename)
+RKR::loadfile_legacy (char *filename)
 {
     std::ifstream file(filename);
     if (!file.is_open())
@@ -1290,6 +1236,49 @@ RKR::loadfile (char *filename)
     }
 
     Actualizar_Audio();
+}
+
+
+void
+RKR::loadfile (char *filename)
+{
+    // Detected by content rather than extension, the way banks are, so a
+    // preset written by either version opens without the user having to know
+    // which wrote it.
+    std::string text;
+    if (FILE *fn = portable_fopen (filename, "rb")) {
+        char buf[4096];
+        std::size_t got;
+        while ((got = fread (buf, 1, sizeof (buf), fn)) > 0)
+            text.append (buf, got);
+        fclose (fn);
+    }
+    else
+        return;
+
+    if (!looksLikeJsonPreset (text.data (), text.size ())) {
+        loadfile_legacy (filename);
+        return;
+    }
+
+    auto preset = std::make_unique<Preset_Bank_Struct> ();
+    GraphLayout graph;
+    std::string error;
+    if (!singlePresetFromJson (text, *preset, error, &graph)) {
+        char meslabel[128];
+        memset (meslabel, 0, sizeof (meslabel));
+        snprintf (meslabel, sizeof (meslabel), "%s %s", jack.name.data (), VERSION);
+
+        std::string message{"Can not load preset file "};
+        message += filename;
+        message += ":\n";
+        message += error;
+        Message (1, meslabel, message.c_str ());
+        return;
+    }
+
+    New ();
+    Bank_to_Preset (*preset, graph);
 }
 
 
@@ -2340,95 +2329,102 @@ RKR::New_Bank ()
 void
 RKR::Bank_to_Preset (int i)
 {
+    Bank_to_Preset (presets.Bank[i], presets.BankGraph[i]);
+}
+
+
+void
+RKR::Bank_to_Preset (const Preset_Bank_Struct &src, const GraphLayout &srcGraph)
+{
 
     int j, k;
 
 
     memset(presets.Preset_Name.data(), 0, presets.Preset_Name.size());
-    safe_copy(presets.Preset_Name, presets.Bank[i].Preset_Name);
+    safe_copy(presets.Preset_Name, src.Preset_Name);
     memset(presets.Author.data(), 0, presets.Author.size());
-    safe_copy(presets.Author, presets.Bank[i].Author);
+    safe_copy(presets.Author, src.Author);
     efx_Convol->Filename.fill(0);
-    safe_copy(efx_Convol->Filename, presets.Bank[i].ConvoFiname);
+    safe_copy(efx_Convol->Filename, src.ConvoFiname);
     efx_Reverbtron->Filename.fill(0);
-    safe_copy(efx_Reverbtron->Filename, presets.Bank[i].RevFiname);
+    safe_copy(efx_Reverbtron->Filename, src.RevFiname);
     efx_Echotron->Filename.fill(0);
-    safe_copy(efx_Echotron->Filename, presets.Bank[i].EchoFiname);
+    safe_copy(efx_Echotron->Filename, src.EchoFiname);
 
 
     for (j = 0; j <=NumEffects; j++) {
         for (k = 0; k < 20; k++) {
-            lv[j][k] = presets.Bank[i].lv[j][k];
+            lv[j][k] = src.lv[j][k];
         }
     }
 
 
     for (k = 0; k < MAX_EFFECT_SLOTS; k++)
-        efx_order[k] = presets.Bank[i].lv[10][k];
+        efx_order[k] = src.lv[10][k];
 
 
-    Reverb_B = presets.Bank[i].lv[0][19];
-    Echo_B = presets.Bank[i].lv[1][19];
-    Chorus_B = presets.Bank[i].lv[2][19];
-    Flanger_B = presets.Bank[i].lv[3][19];
-    Phaser_B = presets.Bank[i].lv[4][19];
-    Overdrive_B = presets.Bank[i].lv[5][19];
-    Distorsion_B = presets.Bank[i].lv[6][19];
-    EQ1_B = presets.Bank[i].lv[7][19];
-    EQ2_B = presets.Bank[i].lv[8][19];
-    Compressor_B = presets.Bank[i].lv[9][19];
-    WhaWha_B = presets.Bank[i].lv[11][19];
-    Alienwah_B = presets.Bank[i].lv[12][19];
-    Cabinet_B = presets.Bank[i].lv[13][19];
-    Pan_B = presets.Bank[i].lv[14][19];
-    Harmonizer_B = presets.Bank[i].lv[15][19];
-    MusDelay_B = presets.Bank[i].lv[16][19];
-    Gate_B = presets.Bank[i].lv[17][19];
-    NewDist_B = presets.Bank[i].lv[18][19];
-    APhaser_B = presets.Bank[i].lv[19][19];
-    Valve_B = presets.Bank[i].lv[20][19];
-    DFlange_B = presets.Bank[i].lv[21][19];
-    Ring_B = presets.Bank[i].lv[22][19];
-    Exciter_B = presets.Bank[i].lv[23][19];
-    MBDist_B = presets.Bank[i].lv[24][19];
-    Arpie_B = presets.Bank[i].lv[25][19];
-    Expander_B = presets.Bank[i].lv[26][19];
-    Shuffle_B = presets.Bank[i].lv[27][19];
-    Synthfilter_B = presets.Bank[i].lv[28][19];
-    MBVvol_B = presets.Bank[i].lv[29][19];
-    Convol_B = presets.Bank[i].lv[30][19];
-    Looper_B = presets.Bank[i].lv[31][19];
-    RyanWah_B = presets.Bank[i].lv[32][19];
-    RBEcho_B = presets.Bank[i].lv[33][19];
-    CoilCrafter_B = presets.Bank[i].lv[34][19];
-    ShelfBoost_B = presets.Bank[i].lv[35][19];
-    Vocoder_B = presets.Bank[i].lv[36][19];
-    Sustainer_B = presets.Bank[i].lv[37][19];
-    Sequence_B = presets.Bank[i].lv[38][19];
-    Shifter_B = presets.Bank[i].lv[39][19];
-    StompBox_B = presets.Bank[i].lv[40][19];
-    Reverbtron_B = presets.Bank[i].lv[41][19];
-    Echotron_B = presets.Bank[i].lv[42][19];
-    StereoHarm_B = presets.Bank[i].lv[43][19];
-    CompBand_B = presets.Bank[i].lv[44][19];
-    Opticaltrem_B = presets.Bank[i].lv[45][19];
-    Vibe_B = presets.Bank[i].lv[46][19];
-    Infinity_B = presets.Bank[i].lv[47][19];
+    Reverb_B = src.lv[0][19];
+    Echo_B = src.lv[1][19];
+    Chorus_B = src.lv[2][19];
+    Flanger_B = src.lv[3][19];
+    Phaser_B = src.lv[4][19];
+    Overdrive_B = src.lv[5][19];
+    Distorsion_B = src.lv[6][19];
+    EQ1_B = src.lv[7][19];
+    EQ2_B = src.lv[8][19];
+    Compressor_B = src.lv[9][19];
+    WhaWha_B = src.lv[11][19];
+    Alienwah_B = src.lv[12][19];
+    Cabinet_B = src.lv[13][19];
+    Pan_B = src.lv[14][19];
+    Harmonizer_B = src.lv[15][19];
+    MusDelay_B = src.lv[16][19];
+    Gate_B = src.lv[17][19];
+    NewDist_B = src.lv[18][19];
+    APhaser_B = src.lv[19][19];
+    Valve_B = src.lv[20][19];
+    DFlange_B = src.lv[21][19];
+    Ring_B = src.lv[22][19];
+    Exciter_B = src.lv[23][19];
+    MBDist_B = src.lv[24][19];
+    Arpie_B = src.lv[25][19];
+    Expander_B = src.lv[26][19];
+    Shuffle_B = src.lv[27][19];
+    Synthfilter_B = src.lv[28][19];
+    MBVvol_B = src.lv[29][19];
+    Convol_B = src.lv[30][19];
+    Looper_B = src.lv[31][19];
+    RyanWah_B = src.lv[32][19];
+    RBEcho_B = src.lv[33][19];
+    CoilCrafter_B = src.lv[34][19];
+    ShelfBoost_B = src.lv[35][19];
+    Vocoder_B = src.lv[36][19];
+    Sustainer_B = src.lv[37][19];
+    Sequence_B = src.lv[38][19];
+    Shifter_B = src.lv[39][19];
+    StompBox_B = src.lv[40][19];
+    Reverbtron_B = src.lv[41][19];
+    Echotron_B = src.lv[42][19];
+    StereoHarm_B = src.lv[43][19];
+    CompBand_B = src.lv[44][19];
+    Opticaltrem_B = src.lv[45][19];
+    Vibe_B = src.lv[46][19];
+    Infinity_B = src.lv[47][19];
 
 
     Bypass_B = Bypass;
 
 
-    memcpy(XUserMIDI.data(), presets.Bank[i].XUserMIDI.data(), sizeof(XUserMIDI));
+    memcpy(XUserMIDI.data(), src.XUserMIDI.data(), sizeof(XUserMIDI));
 
 
 
     Actualizar_Audio ();
 
     if (actuvol == 0) {
-        Input_Gain = presets.Bank[i].Input_Gain;
-        Master_Volume = presets.Bank[i].Master_Volume;
-        Fraction_Bypass = presets.Bank[i].Balance;
+        Input_Gain = src.Input_Gain;
+        Master_Volume = src.Master_Volume;
+        Fraction_Bypass = src.Balance;
 
         // The audio path multiplies by Log_I_Gain / Log_M_Volume, and only
         // calculavol() derives those from the two values above. Without this a
@@ -2444,13 +2440,20 @@ RKR::Bank_to_Preset (int i)
     // Actualizar_Audio() above, which writes the effect parameters: the nodes
     // capture their settings from those instances, and a layout staged first
     // would be built from the outgoing preset's values.
-    applyPresetGraph (i);
+    applyPresetGraph (srcGraph);
 
 };
 
 
 void
 RKR::Preset_to_Bank (int i)
+{
+    Preset_to_Bank (presets.Bank[i], presets.BankGraph[i]);
+}
+
+
+void
+RKR::Preset_to_Bank (Preset_Bank_Struct &dst, GraphLayout &dstGraph)
 {
 
 
@@ -2459,24 +2462,24 @@ RKR::Preset_to_Bank (int i)
     // A patch that branches has no equivalent in the effect order, so store
     // the layout as well. Only once one has actually been staged -- otherwise
     // the graph is just mirroring efx_order and lv[] already describes it.
-    presets.BankGraph[i] =
+    dstGraph =
         (use_effect_graph && efx_graph_custom) ? effectGraphLayout () : GraphLayout{};
 
-    memset(presets.Bank[i].Preset_Name.data(), 0, presets.Bank[i].Preset_Name.size());
-    safe_copy(presets.Bank[i].Preset_Name, presets.Preset_Name);
-    memset(presets.Bank[i].Author.data(), 0, presets.Bank[i].Author.size());
-    safe_copy(presets.Bank[i].Author, presets.Author);
-    memset(presets.Bank[i].ConvoFiname.data(), 0, presets.Bank[i].ConvoFiname.size());
-    safe_copy(presets.Bank[i].ConvoFiname, efx_Convol->Filename);
-    memset(presets.Bank[i].RevFiname.data(), 0, presets.Bank[i].RevFiname.size());
-    safe_copy(presets.Bank[i].RevFiname, efx_Reverbtron->Filename);
-    memset(presets.Bank[i].EchoFiname.data(), 0, presets.Bank[i].EchoFiname.size());
-    safe_copy(presets.Bank[i].EchoFiname, efx_Echotron->Filename);
+    memset(dst.Preset_Name.data(), 0, dst.Preset_Name.size());
+    safe_copy(dst.Preset_Name, presets.Preset_Name);
+    memset(dst.Author.data(), 0, dst.Author.size());
+    safe_copy(dst.Author, presets.Author);
+    memset(dst.ConvoFiname.data(), 0, dst.ConvoFiname.size());
+    safe_copy(dst.ConvoFiname, efx_Convol->Filename);
+    memset(dst.RevFiname.data(), 0, dst.RevFiname.size());
+    safe_copy(dst.RevFiname, efx_Reverbtron->Filename);
+    memset(dst.EchoFiname.data(), 0, dst.EchoFiname.size());
+    safe_copy(dst.EchoFiname, efx_Echotron->Filename);
 
 
-    presets.Bank[i].Input_Gain = Input_Gain;
-    presets.Bank[i].Master_Volume = Master_Volume;
-    presets.Bank[i].Balance = Fraction_Bypass;
+    dst.Input_Gain = Input_Gain;
+    dst.Master_Volume = Master_Volume;
+    dst.Balance = Fraction_Bypass;
 
 
     for (j = 0; j <= 11; j++)
@@ -2591,63 +2594,63 @@ RKR::Preset_to_Bank (int i)
 
     for (j = 0; j <= NumEffects; j++) {
         for (k = 0; k < 19; k++) {
-            presets.Bank[i].lv[j][k] = lv[j][k];
+            dst.lv[j][k] = lv[j][k];
         }
     }
 
-    presets.Bank[i].lv[11][10] = efx_WhaWha->Ppreset;
+    dst.lv[11][10] = efx_WhaWha->Ppreset;
 
 
-    presets.Bank[i].lv[0][19] = Reverb_Bypass;
-    presets.Bank[i].lv[1][19] = Echo_Bypass;
-    presets.Bank[i].lv[2][19] = Chorus_Bypass;
-    presets.Bank[i].lv[3][19] = Flanger_Bypass;
-    presets.Bank[i].lv[4][19] = Phaser_Bypass;
-    presets.Bank[i].lv[5][19] = Overdrive_Bypass;
-    presets.Bank[i].lv[6][19] = Distorsion_Bypass;
-    presets.Bank[i].lv[7][19] = EQ1_Bypass;
-    presets.Bank[i].lv[8][19] = EQ2_Bypass;
-    presets.Bank[i].lv[9][19] = Compressor_Bypass;
-    presets.Bank[i].lv[11][19] = WhaWha_Bypass;
-    presets.Bank[i].lv[12][19] = Alienwah_Bypass;
-    presets.Bank[i].lv[13][19] = Cabinet_Bypass;
-    presets.Bank[i].lv[14][19] = Pan_Bypass;
-    presets.Bank[i].lv[15][19] = Harmonizer_Bypass;
-    presets.Bank[i].lv[16][19] = MusDelay_Bypass;
-    presets.Bank[i].lv[17][19] = Gate_Bypass;
-    presets.Bank[i].lv[18][19] = NewDist_Bypass;
-    presets.Bank[i].lv[19][19] = APhaser_Bypass;
-    presets.Bank[i].lv[20][19] = Valve_Bypass;
-    presets.Bank[i].lv[21][19] = DFlange_Bypass;
-    presets.Bank[i].lv[22][19] = Ring_Bypass;
-    presets.Bank[i].lv[23][19] = Exciter_Bypass;
-    presets.Bank[i].lv[24][19] = MBDist_Bypass;
-    presets.Bank[i].lv[25][19] = Arpie_Bypass;
-    presets.Bank[i].lv[26][19] = Expander_Bypass;
-    presets.Bank[i].lv[27][19] = Shuffle_Bypass;
-    presets.Bank[i].lv[28][19] = Synthfilter_Bypass;
-    presets.Bank[i].lv[29][19] = MBVvol_Bypass;
-    presets.Bank[i].lv[30][19] = Convol_Bypass;
-    presets.Bank[i].lv[31][19] = Looper_Bypass;
-    presets.Bank[i].lv[32][19] = RyanWah_Bypass;
-    presets.Bank[i].lv[33][19] = RBEcho_Bypass;
-    presets.Bank[i].lv[34][19] = CoilCrafter_Bypass;
-    presets.Bank[i].lv[35][19] = ShelfBoost_Bypass;
-    presets.Bank[i].lv[36][19] = Vocoder_Bypass;
-    presets.Bank[i].lv[37][19] = Sustainer_Bypass;
-    presets.Bank[i].lv[38][19] = Sequence_Bypass;
-    presets.Bank[i].lv[39][19] = Shifter_Bypass;
-    presets.Bank[i].lv[40][19] = StompBox_Bypass;
-    presets.Bank[i].lv[41][19] = Reverbtron_Bypass;
-    presets.Bank[i].lv[42][19] = Echotron_Bypass;
-    presets.Bank[i].lv[43][19] = StereoHarm_Bypass;
-    presets.Bank[i].lv[44][19] = CompBand_Bypass;
-    presets.Bank[i].lv[45][19] = Opticaltrem_Bypass;
-    presets.Bank[i].lv[46][19] = Vibe_Bypass;
-    presets.Bank[i].lv[47][19] = Infinity_Bypass;
+    dst.lv[0][19] = Reverb_Bypass;
+    dst.lv[1][19] = Echo_Bypass;
+    dst.lv[2][19] = Chorus_Bypass;
+    dst.lv[3][19] = Flanger_Bypass;
+    dst.lv[4][19] = Phaser_Bypass;
+    dst.lv[5][19] = Overdrive_Bypass;
+    dst.lv[6][19] = Distorsion_Bypass;
+    dst.lv[7][19] = EQ1_Bypass;
+    dst.lv[8][19] = EQ2_Bypass;
+    dst.lv[9][19] = Compressor_Bypass;
+    dst.lv[11][19] = WhaWha_Bypass;
+    dst.lv[12][19] = Alienwah_Bypass;
+    dst.lv[13][19] = Cabinet_Bypass;
+    dst.lv[14][19] = Pan_Bypass;
+    dst.lv[15][19] = Harmonizer_Bypass;
+    dst.lv[16][19] = MusDelay_Bypass;
+    dst.lv[17][19] = Gate_Bypass;
+    dst.lv[18][19] = NewDist_Bypass;
+    dst.lv[19][19] = APhaser_Bypass;
+    dst.lv[20][19] = Valve_Bypass;
+    dst.lv[21][19] = DFlange_Bypass;
+    dst.lv[22][19] = Ring_Bypass;
+    dst.lv[23][19] = Exciter_Bypass;
+    dst.lv[24][19] = MBDist_Bypass;
+    dst.lv[25][19] = Arpie_Bypass;
+    dst.lv[26][19] = Expander_Bypass;
+    dst.lv[27][19] = Shuffle_Bypass;
+    dst.lv[28][19] = Synthfilter_Bypass;
+    dst.lv[29][19] = MBVvol_Bypass;
+    dst.lv[30][19] = Convol_Bypass;
+    dst.lv[31][19] = Looper_Bypass;
+    dst.lv[32][19] = RyanWah_Bypass;
+    dst.lv[33][19] = RBEcho_Bypass;
+    dst.lv[34][19] = CoilCrafter_Bypass;
+    dst.lv[35][19] = ShelfBoost_Bypass;
+    dst.lv[36][19] = Vocoder_Bypass;
+    dst.lv[37][19] = Sustainer_Bypass;
+    dst.lv[38][19] = Sequence_Bypass;
+    dst.lv[39][19] = Shifter_Bypass;
+    dst.lv[40][19] = StompBox_Bypass;
+    dst.lv[41][19] = Reverbtron_Bypass;
+    dst.lv[42][19] = Echotron_Bypass;
+    dst.lv[43][19] = StereoHarm_Bypass;
+    dst.lv[44][19] = CompBand_Bypass;
+    dst.lv[45][19] = Opticaltrem_Bypass;
+    dst.lv[46][19] = Vibe_Bypass;
+    dst.lv[47][19] = Infinity_Bypass;
 
 
-    memcpy(presets.Bank[i].XUserMIDI.data(),XUserMIDI.data(),sizeof(XUserMIDI));
+    memcpy(dst.XUserMIDI.data(),XUserMIDI.data(),sizeof(XUserMIDI));
 
 
 };
