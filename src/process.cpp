@@ -85,13 +85,6 @@ RKR::RKR (unsigned int offlineSampleRate, unsigned int offlinePeriod)
     ML_filter=0;
     error_num = 0;
 
-    // Transitional opt-in for the node-graph signal path. Deliberately an
-    // environment variable rather than a preference: it is a development
-    // switch for comparing the graph against the legacy chain, not something
-    // to persist in a preset. Remove once the graph is the only path.
-    if (const char *env = getenv ("RAKARRACK_EFFECT_GRAPH"))
-        use_effect_graph = (atoi (env) != 0);
-
     efx_graph = std::make_unique<EffectGraph> ();
 
     eff_filter = 0;
@@ -145,6 +138,19 @@ RKR::RKR (unsigned int offlineSampleRate, unsigned int offlinePeriod)
     }
 
     rakarrack.get(PrefNom("Disable Warnings"),mess_dis,0);
+
+    // The node-graph signal path. Off by default: it is the newer of the two,
+    // and the legacy chain is what every existing preset was voiced through.
+    // Read here rather than earlier because PrefNom() builds its key from
+    // jack.name, which is only known once the client is open.
+    //
+    // The environment variable still wins where it is set, so a comparison run
+    // does not depend on whatever the last GUI session happened to save.
+    int graphPref = 0;
+    rakarrack.get (PrefNom ("Effect Graph Path"), graphPref, 0);
+    use_effect_graph = (graphPref != 0);
+    if (const char *env = getenv ("RAKARRACK_EFFECT_GRAPH"))
+        use_effect_graph = (atoi (env) != 0);
     rakarrack.get (PrefNom ("Filter DC Offset"), DC_Offset, 0);
     rakarrack.get (PrefNom ("UpSampling"), upsample, 0);
     rakarrack.get (PrefNom ("UpQuality"), UpQual, 4);
@@ -1358,6 +1364,53 @@ RKR::effectGraphLayout () const
         return efx_graph_gui->layout ();
 
     return efx_graph ? efx_graph->layout () : GraphLayout{};
+}
+
+
+void
+RKR::applyPresetGraph (int i)
+{
+    if (!use_effect_graph)
+        return;
+
+    const bool valid = (i >= 0 && i < (int) presets.BankGraph.size ());
+    if (!valid || presets.BankGraph[i].nodes.empty ()) {
+        // No patch: fall back to the effect order. Clearing the custom flag
+        // lets Alg() resume mirroring efx_order, so loading a plain preset
+        // after a branching one does not leave the old routing behind.
+        efx_graph_custom = false;
+        efx_graph_built = false;
+        efx_graph_gui = nullptr;
+        return;
+    }
+
+    if (auto graph = buildEffectGraph (presets.BankGraph[i]))
+        stageEffectGraph (std::move (graph));
+}
+
+
+void
+RKR::setEffectGraphEnabled (bool enabled)
+{
+    if (enabled == use_effect_graph)
+        return;
+
+    use_effect_graph = enabled;
+
+    if (enabled) {
+        // Start from the chain the user can currently see rather than from
+        // whatever patch happened to be staged before the path was last
+        // turned off -- that one may belong to a preset since replaced.
+        efx_graph_custom = false;
+        efx_graph_built = false;
+        efx_graph_gui = nullptr;
+    }
+
+    // Remembered across sessions: a signal path that has to be chosen again on
+    // every launch is not really a setting. Written here rather than by the
+    // caller so the preferences object stays private to this file.
+    rakarrack.set (PrefNom ("Effect Graph Path"), enabled ? 1 : 0);
+    rakarrack.flush ();
 }
 
 

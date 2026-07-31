@@ -210,6 +210,18 @@ public:
     /// The layout the engine is currently running, for the editor to open on.
     [[nodiscard]] GraphLayout effectGraphLayout () const;
 
+    /// The layout of preset `i`, staged so it becomes the live routing. A
+    /// preset without one falls back to the effect order. Does nothing while
+    /// the graph path is off.
+    void applyPresetGraph (int i);
+
+    /// Turn the node-graph signal path on or off.
+    ///
+    /// Enabling starts from the effect order rather than from whatever patch
+    /// was staged when it was last turned off, which may belong to a preset
+    /// that has since been replaced.
+    void setEffectGraphEnabled (bool enabled);
+
     /// Run the effect chain through efx_graph instead of the hand-written
     /// switch in Alg(). Both paths produce identical audio for a series chain;
     /// the graph additionally allows splits and merges, which efx_order cannot

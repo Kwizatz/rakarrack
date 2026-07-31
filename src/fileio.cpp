@@ -2444,19 +2444,7 @@ RKR::Bank_to_Preset (int i)
     // Actualizar_Audio() above, which writes the effect parameters: the nodes
     // capture their settings from those instances, and a layout staged first
     // would be built from the outgoing preset's values.
-    if (use_effect_graph) {
-        if (presets.BankGraph[i].nodes.empty()) {
-            // No patch: fall back to the effect order. Clearing the custom
-            // flag lets Alg() resume mirroring efx_order, so loading a plain
-            // preset after a branching one does not leave the old routing.
-            efx_graph_custom = false;
-            efx_graph_built = false;
-            efx_graph_gui = nullptr;
-        }
-        else if (auto graph = buildEffectGraph (presets.BankGraph[i])) {
-            stageEffectGraph (std::move (graph));
-        }
-    }
+    applyPresetGraph (i);
 
 };
 

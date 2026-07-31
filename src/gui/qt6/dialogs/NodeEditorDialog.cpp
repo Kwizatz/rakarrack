@@ -277,9 +277,9 @@ void NodeEditorDialog::updateStatus()
     if (branching)
     {
         m_status->setText(
-            tr("This patch branches. Turn on the graph signal path to run it, "
-               "or straighten it into a single path to apply it to the "
-               "%1-slot chain.")
+            tr("This patch branches, which the %1-slot chain cannot hold. "
+               "Turn on Settings > Audio > Route through the node graph to "
+               "run it, or straighten it into a single path to apply it.")
                 .arg(kMaxEffectSlots));
         return;
     }

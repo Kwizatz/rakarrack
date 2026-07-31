@@ -130,7 +130,7 @@ bool EngineController::isGraphPathActive() const
 
 void EngineController::setGraphPathActive(bool active)
 {
-    m_engine.use_effect_graph = active;
+    m_engine.setEffectGraphEnabled(active);
 }
 
 std::array<int, kMaxEffectSlots> EngineController::getEffectOrder() const
