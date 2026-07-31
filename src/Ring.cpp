@@ -142,7 +142,13 @@ Ring::out (float * smpsl, float * smpsr, int nframes)
             smpsr[i] *= tmpfactor;
         }
         offset += Pfreq;
-        if (offset > SAMPLE_RATE) offset -=SAMPLE_RATE;
+        // The tables hold exactly SAMPLE_RATE entries, so an offset equal to
+        // that is already one past the end -- the old test only wrapped when
+        // it went beyond. A frequency above the sample rate would also be
+        // left out of range by a single subtraction. The branch keeps the
+        // divide off the common path.
+        if (offset >= SAMPLE_RATE)
+            offset %= SAMPLE_RATE;
     }
 
 

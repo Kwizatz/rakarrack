@@ -42,8 +42,8 @@ public:
     void cleanup ();
     void Create_Tables();
 
-    int Pafreq;
-    int Pfreq;
+    int Pafreq{};
+    int Pfreq{};
 
 
 
@@ -55,24 +55,24 @@ private:
 
 
     //Parametrii
-    int Pvolume;	//Volumul or E/R
-    int Ppanning;	//Panning
-    int Plrcross;	// L/R Mixing
-    int Pinput;
-    int Plevel;		//the ouput amplification
-    int Pdepthp;
-    int Psin;		//highpass filter
-    int Ptri;
-    int Psaw;
-    int Psqu;
-    int Pstereo;	//0=mono,1=stereo
+    int Pvolume{};	//Volumul or E/R
+    int Ppanning{};	//Panning
+    int Plrcross{};	// L/R Mixing
+    int Pinput{};
+    int Plevel{};		//the ouput amplification
+    int Pdepthp{};
+    int Psin{};		//highpass filter
+    int Ptri{};
+    int Psaw{};
+    int Psqu{};
+    int Pstereo{};	//0=mono,1=stereo
 
 
     //Parametrii reali
-    unsigned int offset;
-    float panning, lrcross;
+    unsigned int offset{};
+    float panning{}, lrcross{};
     std::vector<float> sin_tbl, tri_tbl, saw_tbl, squ_tbl;
-    float sin,tri,saw,squ,scale,depth, idepth;
+    float sin{}, tri{}, saw{}, squ{}, scale{}, depth{}, idepth{};
 };
 
 

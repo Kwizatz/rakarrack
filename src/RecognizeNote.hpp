@@ -28,14 +28,14 @@ public:
     void schmittFloat (float *indatal, float *indatar);
     void sethpf(int value);
     void setlpf(int value);
-    int note;
+    int note{};
 
     std::vector<signed short int> schmittBuffer;
-    signed short int *schmittPointer;
-    const char **notes;
-    float trigfact;
-    float lafreq;
-    float nfreq, afreq, freq;
+    signed short int *schmittPointer{nullptr};
+    const char **notes{nullptr};
+    float trigfact{};
+    float lafreq{};
+    float nfreq{}, afreq{}, freq{};
 
 
 
@@ -46,8 +46,8 @@ private:
     void schmittS16LE (signed short int *indata);
     void schmittFree ();
 
-    int ultima;
-    int blockSize;
+    int ultima{};
+    int blockSize{};
 
     std::unique_ptr<AnalogFilter> lpfl, lpfr, hpfl, hpfr;
 

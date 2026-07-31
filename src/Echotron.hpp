@@ -70,21 +70,21 @@ private:
     //User input parameters
     EffectLFO lfo;
     EffectLFO dlfo;
-    int Pvolume;	//This is master wet/dry mix like other FX...but I am finding it is not useful
-    int Ppanning;	//Panning
-    int Plrcross;	// L/R Mixing  //
-    int Phidamp;
-    int Puser;		//0,1//
-    int Ptempo;		//Tempo, BPM//For stretching reverb responses
-    int Filenum;
-    int Pfb;		//-64 ... 64// amount of feedback
-    int Pdepth;
-    int Pwidth;
-    int Pfilters;         //0 or 1// use or don't use filters in delay line
-    int Pmodfilts;	//0 or 1// apply LFO to filter freqs
-    int Pmoddly;		//0 or 1// apply LFO to delay time
-    int Pstdiff;
-    int Plength;
+    int Pvolume{};	//This is master wet/dry mix like other FX...but I am finding it is not useful
+    int Ppanning{};	//Panning
+    int Plrcross{};	// L/R Mixing  //
+    int Phidamp{};
+    int Puser{};		//0,1//
+    int Ptempo{};		//Tempo, BPM//For stretching reverb responses
+    int Filenum{};
+    int Pfb{};		//-64 ... 64// amount of feedback
+    int Pdepth{};
+    int Pwidth{};
+    int Pfilters{};         //0 or 1// use or don't use filters in delay line
+    int Pmodfilts{};	//0 or 1// apply LFO to filter freqs
+    int Pmoddly{};		//0 or 1// apply LFO to delay time
+    int Pstdiff{};
+    int Plength{};
 
 
     int offset{0};
@@ -112,23 +112,23 @@ private:
 
 //end text configurable parameters
 
-    int initparams;
+    int initparams{};
 
-    float ldmod, rdmod, oldldmod, oldrdmod, interpl, interpr;
-    float dlyrange;
+    float ldmod{}, rdmod{}, oldldmod{}, oldrdmod{}, interpl{}, interpr{};
+    float dlyrange{};
 
-    float width, depth;
-    float lpanning, rpanning, hidamp, alpha_hidamp, convlength;
+    float width{}, depth{};
+    float lpanning{}, rpanning{}, hidamp{}, alpha_hidamp{}, convlength{};
 
     std::unique_ptr<delayline> lxn, rxn;
 
-    float level,fb, rfeedback, lfeedback,levpanl,levpanr, lrcross, ilrcross;
-    float tempo_coeff;
+    float level{}, fb{}, rfeedback{}, lfeedback{}, levpanl{}, levpanr{}, lrcross{}, ilrcross{};
+    float tempo_coeff{};
 
     std::unique_ptr<AnalogFilter> lpfl, lpfr;	//filters
 
     struct {
-        float sfreq, sq,sLP,sBP,sHP, sStg;
+        float sfreq{}, sq{}, sLP{}, sBP{}, sHP{}, sStg{};
         std::unique_ptr<RBFilter> l, r;
 
     } filterbank[ECHOTRON_MAXFILTERS];

@@ -1750,8 +1750,12 @@ RKR::Alg (float *inl1, float *inr1, float *origl, float *origr, void *)
             if(!reco) RecNote->schmittFloat (efxoutl.data(), efxoutr.data());
             reco=1;
             if ((reconota != -1) && (reconota != last)) {
-                if(RecNote->afreq > 0.0) {
-                    efx_Ring->Pfreq=lrintf(RecNote->lafreq);
+                if((RecNote->afreq > 0.0) && std::isfinite (RecNote->lafreq)) {
+                    // Through changepar() so a tracked frequency gets the same
+                    // clamp a user-set one does. Assigning Pfreq directly
+                    // skipped it, and that clamp is what keeps Ring's
+                    // wavetable index inside the table.
+                    efx_Ring->changepar (5, lrintf (RecNote->lafreq));
                     ponlast = 1;
                 }
             }

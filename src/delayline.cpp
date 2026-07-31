@@ -16,6 +16,7 @@
 */
 #include "delayline.hpp"
 #include "math.h"
+#include <cmath>
 #include <cstdlib>
 #include "f_sin.hpp"
 
@@ -202,6 +203,17 @@ delayline::delay(float smps, float time_, int tap_, int touch,
     tap = static_cast<int>(fabs(tap_));
     if (tap >= maxtaps)
         tap = 0;
+
+    // A non-finite time fails both range checks below -- every comparison
+    // with a NaN is false -- and then reaches the ring buffer through
+    // lrintf(floorf(NaN)), which is undefined and in practice an index far
+    // outside it. avgtime makes it worse: it is a smoothing filter that feeds
+    // back on itself, so a single NaN poisons this tap for good, and it is
+    // itself read before being written if the buffer arrives uninitialised.
+    if (!std::isfinite(time_))
+        time_ = 0.0f;
+    if (!std::isfinite(avgtime[tap]))
+        avgtime[tap] = 0.0f;
 
     if (reverse)  avgtime[tap] = alpha * 2.0f*time_ + beta * avgtime[tap];	//smoothing the rate of time change
     else avgtime[tap] = alpha * time_ + beta * avgtime[tap];	//smoothing the rate of time change

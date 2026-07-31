@@ -118,6 +118,13 @@ static inline float f_pow2(float x)
 {
     float y = 0.0f;
 
+    // A NaN fails both range tests below -- every comparison with one is
+    // false -- and would then reach the tables through (int)ceilf(NaN), which
+    // is undefined and in practice an index far outside them. There is no
+    // sensible power of two for a NaN, so return the identity and let the
+    // caller carry on rather than read out of bounds.
+    if (std::isnan(x)) return 1.0f;
+
     if(x >=24) return pw2[24];
     else if (x <= -24.0f) return ipw2[24];
     else {

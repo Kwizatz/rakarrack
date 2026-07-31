@@ -49,16 +49,16 @@ public:
 
 
 private:
-    int Pwidth;
-    int Pfb;
-    int Plrcross;
-    int Pdepth;
-    int Ppanning;
-    int Pvolume;
-    int Pstereo;
+    int Pwidth{};
+    int Pfb{};
+    int Plrcross{};
+    int Pdepth{};
+    int Ppanning{};
+    int Pvolume{};
+    int Pstereo{};
 
-    float fwidth;
-    float fdepth;
+    float fwidth{};
+    float fdepth{};
     float rpanning{0.0f}, lpanning{0.0f};
     float flrcross{0.0f}, fcross{0.0f};
     float fb{0.0f};
@@ -100,7 +100,7 @@ private:
     float C2{0.0f};
     float C1[8]{};
     float beta{0.0f};  //transistor forward gain.
-    float gain, k;
+    float gain{}, k{};
     float oldcvolt[8] ;
     float en1[8], en0[8], ed1[8], ed0[8];
     float cn1[8], cn0[8], cd1[8], cd0[8];

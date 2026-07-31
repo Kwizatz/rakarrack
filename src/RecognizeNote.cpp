@@ -97,16 +97,21 @@ Recognize::schmittS16LE (signed short int *indata)
             t1 = lrintf ((float)A1 * trigfact + 0.5f);
             t2 = -lrintf((float)A2 * trigfact + 0.5f);
             startpoint = 0;
-            for (j = 1; schmittBuffer[j] <= t1 && j < blockSize; j++);
-            for (; !(schmittBuffer[j] >= t2 &&
-            schmittBuffer[j + 1] < t2) && j < blockSize; j++);
+            // These two scans tested the bound AFTER using the index, so a run
+            // that reached the end read one past the buffer -- and the second
+            // looks ahead to [j + 1], so it could reach two past. The buffer
+            // is exactly blockSize long, so both were genuine overruns.
+            for (j = 1; j < blockSize && schmittBuffer[j] <= t1; j++);
+            for (; j + 1 < blockSize
+                   && !(schmittBuffer[j] >= t2 && schmittBuffer[j + 1] < t2); j++);
             startpoint = j;
             schmittTriggered = 0;
             endpoint = startpoint + 1;
             for (j = startpoint, tc = 0; j < blockSize; j++) {
                 if (!schmittTriggered) {
                     schmittTriggered = (schmittBuffer[j] >= t1);
-                } else if (schmittBuffer[j] >= t2 && schmittBuffer[j + 1] < t2) {
+                } else if (j + 1 < blockSize && schmittBuffer[j] >= t2
+                           && schmittBuffer[j + 1] < t2) {
                     endpoint = j;
                     tc++;
                     schmittTriggered = 0;
