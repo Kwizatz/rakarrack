@@ -32,7 +32,15 @@ void applyEffectSettings(Effect& effect, const EffectSettings& settings)
     // Replay the preset first. Most of what it does is then overwritten by the
     // stored parameters, but it is the only way to reach state that no
     // parameter reports -- DynamicFilter's filter definitions, for one.
-    effect.setpreset(settings.preset);
+    //
+    // Only when the effect is not already on that preset, though. A freshly
+    // built effect ran setpreset() in its own constructor, so replaying the
+    // same number calls it twice, and setpreset() is not idempotent for
+    // several effects: Gate, Convolotron and Echotron all came out different.
+    // The engine's own preset loader does not replay it either, and matching
+    // that is what makes a rebuilt effect sound like the one it came from.
+    if (settings.preset != effect.Ppreset)
+        effect.setpreset(settings.preset);
 
     // Settle here rather than at the end. Changing a filter's frequency or
     // gain leaves it interpolating towards the new value, and cleanup() clears
