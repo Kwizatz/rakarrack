@@ -162,15 +162,31 @@ Recognize::schmittFloat (float *indatal, float *indatar)
     int i;
     buf.resize(PERIOD);
 
-    lpfl->filterout (indatal);
-    hpfl->filterout (indatal);
-    lpfr->filterout (indatar);
-    hpfr->filterout (indatar);
+    // Work on a copy. Everything below conditions the signal so a note is
+    // easier to trigger on -- a band limit either side of the fundamental,
+    // then a sustainer to even out the envelope -- and all of it runs in
+    // place. Alg() hands this the live bus, so filtering the caller's buffers
+    // put those three stages into the signal path whenever note tracking was
+    // on, which is audible and has nothing to do with detecting a note.
+    if (static_cast<int>(scratchl.size()) != PERIOD) {
+        scratchl.resize(PERIOD);
+        scratchr.resize(PERIOD);
+    }
+    std::memcpy(scratchl.data(), indatal, sizeof(float) * PERIOD);
+    std::memcpy(scratchr.data(), indatar, sizeof(float) * PERIOD);
 
-    Sus->out(indatal,indatar);
+    float *left  = scratchl.data();
+    float *right = scratchr.data();
+
+    lpfl->filterout (left);
+    hpfl->filterout (left);
+    lpfr->filterout (right);
+    hpfr->filterout (right);
+
+    Sus->out(left, right);
 
     for (i = 0; i < PERIOD; i++) {
-        buf[i] = (short) ((indatal[i]+indatar[i]) * 32768);
+        buf[i] = (short) ((left[i]+right[i]) * 32768);
     }
     schmittS16LE (buf.data());
 };

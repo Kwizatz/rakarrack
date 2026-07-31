@@ -55,6 +55,11 @@ private:
 
     std::vector<signed short int> buf{};
 
+    /// The signal is conditioned before it is analysed, and every stage that
+    /// does so works in place, so the analysis runs on these rather than on
+    /// the caller's buffers.
+    std::vector<float> scratchl{}, scratchr{};
+
 };
 
 #endif
