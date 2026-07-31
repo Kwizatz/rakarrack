@@ -140,6 +140,14 @@ const EffectNode* EffectGraph::findNode(int id) const
     return (idx < 0) ? nullptr : &m_nodes[static_cast<std::size_t>(idx)];
 }
 
+const EffectNode* EffectGraph::findNodeByType(int type) const
+{
+    for (const EffectNode& node : m_nodes)
+        if (node.type == type)
+            return &node;
+    return nullptr;
+}
+
 int EffectGraph::addNode(int type, std::unique_ptr<Effect> effect, float x, float y)
 {
     // Register it as a borrowed node first, then hand the ownership over, so

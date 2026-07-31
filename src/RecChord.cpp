@@ -688,16 +688,23 @@ RecChord::Vamos (int voz, int interval)
     int harmo;
     int typo;
 
-    nota = reconota % 12;
+    // ctipo and fundi are only assigned when a chord actually matches, so
+    // until one does they hold whatever they were built with -- and both end
+    // up indexing Ch[34][13] below. Nothing sensible can be transposed
+    // against a chord that was never recognised.
+    if (ctipo < 0 || ctipo >= 34)
+        return;
 
-    nota -= fundi;
+    // reconota is -1 when no note was detected, and interval is signed, so
+    // these can go negative. A single += 12 only recovers a value that is at
+    // most 12 short; wrap properly instead.
+    nota = ((reconota % 12) - fundi) % 12;
     if (nota < 0)
         nota += 12;
 
-
-    harmo = (12 + nota + interval) % 12;
-    if (harmo > 12)
-        harmo %= 12;
+    harmo = (nota + interval) % 12;
+    if (harmo < 0)
+        harmo += 12;
 
 
 

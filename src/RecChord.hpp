@@ -37,10 +37,10 @@ public:
     void Vamos (int voz, int interval);
     void cleanup ();
 
-    int cc;
-    int fundi;
-    int bass;
-    int ctipo;
+    int cc{};
+    int fundi{};
+    int bass{};
+    int ctipo{-1};      ///< -1 until a chord has actually been recognised.
 
     char NombreAcorde[64];
 

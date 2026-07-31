@@ -1252,6 +1252,15 @@ RKR::rebuildEffectGraph ()
         if (type == EMPTY_SLOT)
             continue;
 
+        // These nodes BORROW the engine's per-type instances, so a repeated
+        // type would put the same object in the chain twice -- feeding it its
+        // own output through its own state, which diverges. The legacy loop in
+        // Alg() skips repeats for the same reason, and both paths have to
+        // agree. A staged patch is different: its nodes own their effects, so
+        // there a repeat is a second, independent instance.
+        if (efx_graph->findNodeByType (type) != nullptr)
+            continue;
+
         Effect *efx = effectByIndex (*this, type);
         if (efx == nullptr)
             continue;
@@ -1689,6 +1698,11 @@ RKR::Alg (float *inl1, float *inr1, float *origl, float *origr, void *)
     int i;
     int reco=0;
     int ponlast=0;
+
+    // Which effect types have already run this block; see the legacy loop
+    // below and rebuildEffectGraph() for why a repeat has to be skipped.
+    std::array<bool, kEffectTypeCount> alreadyRan{};
+
     memcpy(efxoutl.data(), inl1, sizeof(float) * PERIOD);
     memcpy(efxoutr.data(), inr1, sizeof(float) * PERIOD);
 
@@ -1816,6 +1830,18 @@ RKR::Alg (float *inl1, float *inr1, float *origl, float *origr, void *)
         for (i = 0; i < MAX_EFFECT_SLOTS; i++) {
             if (efx_order[i] == EMPTY_SLOT)
                 continue;
+            // There is one instance per effect type, so a type appearing twice
+            // in the order does not cascade: the second pass feeds the effect
+            // its own output through its own filter state, which is feedback,
+            // and it diverges. Default preset 0 ends in six unused slots
+            // holding 0 -- which IS EQ1 -- and running EQ seven times took its
+            // output to NaN inside a second. Only a staged patch, where each
+            // node owns its effect, can repeat a type meaningfully.
+            if (efx_order[i] >= 0 && efx_order[i] < kEffectTypeCount) {
+                if (alreadyRan[efx_order[i]])
+                    continue;
+                alreadyRan[efx_order[i]] = true;
+            }
             switch (efx_order[i]) {
             case 0:
                 if (EQ1_Bypass) {

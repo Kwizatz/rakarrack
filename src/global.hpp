@@ -626,7 +626,12 @@ public:
 
     compat_timeval timeA;
 
-    float booster;
+    /// Final output gain, applied to every sample in Control_Volume(). Only
+    /// the GUI's main() ever assigned it, so anything else driving the engine
+    /// -- the offline renderer, a headless host -- multiplied its output by
+    /// whatever happened to be in this word. Sometimes that was zero, which
+    /// silenced the render; it could as easily have been enormous.
+    float booster{1.0f};
     float cpuload;
     float rtrig;
 

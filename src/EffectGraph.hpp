@@ -169,6 +169,11 @@ public:
     [[nodiscard]] EffectNode* findNode(int id);
     [[nodiscard]] const EffectNode* findNode(int id) const;
 
+    /// First node of a given effect type, or null. Used when mirroring the
+    /// legacy chain, where every node borrows the engine's single instance of
+    /// its type and a repeat would put the same object in twice.
+    [[nodiscard]] const EffectNode* findNodeByType(int type) const;
+
     /// True if every node lies on a path from the input to the output.
     /// Orphaned nodes are legal but silent, so this is advisory for the GUI.
     [[nodiscard]] bool isFullyConnected() const;
