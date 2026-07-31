@@ -106,16 +106,22 @@ Tuner::schmittS16LE (int nframes, signed short int *indata)
             t1 = lrintf ((float)A1 * trigfact + 0.5f);
             t2 = - lrintf ((float)A2 * trigfact + 0.5f);
             startpoint = 0;
-            for (j = 1; schmittBuffer[j] <= t1 && j < blockSize; j++);
-            for (; !(schmittBuffer[j] >= t2 &&
-            schmittBuffer[j + 1] < t2) && j < blockSize; j++);
+            // Bound before indexing. These scans tested j < blockSize only
+            // after reading schmittBuffer[j], and the second looks ahead to
+            // [j + 1]; the buffer is exactly blockSize long, so both ran off
+            // the end. The tuner is left on, so this was happening in normal
+            // use rather than in some corner.
+            for (j = 1; j < blockSize && schmittBuffer[j] <= t1; j++);
+            for (; j + 1 < blockSize
+                   && !(schmittBuffer[j] >= t2 && schmittBuffer[j + 1] < t2); j++);
             startpoint = j;
             schmittTriggered = 0;
             endpoint = startpoint + 1;
             for (j = startpoint, tc = 0; j < blockSize; j++) {
                 if (!schmittTriggered) {
                     schmittTriggered = (schmittBuffer[j] >= t1);
-                } else if (schmittBuffer[j] >= t2 && schmittBuffer[j + 1] < t2) {
+                } else if (j + 1 < blockSize && schmittBuffer[j] >= t2
+                           && schmittBuffer[j + 1] < t2) {
                     endpoint = j;
                     tc++;
                     schmittTriggered = 0;

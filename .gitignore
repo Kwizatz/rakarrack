@@ -34,3 +34,4 @@ icons/Makefile
 icons/Makefile.in
 man/Makefile
 man/Makefile.in
+mingw64-check/
