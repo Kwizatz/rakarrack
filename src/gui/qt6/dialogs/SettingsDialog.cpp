@@ -141,11 +141,11 @@ QWidget* SettingsDialog::createAudioTab()
     graphLayout->addWidget(m_effectGraphPath);
 
     auto* graphNote = new QLabel(
-        tr("The fixed chain runs up to sixteen effects in order, one of each "
-           "kind. The node graph runs the same effects but lets them split, "
-           "merge, and repeat, each with its own settings. Both sound "
-           "identical for a plain chain. Edit patches in Windows > Node "
-           "Editor."),
+        tr("The node graph is the default. It runs the same effects as the "
+           "fixed chain and sounds identical for a plain chain, but lets them "
+           "split, merge, and repeat, each with its own settings. Edit patches "
+           "in Windows > Node Editor. Turning this off falls back to the older "
+           "fixed chain of up to sixteen effects in order, one of each kind."),
         graphGroup);
     graphNote->setWordWrap(true);
     graphLayout->addWidget(graphNote);

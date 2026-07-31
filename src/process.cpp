@@ -139,15 +139,21 @@ RKR::RKR (unsigned int offlineSampleRate, unsigned int offlinePeriod)
 
     rakarrack.get(PrefNom("Disable Warnings"),mess_dis,0);
 
-    // The node-graph signal path. Off by default: it is the newer of the two,
-    // and the legacy chain is what every existing preset was voiced through.
+    // The node-graph signal path, now the default. It is the only routing
+    // that can branch, and it produces bit-identical audio to the legacy
+    // chain for every one of the 180 stock presets, at the same cost. The
+    // legacy switch stays for a while yet: it is the reference the graph is
+    // checked against, and losing it would mean losing that check.
+    //
     // Read here rather than earlier because PrefNom() builds its key from
     // jack.name, which is only known once the client is open.
     //
-    // The environment variable still wins where it is set, so a comparison run
-    // does not depend on whatever the last GUI session happened to save.
-    int graphPref = 0;
-    rakarrack.get (PrefNom ("Effect Graph Path"), graphPref, 0);
+    // Anyone who has turned it off keeps it off -- the preference is only
+    // written when the setting is actually changed. The environment variable
+    // still wins where it is set, so an A/B run does not depend on whatever
+    // the last GUI session happened to save.
+    int graphPref = 1;
+    rakarrack.get (PrefNom ("Effect Graph Path"), graphPref, 1);
     use_effect_graph = (graphPref != 0);
     if (const char *env = getenv ("RAKARRACK_EFFECT_GRAPH"))
         use_effect_graph = (atoi (env) != 0);
