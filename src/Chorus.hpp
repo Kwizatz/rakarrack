@@ -44,9 +44,9 @@ public:
     void out (float * smpsl, float * smpsr, int nframes) override;
     using Effect::setpreset;
     void setpreset (int dgui, int npreset);
-    void changepar (int npar, int value);
-    int getpar (int npar);
-    void cleanup ();
+    void changepar (int npar, int value) override;
+    int getpar (int npar) override;
+    void cleanup () override;
 
 
 

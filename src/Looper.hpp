@@ -38,13 +38,13 @@ public:
     void out (float * smpsl, float * smpr) override;
     void out (float * smpsl, float * smpr, int nframes) override;
     void setMaxBlockSize (int maxBlockSize) override;
-    void setpreset (int npreset);
+    void setpreset (int npreset) override;
     void loadpreset (int npar, int value) override;  // to set one from a preset
-    void changepar (int npar, int value);
-    int getpar (int npar);
+    void changepar (int npar, int value) override;
+    int getpar (int npar) override;
     void cleanuppt1 ();
     void cleanuppt2 ();
-    void cleanup ();
+    void cleanup () override;
     void settempo(int value);
     void setmvol(int value);
     int looper_bar;

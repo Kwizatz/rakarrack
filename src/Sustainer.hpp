@@ -31,13 +31,13 @@ class Sustainer : public Effect
 public:
     Sustainer ();
     ~Sustainer ();
-    void cleanup ();
+    void cleanup () override;
 
     void out (float * smpsl, float * smpr) override;
     void out (float * smpsl, float * smpr, int nframes) override;
-    void changepar (int npar, int value);
-    int getpar (int npar);
-    void setpreset (int npreset);
+    void changepar (int npar, int value) override;
+    int getpar (int npar) override;
+    void setpreset (int npreset) override;
 
 
 

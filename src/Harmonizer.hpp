@@ -42,10 +42,10 @@ public:
     void out (float *smpsl, float *smpsr) override;
     void out (float *smpsl, float *smpsr, int nframes) override;
     void setMaxBlockSize (int maxBlockSize) override;
-    void setpreset (int npreset);
-    void changepar (int npar, int value);
-    int getpar (int npar);
-    void cleanup ();
+    void setpreset (int npreset) override;
+    void changepar (int npar, int value) override;
+    int getpar (int npar) override;
+    void cleanup () override;
     void applyfilters (float * smpsl, int nframes);
     void adjust(int DS);
     /// Internal-rate frames produced from `nframes` host-rate frames.

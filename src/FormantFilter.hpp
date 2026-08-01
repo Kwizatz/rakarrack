@@ -36,10 +36,10 @@ class FormantFilter:public Filter_
 public:
     FormantFilter (class FilterParams * pars);
     ~FormantFilter ();
-    void filterout (float * smp);
-    void setfreq (float frequency);
-    void setfreq_and_q (float frequency, float q_);
-    void setq (float q_);
+    void filterout (float * smp) override;
+    void setfreq (float frequency) override;
+    void setfreq_and_q (float frequency, float q_) override;
+    void setq (float q_) override;
 
     void cleanup ();
 private:

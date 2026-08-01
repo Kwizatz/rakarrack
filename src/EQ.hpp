@@ -36,11 +36,11 @@ public:
     ~EQ ();
     void out (float * smpsl, float * smpr) override;
     void out (float * smpsl, float * smpr, int nframes) override;
-    void setpreset (int npreset);
-    void changepar (int npar, int value);
-    int getpar (int npar);
-    void cleanup ();
-    float getfreqresponse (float freq);
+    void setpreset (int npreset) override;
+    void changepar (int npar, int value) override;
+    int getpar (int npar) override;
+    void cleanup () override;
+    float getfreqresponse (float freq) override;
     void setvolume (int Pvolume);
 
     int Pvolume;	//Volumul

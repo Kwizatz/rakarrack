@@ -35,11 +35,11 @@ public:
     ~Ring ();
     void out (float * smpsl, float * smpr) override;
     void out (float * smpsl, float * smpr, int nframes) override;
-    void setpreset (int npreset);
-    void changepar (int npar, int value);
-    int getpar (int npar);
+    void setpreset (int npreset) override;
+    void changepar (int npar, int value) override;
+    int getpar (int npar) override;
     void setscale();
-    void cleanup ();
+    void cleanup () override;
     void Create_Tables();
 
     int Pafreq{};

@@ -38,13 +38,13 @@ public:
     void filterout (float * smp, int nframes) override;
     float filterout_s (float smp);
 
-    void setfreq (float frequency);
-    void setfreq_and_q (float frequency, float q_);
-    void setq (float q_);
+    void setfreq (float frequency) override;
+    void setfreq_and_q (float frequency, float q_) override;
+    void setq (float q_) override;
     void setSR(unsigned int SR);
 
     void settype (int type_);
-    void setgain (float dBgain);
+    void setgain (float dBgain) override;
     void setstages (int stages_);
     void cleanup ();
     void reversecoeffs();

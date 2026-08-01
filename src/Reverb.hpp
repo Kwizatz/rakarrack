@@ -38,11 +38,11 @@ public:
     void out (float * smps_l, float * smps_r) override;
     void out (float * smps_l, float * smps_r, int nframes) override;
     void setMaxBlockSize (int maxBlockSize) override;
-    void cleanup ();
+    void cleanup () override;
 
-    void setpreset (int npreset);
-    void changepar (int npar, int value);
-    int getpar (int npar);
+    void setpreset (int npreset) override;
+    void changepar (int npar, int value) override;
+    int getpar (int npar) override;
 
 
 
