@@ -65,10 +65,37 @@ std::atomic<int> g_xruns{0};
 std::atomic<unsigned> g_shortBlocks{0};
 std::atomic<unsigned> g_expectedFrames{0};
 
+// Callback duration. JACK reports a late client without saying how late, and
+// that is the difference between an engine too slow to hold the deadline and a
+// deadline set too short for it.
+std::atomic<long long> g_procMaxNs{0};
+std::atomic<long long> g_procTotalNs{0};
+std::atomic<long long> g_procCalls{0};
+
 int countXrun(void*)
 {
     g_xruns.fetch_add(1, std::memory_order_relaxed);
     return 0;
+}
+
+/// Recount what each port is connected to, for the GUI's port display.
+///
+/// jack_port_connected() is not realtime safe. Measured against a running
+/// server it averages well under a microsecond but peaks at 6.7 ms, which is
+/// longer than an entire 256-frame period, and the process callback was making
+/// seven of these calls every cycle. That is what JACK was reporting as "client
+/// was not finished": the engine itself uses about 2% of a period, so the
+/// deadline was being missed inside the JACK API rather than in the DSP.
+void refreshPortCounts();
+
+void onPortsConnected(jack_port_id_t, jack_port_id_t, int, void*)
+{
+    refreshPortCounts();
+}
+
+void onPortRegistered(jack_port_id_t, int, void*)
+{
+    refreshPortCounts();
 }
 
 void writeTap(const char* path, const std::vector<float>& data, std::size_t frames,
@@ -99,6 +126,37 @@ jack_port_t *jack_midi_in, *jack_midi_out;
 void *dataout;
 int jackprocess (jack_nframes_t nframes, void *arg);
 
+namespace
+{
+void refreshPortCounts()
+{
+    if (JackOUT == nullptr)
+        return;
+
+    const int in = jack_port_connected(inputport_left)
+                 + jack_port_connected(inputport_right);
+    const int out = jack_port_connected(outport_left)
+                  + jack_port_connected(outport_right);
+    const int aux = jack_port_connected(inputport_aux);
+    const int midiIn = jack_port_connected(jack_midi_in);
+    const int midiOut = jack_port_connected(jack_midi_out);
+
+    if (in != JackOUT->jack.num_input_ports
+        || out != JackOUT->jack.num_output_ports
+        || aux != JackOUT->jack.num_aux_ports
+        || midiIn != JackOUT->jack.num_midi_in_ports
+        || midiOut != JackOUT->jack.num_midi_out_ports)
+    {
+        JackOUT->jack.num_input_ports = in;
+        JackOUT->jack.num_output_ports = out;
+        JackOUT->jack.num_aux_ports = aux;
+        JackOUT->jack.num_midi_in_ports = midiIn;
+        JackOUT->jack.num_midi_out_ports = midiOut;
+        JackOUT->jack.num_pc_ports = 1;
+    }
+}
+} // namespace
+
 int
 JACKstart (RKR * rkr_, jack_client_t * jackclient_)
 {
@@ -114,6 +172,9 @@ JACKstart (RKR * rkr_, jack_client_t * jackclient_)
     jack_on_shutdown (jackclient, jackshutdown, 0);
 
     jack_set_xrun_callback (jackclient, countXrun, 0);
+
+    jack_set_port_connect_callback (jackclient, onPortsConnected, 0);
+    jack_set_port_registration_callback (jackclient, onPortRegistered, 0);
 
     if (const char* secs = getenv("RAKARRACK_CAPTURE"))
     {
@@ -199,6 +260,8 @@ JACKstart (RKR * rkr_, jack_client_t * jackclient_)
 
 
 
+    refreshPortCounts();
+
     return 3;
 
 };
@@ -208,6 +271,8 @@ JACKstart (RKR * rkr_, jack_client_t * jackclient_)
 int
 jackprocess (jack_nframes_t nframes, [[maybe_unused]] void *arg)
 {
+    const auto processStart = std::chrono::steady_clock::now();
+
 #ifdef HAVE_JACK_TRANSPORT
     jack_position_t pos;
     jack_transport_state_t astate;
@@ -255,36 +320,6 @@ jackprocess (jack_nframes_t nframes, [[maybe_unused]] void *arg)
         }
     }
 #endif
-
-
-
-    int jnumpi = jack_port_connected(inputport_left) + jack_port_connected(inputport_right );
-    if(jnumpi != JackOUT->jack.num_input_ports) {
-        JackOUT->jack.num_input_ports=jnumpi;
-        JackOUT->jack.num_pc_ports = 1;
-    }
-    int jnumpo = jack_port_connected(outport_left) + jack_port_connected(outport_right );
-    if(jnumpo != JackOUT->jack.num_output_ports) {
-        JackOUT->jack.num_output_ports = jnumpo;
-        JackOUT->jack.num_pc_ports = 1;
-    }
-    int jnumpa = jack_port_connected(inputport_aux);
-    if(jnumpa != JackOUT->jack.num_aux_ports) {
-        JackOUT->jack.num_aux_ports = jnumpa;
-        JackOUT->jack.num_pc_ports = 1;
-    }
-
-    int jnumpmi = jack_port_connected(jack_midi_in);
-    if(jnumpmi != JackOUT->jack.num_midi_in_ports) {
-        JackOUT->jack.num_midi_in_ports = jnumpmi;
-        JackOUT->jack.num_pc_ports = 1;
-    }
-
-    int jnumpmo = jack_port_connected(jack_midi_out);
-    if(jnumpmo != JackOUT->jack.num_midi_out_ports) {
-        JackOUT->jack.num_midi_out_ports = jnumpmo;
-        JackOUT->jack.num_pc_ports = 1;
-    }
 
 
 
@@ -392,6 +427,18 @@ jackprocess (jack_nframes_t nframes, [[maybe_unused]] void *arg)
         g_capture.frames += take;
     }
 
+    {
+        const auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
+                            std::chrono::steady_clock::now() - processStart).count();
+        g_procTotalNs.fetch_add(ns, std::memory_order_relaxed);
+        g_procCalls.fetch_add(1, std::memory_order_relaxed);
+        long long prev = g_procMaxNs.load(std::memory_order_relaxed);
+        while (ns > prev
+               && !g_procMaxNs.compare_exchange_weak(prev, ns,
+                                                     std::memory_order_relaxed))
+            ;
+    }
+
     return 0;
 
 };
@@ -404,6 +451,17 @@ JACKfinish ()
            g_xruns.load(), g_shortBlocks.load(), g_expectedFrames.load());
 
     const int rate = static_cast<int>(jack_get_sample_rate(jackclient));
+
+    if (const long long calls = g_procCalls.load(); calls > 0)
+    {
+        const double budgetMs = 1000.0 * g_expectedFrames.load() / rate;
+        const double meanMs = g_procTotalNs.load() / 1e6 / static_cast<double>(calls);
+        const double maxMs = g_procMaxNs.load() / 1e6;
+        printf("jack: process took %.3f ms mean, %.3f ms worst, of %.3f ms available"
+               " (%.0f%% mean, %.0f%% worst)\n",
+               meanMs, maxMs, budgetMs,
+               100.0 * meanMs / budgetMs, 100.0 * maxMs / budgetMs);
+    }
 
     // Close first. The process callback is still running until this returns,
     // and it appends to the same buffers and counter the writes below read,

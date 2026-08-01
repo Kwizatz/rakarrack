@@ -11,6 +11,7 @@
     6. Run QApplication event loop
 */
 
+#include <csignal>
 #include <QApplication>
 #include <QCommandLineParser>
 #include <QIcon>
@@ -91,6 +92,12 @@ int main(int argc, char* argv[])
     preset       = 1000;
     commandline  = 0;
     gui          = parser.isSet(noguiOpt) ? 0 : 1;
+
+    // Headless has no other way out: the loop below only watches this flag, so
+    // without a handler the process has to be killed, and JACK is never closed.
+    std::signal(SIGINT, [](int) { Pexitprogram = 1; });
+    std::signal(SIGTERM, [](int) { Pexitprogram = 1; });
+
     needtoloadbank  = 0;
     needtoloadstate = 0;
 
