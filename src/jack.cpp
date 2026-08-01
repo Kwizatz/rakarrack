@@ -72,6 +72,12 @@ std::atomic<long long> g_procMaxNs{0};
 std::atomic<long long> g_procTotalNs{0};
 std::atomic<long long> g_procCalls{0};
 
+// Gap between successive callbacks. It should equal the period; if it does not,
+// the cycle was already late before any of our code ran.
+std::chrono::steady_clock::time_point g_lastStart{};
+std::atomic<long long> g_gapMaxNs{0};
+std::atomic<long long> g_gapOverBudget{0};
+
 int countXrun(void*)
 {
     g_xruns.fetch_add(1, std::memory_order_relaxed);
@@ -425,11 +431,33 @@ jackprocess (jack_nframes_t nframes, [[maybe_unused]] void *arg)
             dstOut[i * 2 + 1] = outr[i];
         }
         g_capture.frames += take;
+
+        // Headless has no window to close, and a killed process never reaches
+        // the shutdown report, so let the requested duration end the run.
+        if (g_capture.frames >= g_capture.capacity && gui == 0)
+            Pexitprogram = 1;
     }
 
     {
+        const auto now = std::chrono::steady_clock::now();
+        if (g_lastStart.time_since_epoch().count() != 0)
+        {
+            const auto gap = std::chrono::duration_cast<std::chrono::nanoseconds>(
+                                 processStart - g_lastStart).count();
+            long long prevGap = g_gapMaxNs.load(std::memory_order_relaxed);
+            while (gap > prevGap
+                   && !g_gapMaxNs.compare_exchange_weak(prevGap, gap,
+                                                        std::memory_order_relaxed))
+                ;
+            const long long budgetNs = 1000000000LL * g_expectedFrames.load()
+                                     / (JackOUT ? JackOUT->jack.sample_rate : 44100);
+            if (gap > budgetNs * 3 / 2)
+                g_gapOverBudget.fetch_add(1, std::memory_order_relaxed);
+        }
+        g_lastStart = processStart;
+
         const auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
-                            std::chrono::steady_clock::now() - processStart).count();
+                            now - processStart).count();
         g_procTotalNs.fetch_add(ns, std::memory_order_relaxed);
         g_procCalls.fetch_add(1, std::memory_order_relaxed);
         long long prev = g_procMaxNs.load(std::memory_order_relaxed);
@@ -461,6 +489,9 @@ JACKfinish ()
                " (%.0f%% mean, %.0f%% worst)\n",
                meanMs, maxMs, budgetMs,
                100.0 * meanMs / budgetMs, 100.0 * maxMs / budgetMs);
+        printf("jack: cycle arrived %.3f ms late at worst, %lld of %lld cycles"
+               " more than half a period apart\n",
+               g_gapMaxNs.load() / 1e6 - budgetMs, g_gapOverBudget.load(), calls);
     }
 
     // Close first. The process callback is still running until this returns,
