@@ -2190,6 +2190,14 @@ RKR::Alg (float *inl1, float *inr1, float *origl, float *origr, void *)
         Control_Volume (origl,origr);
 
     }
+    else {
+        // Bypass still carries the input gain and master volume, so switching
+        // the effects out compares the two paths at the same level instead of
+        // dropping to whatever the untouched input happens to be. It also keeps
+        // the meters live, which stopped dead here before.
+        Control_Gain (origl, origr);
+        Control_Volume (origl, origr);
+    }
 
 }
 

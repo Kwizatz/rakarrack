@@ -2702,7 +2702,13 @@ RKR::convert_IO()
         parse_csv(presets.Bank[i].cBalance.data(), presets.Bank[i].Balance);
         if(presets.Bank[i].Balance == 0.0) presets.Bank[i].Balance=1.0f;
 
-
+        // Banks written before EMPTY_SLOT existed pad the unused tail of the
+        // order with 0, which is also the type id of EQ, so those slots read
+        // back as real effects. Only the tail is padding; a 0 with anything
+        // after it is a chain entry and stays.
+        for (int j = MAX_EFFECT_SLOTS - 1;
+             j >= 0 && presets.Bank[i].lv[10][j] == 0; --j)
+            presets.Bank[i].lv[10][j] = EMPTY_SLOT;
 
     }
 
