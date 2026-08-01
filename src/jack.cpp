@@ -132,6 +132,13 @@ JACKstart (RKR * rkr_, jack_client_t * jackclient_)
     g_expectedFrames.store(static_cast<unsigned>(jack_get_buffer_size(jackclient)),
                            std::memory_order_relaxed);
 
+    // Worth stating plainly. Which server you reached decides whether capture
+    // and playback share a clock, and the rate is the quickest way to tell one
+    // server from another when several could be running.
+    printf("jack: connected at %u Hz, buffer %u frames (%.1f ms per period)\n",
+           jack_get_sample_rate(jackclient), jack_get_buffer_size(jackclient),
+           1000.0 * jack_get_buffer_size(jackclient) / jack_get_sample_rate(jackclient));
+
 
 
     inputport_left =
@@ -396,14 +403,19 @@ JACKfinish ()
     printf("jack: %d xruns, %u odd-sized blocks (buffer size %u)\n",
            g_xruns.load(), g_shortBlocks.load(), g_expectedFrames.load());
 
+    const int rate = static_cast<int>(jack_get_sample_rate(jackclient));
+
+    // Close first. The process callback is still running until this returns,
+    // and it appends to the same buffers and counter the writes below read,
+    // which raced: the second file came out 1024 frames longer than the first.
+    jack_client_close (jackclient);
+
     if (g_capture.active)
     {
-        const int rate = static_cast<int>(jack_get_sample_rate(jackclient));
         writeTap("capture_in.wav", g_capture.in, g_capture.frames, rate);
         writeTap("capture_out.wav", g_capture.out, g_capture.frames, rate);
     }
 
-    jack_client_close (jackclient);
     std::this_thread::sleep_for(std::chrono::microseconds(1000));
 };
 
