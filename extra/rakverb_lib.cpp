@@ -36,7 +36,11 @@ inline FILE* portable_fopen(const char* filename, const char* mode)
 #endif
 }
 
-#define RND (rand() / ((RAND_MAX) + 1.0f))
+// RAND_MAX is 2^31-1 wherever rand() is a 31-bit generator, and float cannot
+// represent that: converting it rounds up to 2^31, so RAND_MAX + 1.0f never
+// lands on the intended bound and clang rejects the silent change of value.
+// Divide in double, where the +1 is exact, and narrow the finished quotient.
+#define RND (static_cast<float>(rand() / (static_cast<double>(RAND_MAX) + 1.0)))
 
 } // anonymous namespace
 

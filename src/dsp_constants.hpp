@@ -93,8 +93,21 @@ inline constexpr int REV_APS = 4;
 inline constexpr int MAX_SFILTER_STAGES = 12;
 
 // Utility functions
-inline float RND() { return static_cast<float>(rand()) / (RAND_MAX + 1.0f); }
-inline float RND1() { return static_cast<float>(rand()) / (static_cast<float>(RAND_MAX) + 1.0f); }
+// RAND_MAX is 2^31-1 wherever rand() is a 31-bit generator, and float cannot
+// represent that: converting it rounds up to 2^31, so RAND_MAX + 1.0f never
+// lands on the intended bound and clang rejects the silent change of value.
+// Divide in double, where the +1 is exact, and narrow the finished quotient.
+//
+// The quotient is always below 1 in double, but float carries only 24 bits of
+// mantissa, so the largest draw narrows to exactly 1.0f. Callers scale this
+// into array offsets -- Reverbtron indexes data[RND() * span] -- where 1.0
+// reads one past the end, so hold the result below the bound.
+inline float RND()
+{
+    const float r = static_cast<float>(rand() / (static_cast<double>(RAND_MAX) + 1.0));
+    return r < 1.0f ? r : 0x1.fffffep-1f;   // largest float below 1.0f
+}
+inline float RND1() { return RND(); }
 inline void F2I(float f, int &i) { i = (f > 0) ? static_cast<int>(f) : static_cast<int>(f - 1.0f); }
 inline float dB2rap(float dB) { return expf(dB * LOG_10 / 20.0f); }
 inline float rap2dB(float rap) { return 20.0f * logf(rap) / LOG_10; }
