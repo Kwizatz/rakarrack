@@ -55,6 +55,11 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
   # MSVC: /std:c++latest enables the latest C++ features
   add_compile_options(/std:c++latest)
+  # windows.h defines min and max as function-like macros unless NOMINMAX is
+  # set, which rewrites std::min(a, b) into std::(a, b) and fails to compile
+  # (C2589). The GCC and Clang branches above already pass -DNOMINMAX, but
+  # those toolchains are the ones that never needed it; MSVC went without.
+  add_compile_definitions(NOMINMAX)
 endif()
 
 option(USE_CPPCHECK "Use cppcheck static code analisys" OFF)
