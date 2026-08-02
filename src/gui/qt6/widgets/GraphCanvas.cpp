@@ -8,13 +8,18 @@
 #include "GraphCanvas.hpp"
 
 #include <QContextMenuEvent>
+#include <QDragEnterEvent>
+#include <QDragMoveEvent>
+#include <QDropEvent>
 #include <QGraphicsPathItem>
 #include <QGraphicsScene>
 #include <QGraphicsSceneMouseEvent>
 #include <QKeyEvent>
 #include <QMenu>
+#include <QMimeData>
 #include <QPainter>
 #include <QPainterPath>
+#include <QSignalBlocker>
 #include <QtMath>
 
 #include <algorithm>
@@ -92,7 +97,7 @@ public:
     GraphNodeItem(GraphCanvas& canvas, int id, QString title, bool endpoint)
         : m_canvas(canvas), m_id(id), m_title(std::move(title)), m_endpoint(endpoint)
     {
-        setFlag(QGraphicsItem::ItemIsMovable, !endpoint);
+        setFlag(QGraphicsItem::ItemIsMovable, true);
         setFlag(QGraphicsItem::ItemIsSelectable, !endpoint);
         setFlag(QGraphicsItem::ItemSendsGeometryChanges, true);
     }
@@ -141,6 +146,14 @@ public:
     }
 
 protected:
+    QVariant itemChange(GraphicsItemChange change, const QVariant& value) override
+    {
+        const QVariant result = QGraphicsItem::itemChange(change, value);
+        if (change == QGraphicsItem::ItemPositionHasChanged)
+            m_canvas.nodePositionChanged(m_id, pos());
+        return result;
+    }
+
     void mousePressEvent(QGraphicsSceneMouseEvent* event) override
     {
         // Pressing the output port starts a wire rather than a move.
@@ -181,6 +194,9 @@ protected:
                     auto* target = dynamic_cast<GraphNodeItem*>(item);
                     if (target == nullptr || target == this)
                         continue;
+                    if (QLineF(event->scenePos(), target->inputPortScenePos()).length()
+                        > kPortRadius * 1.8)
+                        continue;
                     m_canvas.requestConnection(m_id, target->nodeId());
                     break;
                 }
@@ -191,8 +207,7 @@ protected:
         }
 
         QGraphicsItem::mouseReleaseEvent(event);
-        if (!m_endpoint)
-            m_canvas.nodeMoved(m_id, pos());
+        m_canvas.nodeMoved(m_id, pos());
     }
 
 public:
@@ -220,6 +235,26 @@ GraphCanvas::GraphCanvas(QWidget* parent)
     setScene(m_scene);
     setRenderHint(QPainter::Antialiasing, true);
     setDragMode(QGraphicsView::RubberBandDrag);
+    setAcceptDrops(true);
+    viewport()->setAcceptDrops(true);
+
+    connect(m_scene, &QGraphicsScene::selectionChanged, this, [this]
+    {
+        int selectedId = -1;
+        for (QGraphicsItem* selected : m_scene->selectedItems())
+        {
+            if (auto* node = dynamic_cast<GraphNodeItem*>(selected))
+            {
+                selectedId = node->nodeId();
+                break;
+            }
+        }
+
+        if (selectedId == m_selectedNodeId)
+            return;
+        m_selectedNodeId = selectedId;
+        Q_EMIT nodeSelected(selectedId);
+    });
 }
 
 GraphCanvas::~GraphCanvas() = default;
@@ -245,8 +280,31 @@ QString GraphCanvas::nameForType(int type) const
 void GraphCanvas::setLayout(const GraphLayout& layout)
 {
     m_layout = layout;
+    m_endpointPositionsInitialized = false;
+    if (m_selectedNodeId >= 0
+        && std::none_of(m_layout.nodes.begin(), m_layout.nodes.end(),
+                        [this](const GraphNodeLayout& node) {
+                            return node.id == m_selectedNodeId;
+                        }))
+    {
+        m_selectedNodeId = -1;
+        Q_EMIT nodeSelected(-1);
+    }
     placeUnpositionedNodes();
     rebuildScene();
+}
+
+void GraphCanvas::setNodeBypassed(int nodeId, bool bypassed)
+{
+    for (GraphNodeLayout& node : m_layout.nodes)
+    {
+        if (node.id != nodeId || node.bypassed == bypassed)
+            continue;
+        node.bypassed = bypassed;
+        rebuildScene();
+        Q_EMIT layoutEdited();
+        return;
+    }
 }
 
 void GraphCanvas::placeUnpositionedNodes()
@@ -267,32 +325,40 @@ void GraphCanvas::placeUnpositionedNodes()
 
 void GraphCanvas::addEndpointItems()
 {
-    qreal minX = 1e9;
-    qreal maxX = -1e9;
-    for (const GraphNodeLayout& n : m_layout.nodes)
+    if (!m_endpointPositionsInitialized)
     {
-        minX = std::min(minX, static_cast<qreal>(n.x));
-        maxX = std::max(maxX, static_cast<qreal>(n.x));
-    }
-    if (m_layout.nodes.empty())
-    {
-        minX = 200.0;
-        maxX = 200.0;
+        qreal minX = 1e9;
+        qreal maxX = -1e9;
+        for (const GraphNodeLayout& n : m_layout.nodes)
+        {
+            minX = std::min(minX, static_cast<qreal>(n.x));
+            maxX = std::max(maxX, static_cast<qreal>(n.x));
+        }
+        if (m_layout.nodes.empty())
+        {
+            minX = 200.0;
+            maxX = 200.0;
+        }
+
+        m_inputNodePosition = {minX - kNodeWidth - 80.0, 220.0};
+        m_outputNodePosition = {maxX + kNodeWidth + 80.0, 220.0};
+        m_endpointPositionsInitialized = true;
     }
 
     auto* in = new GraphNodeItem(*this, kInputNodeId, tr("Input"), true);
-    in->setPos(minX - kNodeWidth - 80.0, 220.0);
+    in->setPos(m_inputNodePosition);
     m_scene->addItem(in);
     m_nodeItems.push_back(in);
 
     auto* out = new GraphNodeItem(*this, kOutputNodeId, tr("Output"), true);
-    out->setPos(maxX + kNodeWidth + 80.0, 220.0);
+    out->setPos(m_outputNodePosition);
     m_scene->addItem(out);
     m_nodeItems.push_back(out);
 }
 
 void GraphCanvas::rebuildScene()
 {
+    const QSignalBlocker blockSelectionSignals(m_scene);
     m_scene->clear();
     m_nodeItems.clear();
     m_edgeItems.clear();
@@ -303,6 +369,7 @@ void GraphCanvas::rebuildScene()
         item->setPos(n.x, n.y);
         item->setBypassed(n.bypassed);
         m_scene->addItem(item);
+        item->setSelected(n.id == m_selectedNodeId);
         m_nodeItems.push_back(item);
     }
 
@@ -323,7 +390,7 @@ void GraphCanvas::rebuildScene()
 
     // Bound the scene to what is actually in it, with room to drag outwards.
     // A fixed rect leaves the patch somewhere off in the corner.
-    m_scene->setSceneRect(m_scene->itemsBoundingRect().adjusted(-160, -160, 160, 160));
+    updateSceneRect();
 }
 
 GraphNodeItem* GraphCanvas::itemForNode(int nodeId) const
@@ -334,8 +401,45 @@ GraphNodeItem* GraphCanvas::itemForNode(int nodeId) const
     return nullptr;
 }
 
+void GraphCanvas::nodePositionChanged(int nodeId, QPointF pos)
+{
+    if (nodeId == kInputNodeId)
+        m_inputNodePosition = pos;
+    else if (nodeId == kOutputNodeId)
+        m_outputNodePosition = pos;
+
+    updateEdgesForNode(nodeId);
+}
+
+void GraphCanvas::updateEdgesForNode(int nodeId)
+{
+    for (GraphEdgeItem* edge : m_edgeItems)
+    {
+        if (edge->fromId() != nodeId && edge->toId() != nodeId)
+            continue;
+
+        GraphNodeItem* from = itemForNode(edge->fromId());
+        GraphNodeItem* to = itemForNode(edge->toId());
+        if (from != nullptr && to != nullptr)
+            edge->setPath(wirePath(from->outputPortScenePos(),
+                                   to->inputPortScenePos()));
+    }
+}
+
+void GraphCanvas::updateSceneRect()
+{
+    m_scene->setSceneRect(m_scene->itemsBoundingRect().adjusted(
+        -160, -160, 160, 160));
+}
+
 void GraphCanvas::nodeMoved(int nodeId, QPointF pos)
 {
+    if (nodeId == kInputNodeId || nodeId == kOutputNodeId)
+    {
+        updateSceneRect();
+        return;
+    }
+
     for (GraphNodeLayout& n : m_layout.nodes)
     {
         if (n.id != nodeId)
@@ -344,7 +448,7 @@ void GraphCanvas::nodeMoved(int nodeId, QPointF pos)
             return;
         n.x = static_cast<float>(pos.x());
         n.y = static_cast<float>(pos.y());
-        rebuildScene();
+        updateSceneRect();
         Q_EMIT layoutEdited();
         return;
     }
@@ -375,12 +479,15 @@ void GraphCanvas::addNodeAt(int type, QPointF scenePos)
     n.y    = static_cast<float>(scenePos.y());
     m_layout.nodes.push_back(n);
 
+    m_selectedNodeId = nextId;
     rebuildScene();
     Q_EMIT layoutEdited();
+    Q_EMIT nodeSelected(nextId);
 }
 
 void GraphCanvas::removeNode(int nodeId)
 {
+    const bool removedSelection = (m_selectedNodeId == nodeId);
     std::erase_if(m_layout.nodes,
                   [nodeId](const GraphNodeLayout& n) { return n.id == nodeId; });
     // A node's wires go with it, or the graph would refer to something absent.
@@ -388,8 +495,12 @@ void GraphCanvas::removeNode(int nodeId)
         return c.from == nodeId || c.to == nodeId;
     });
 
+    if (removedSelection)
+        m_selectedNodeId = -1;
     rebuildScene();
     Q_EMIT layoutEdited();
+    if (removedSelection)
+        Q_EMIT nodeSelected(-1);
 }
 
 void GraphCanvas::removeSelectedEdges()
@@ -429,9 +540,7 @@ void GraphCanvas::toggleBypass(int nodeId)
     {
         if (n.id != nodeId)
             continue;
-        n.bypassed = !n.bypassed;
-        rebuildScene();
-        Q_EMIT layoutEdited();
+        setNodeBypassed(nodeId, !n.bypassed);
         return;
     }
 }
@@ -445,6 +554,46 @@ void GraphCanvas::keyPressEvent(QKeyEvent* event)
         return;
     }
     QGraphicsView::keyPressEvent(event);
+}
+
+void GraphCanvas::dragEnterEvent(QDragEnterEvent* event)
+{
+    if (event->mimeData()->hasFormat(kEffectTypeMimeType))
+        event->acceptProposedAction();
+    else
+        QGraphicsView::dragEnterEvent(event);
+}
+
+void GraphCanvas::dragMoveEvent(QDragMoveEvent* event)
+{
+    if (event->mimeData()->hasFormat(kEffectTypeMimeType))
+        event->acceptProposedAction();
+    else
+        QGraphicsView::dragMoveEvent(event);
+}
+
+void GraphCanvas::dropEvent(QDropEvent* event)
+{
+    if (!event->mimeData()->hasFormat(kEffectTypeMimeType))
+    {
+        QGraphicsView::dropEvent(event);
+        return;
+    }
+
+    bool valid = false;
+    const int type = QString::fromLatin1(
+        event->mimeData()->data(kEffectTypeMimeType)).toInt(&valid);
+    if (!valid
+        || std::find(m_availableTypes.begin(), m_availableTypes.end(), type)
+               == m_availableTypes.end())
+    {
+        event->ignore();
+        return;
+    }
+
+    addNodeAt(type, mapToScene(event->position().toPoint()));
+    event->setDropAction(Qt::CopyAction);
+    event->accept();
 }
 
 void GraphCanvas::contextMenuEvent(QContextMenuEvent* event)

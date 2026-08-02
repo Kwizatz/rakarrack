@@ -94,6 +94,24 @@ int main()
     constexpr int N = 8;
     std::vector<float> inL(N, 1.0f), inR(N, 1.0f), outL(N, 0.0f), outR(N, 0.0f);
 
+    // ---- direct endpoint connection is a transparent stereo pass-through
+    {
+      EffectGraph g;
+      g.setMaxBlockSize(N);
+      check(g.connect(kInputNodeId, kOutputNodeId),
+          "direct: connect input->output");
+
+      inL[3] = 0.25f;
+      inR[3] = -0.75f;
+      g.process(inL.data(), inR.data(), outL.data(), outR.data(), N);
+      check(outL == inL && outR == inR,
+          "direct: stereo input is copied to output");
+
+      g.process(inL.data(), inR.data(), inL.data(), inR.data(), N);
+      check(inL[3] == 0.25f && inR[3] == -0.75f,
+          "direct: in-place pass-through preserves both channels");
+    }
+
     // ---- series: in -> (+10) -> (+100) -> out  =>  1 + 10 + 100 = 111
     {
         EffectGraph g;

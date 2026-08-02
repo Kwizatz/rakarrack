@@ -193,7 +193,7 @@ void TopBar::setupInOutSection(QWidget* container)
 }
 
 // ---------------------------------------------------------------------------
-// Presets section:  Name, Counter, New/Load/Save/Bank/Order buttons
+// Presets section:  Name, Counter, New/Load/Save/Bank buttons
 // ---------------------------------------------------------------------------
 
 void TopBar::setupPresetsSection(QWidget* container)
@@ -218,7 +218,6 @@ void TopBar::setupPresetsSection(QWidget* container)
     addBtn(tr("Load"),  &TopBar::loadPresetRequested);
     addBtn(tr("Save"),  &TopBar::savePresetRequested);
     addBtn(tr("Bank"),  &TopBar::bankWindowRequested);
-    addBtn(tr("Order"), &TopBar::orderWindowRequested);
     layout->addLayout(btnRow);
 
     // Row 2: preset name

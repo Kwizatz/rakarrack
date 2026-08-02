@@ -108,6 +108,11 @@ struct GraphLayout
     std::vector<GraphNodeLayout> nodes;
     std::vector<Connection> connections;
 
+    [[nodiscard]] bool empty() const
+    {
+        return nodes.empty() && connections.empty();
+    }
+
     friend bool operator==(const GraphLayout&, const GraphLayout&) = default;
 };
 

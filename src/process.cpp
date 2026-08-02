@@ -1391,7 +1391,7 @@ RKR::applyPresetGraph (const GraphLayout &layout)
     if (!use_effect_graph)
         return;
 
-    if (layout.nodes.empty ()) {
+    if (layout.empty ()) {
         // No patch: fall back to the effect order. Clearing the custom flag
         // lets Alg() resume mirroring efx_order, so loading a plain preset
         // after a branching one does not leave the old routing behind.

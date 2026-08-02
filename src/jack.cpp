@@ -268,7 +268,7 @@ JACKstart (RKR * rkr_, jack_client_t * jackclient_)
 
     refreshPortCounts();
 
-    return 3;
+    return 0;
 
 };
 

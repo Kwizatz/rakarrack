@@ -205,7 +205,7 @@ std::string bankToJson(const Preset_Bank_Struct* bank, std::size_t count,
         // Only when there is one. A preset whose chain the effect order can
         // already describe is written exactly as it was before, so this does
         // not churn every existing bank.
-        if (graphs != nullptr && !graphs[i].nodes.empty())
+        if (graphs != nullptr && !graphs[i].empty())
             preset["graph"] = layoutToJson(graphs[i]);
 
         presets.push_back(std::move(preset));
@@ -308,7 +308,7 @@ std::string singlePresetToJson(const Preset_Bank_Struct& preset,
     j["format"]  = kPresetFormatName;
     j["version"] = kBankFormatVersion;
 
-    if (graph != nullptr && !graph->nodes.empty())
+    if (graph != nullptr && !graph->empty())
         j["graph"] = layoutToJson(*graph);
 
     return j.dump(2);

@@ -15,7 +15,6 @@ set(QT6_GUI_SOURCES
     ThemeManager.cpp
     SystemTray.cpp
     TopBar.cpp
-    EffectSlotBar.cpp
     panels/EffectPanel.cpp
     panels/SliderPanel.cpp
     panels/EQPanel.cpp
@@ -27,7 +26,6 @@ set(QT6_GUI_SOURCES
     panels/FilterPanels.cpp
     panels/MiscPanels.cpp
     dialogs/BankDialog.cpp
-    dialogs/OrderDialog.cpp
     dialogs/SettingsDialog.cpp
     dialogs/MidiLearnDialog.cpp
     dialogs/AboutDialog.cpp
@@ -39,7 +37,7 @@ set(QT6_GUI_SOURCES
     widgets/Oscilloscope.cpp
     widgets/TunerDisplay.cpp
     widgets/GraphCanvas.cpp
-    dialogs/NodeEditorDialog.cpp
+    widgets/NodeEditor.cpp
 )
 
 set(QT6_GUI_HEADERS
@@ -47,7 +45,6 @@ set(QT6_GUI_HEADERS
     ThemeManager.hpp
     SystemTray.hpp
     TopBar.hpp
-    EffectSlotBar.hpp
     panels/EffectPanel.hpp
     panels/ParamDesc.hpp
     panels/SliderPanel.hpp
@@ -60,7 +57,6 @@ set(QT6_GUI_HEADERS
     panels/FilterPanels.hpp
     panels/MiscPanels.hpp
     dialogs/BankDialog.hpp
-    dialogs/OrderDialog.hpp
     dialogs/SettingsDialog.hpp
     dialogs/MidiLearnDialog.hpp
     dialogs/AboutDialog.hpp
@@ -72,7 +68,7 @@ set(QT6_GUI_HEADERS
     widgets/Oscilloscope.hpp
     widgets/TunerDisplay.hpp
     widgets/GraphCanvas.hpp
-    dialogs/NodeEditorDialog.hpp
+    widgets/NodeEditor.hpp
 )
 
 set(QT6_RESOURCES

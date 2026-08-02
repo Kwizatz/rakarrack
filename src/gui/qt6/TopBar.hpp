@@ -43,7 +43,6 @@ Q_SIGNALS:
     void loadPresetRequested();
     void savePresetRequested();
     void bankWindowRequested();
-    void orderWindowRequested();
     void presetChanged(int index);
 
 private:

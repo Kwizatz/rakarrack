@@ -26,6 +26,12 @@
 class QGraphicsScene;
 class GraphNodeItem;
 class GraphEdgeItem;
+class QDragEnterEvent;
+class QDragMoveEvent;
+class QDropEvent;
+
+inline constexpr char kEffectTypeMimeType[] =
+    "application/x-rakarrack-effect-type";
 
 class GraphCanvas : public QGraphicsView
 {
@@ -46,6 +52,9 @@ public:
     void setLayout(const GraphLayout& layout);
     [[nodiscard]] const GraphLayout& layout() const { return m_layout; }
 
+    /// Update one node's bypass state from its parameter panel.
+    void setNodeBypassed(int nodeId, bool bypassed);
+
 Q_SIGNALS:
     /// Emitted whenever the user changes the patch. Moving a node counts, so
     /// that canvas positions are saved with it.
@@ -57,6 +66,9 @@ Q_SIGNALS:
 
 protected:
     void contextMenuEvent(QContextMenuEvent* event) override;
+    void dragEnterEvent(QDragEnterEvent* event) override;
+    void dragMoveEvent(QDragMoveEvent* event) override;
+    void dropEvent(QDropEvent* event) override;
     void keyPressEvent(QKeyEvent* event) override;
     void drawBackground(QPainter* painter, const QRectF& rect) override;
 
@@ -74,8 +86,14 @@ private:
     void removeSelectedEdges();
     void toggleBypass(int nodeId);
 
+    /// Called for every position change so connected wires follow the node.
+    void nodePositionChanged(int nodeId, QPointF pos);
+
     /// Called by a node item once the user finishes dragging it.
     void nodeMoved(int nodeId, QPointF pos);
+
+    void updateEdgesForNode(int nodeId);
+    void updateSceneRect();
 
     /// Called by a node item when a wire is dropped on a port.
     void requestConnection(int fromId, int toId);
@@ -95,4 +113,9 @@ private:
 
     std::vector<GraphNodeItem*> m_nodeItems;
     std::vector<GraphEdgeItem*> m_edgeItems;
+    int                         m_selectedNodeId{-1};
+
+    QPointF m_inputNodePosition;
+    QPointF m_outputNodePosition;
+    bool    m_endpointPositionsInitialized{false};
 };

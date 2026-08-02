@@ -141,18 +141,24 @@ int main(int argc, char* argv[])
         return 0;
     }
 
-    JACKstart(&rkr, rkr.jack.client);
-#ifdef ENABLE_MIDI
-    rkr.InitMIDI();
-    rkr.ConnectMIDI();
-#endif
-
     if (needtoloadfile)  rkr.loadfile(filetoload.data());
     if (needtoloadbank)  rkr.loadbank(banktoload.data());
 
     // ── EngineController bridge ────────────────────────────────────
     EngineController controller(rkr);
     rkr.m_controller = &controller;
+
+    const auto startAudio = [&rkr]
+    {
+        const int result = JACKstart(&rkr, rkr.jack.client);
+        if (result != 0)
+            return result;
+#ifdef ENABLE_MIDI
+        rkr.InitMIDI();
+        rkr.ConnectMIDI();
+#endif
+        return 0;
+    };
 
     // ── GUI or headless ────────────────────────────────────────────
     if (gui)
@@ -165,6 +171,12 @@ int main(int argc, char* argv[])
         rkr.calculavol(2);
 
         MainWindow window(controller);
+
+        // MainWindow stages the initial graph. Do that before jack_activate()
+        // can process it on the real-time thread.
+        if (const int result = startAudio(); result != 0)
+            return result;
+
         window.show();
 
 #ifndef WIN32
@@ -184,6 +196,9 @@ int main(int argc, char* argv[])
         rkr.calculavol(1);
         rkr.calculavol(2);
         rkr.booster = 1.0f;
+
+        if (const int result = startAudio(); result != 0)
+            return result;
 
 #ifndef WIN32
         mlockall(MCL_CURRENT | MCL_FUTURE);

@@ -10,28 +10,18 @@
 #include <QMainWindow>
 #include <QTimer>
 
-#include <array>
-#include <memory>
-
 class EngineController;
 class TopBar;
-class EffectSlotBar;
-class EffectPanel;
+class NodeEditor;
 class ThemeManager;
 class SystemTray;
-class QStackedWidget;
-class QLabel;
 
 // Dialogs
 class BankDialog;
-class OrderDialog;
 class SettingsDialog;
 class MidiLearnDialog;
 class HelpBrowser;
 class TriggerDialog;
-
-/// Number of effect processing slots.
-inline constexpr int kMainEffectSlots = 16;
 
 class MainWindow : public QMainWindow
 {
@@ -48,9 +38,6 @@ private Q_SLOTS:
     /// Called at 40 Hz to poll engine state (levels, tuner, MIDI, etc.)
     void onGuiTick();
 
-    /// Called when the user selects an effect slot.
-    void onSlotSelected(int slotIndex);
-
     // File actions
     void loadPreset();
     void savePreset();
@@ -59,8 +46,6 @@ private Q_SLOTS:
 
     // Dialog launchers
     void showBankDialog();
-    void showOrderDialog();
-    void showNodeEditorDialog();
     void showSettingsDialog();
     void showMidiLearnDialog();
     void showAboutDialog();
@@ -72,8 +57,8 @@ private:
     void setupUi();
     void setupMenuBar();
     void setupShortcuts();
-    void createEffectPanels();
     void connectTopBarSignals();
+    void syncFromEngine();
     void applyThemeFromEngine();
 
     EngineController& m_engine;
@@ -84,14 +69,9 @@ private:
     SystemTray*       m_tray{nullptr};
 
     // Composed widgets
-    TopBar*           m_topBar{nullptr};
-    EffectSlotBar*    m_slotBar{nullptr};
-    QStackedWidget*   m_panelStack{nullptr};
-    QLabel*           m_patchNotice{nullptr};
-    QWidget*          m_centralWidget{nullptr};
-
-    // Effect panels (one per slot)
-    std::array<EffectPanel*, kMainEffectSlots> m_effectPanels{};
+    TopBar*      m_topBar{nullptr};
+    NodeEditor*  m_nodeEditor{nullptr};
+    QWidget*     m_centralWidget{nullptr};
 
     // Persistent dialogs (created on first use)
     BankDialog*      m_bankDialog{nullptr};

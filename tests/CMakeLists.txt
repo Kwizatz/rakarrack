@@ -64,3 +64,26 @@ add_executable(effect_params_test EffectParamsTest.cpp)
 target_link_libraries(effect_params_test PRIVATE rakarrack_engine)
 
 add_test(NAME EffectParams COMMAND effect_params_test)
+
+# The canvas test runs offscreen and verifies the geometry updates that make
+# connected wires follow effect and endpoint nodes while they are dragged.
+find_package(Qt6 REQUIRED COMPONENTS Widgets)
+
+add_executable(graph_canvas_test
+	GraphCanvasTest.cpp
+	${CMAKE_SOURCE_DIR}/src/gui/qt6/widgets/GraphCanvas.cpp
+	${CMAKE_SOURCE_DIR}/src/gui/qt6/widgets/GraphCanvas.hpp
+	${CMAKE_SOURCE_DIR}/src/EffectGraph.cpp
+	${CMAKE_SOURCE_DIR}/src/EffectParams.cpp
+)
+
+set_target_properties(graph_canvas_test PROPERTIES AUTOMOC ON)
+
+target_include_directories(graph_canvas_test PRIVATE
+	${CMAKE_SOURCE_DIR}/src
+	${CMAKE_BINARY_DIR}/src
+)
+
+target_link_libraries(graph_canvas_test PRIVATE Qt6::Widgets)
+
+add_test(NAME GraphCanvas COMMAND graph_canvas_test)

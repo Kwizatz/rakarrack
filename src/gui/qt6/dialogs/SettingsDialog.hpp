@@ -62,7 +62,6 @@ private:
     QCheckBox*      m_dcOffset{nullptr};
     QCheckBox*      m_preserveGain{nullptr};
     QCheckBox*      m_updateTapOnPreset{nullptr};
-    QCheckBox*      m_effectGraphPath{nullptr};
     QCheckBox*      m_upsample{nullptr};
     QComboBox*      m_upsampleAmount{nullptr};
     QComboBox*      m_upQuality{nullptr};

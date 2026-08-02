@@ -114,6 +114,9 @@ public:
     /// Get effect preset.
     [[nodiscard]] int getEffectPreset(int effectIndex) const;
 
+    /// Snapshot one legacy effect for conversion into an owned graph node.
+    [[nodiscard]] EffectSettings getEffectSettings(int effectIndex) const;
+
     // ─── Per-node Parameter Access (GUI thread) ────────────────────
     //
     // The calls above address an effect by TYPE, which is also its identity in

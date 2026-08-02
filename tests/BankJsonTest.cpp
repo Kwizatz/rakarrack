@@ -292,6 +292,15 @@ int main()
         check(text.find("\"graph\"") != std::string::npos,
               "the patch is written under a graph key");
 
+        GraphLayout direct;
+        direct.connections.push_back({kInputNodeId, kOutputNodeId});
+        const std::string directText = singlePresetToJson(bank[0], &direct);
+        GraphLayout directBack;
+        check(singlePresetFromJson(directText, back[0], error, &directBack),
+              "an endpoint-only patch parses");
+        check(directBack == direct,
+              "a direct input-to-output patch survives a preset round trip");
+
         // Presets without a patch must not grow one, or every existing bank
         // would gain noise on the next save.
         const std::string plain = bankToJson(bank.data(), kBankPresetCount, nullptr);

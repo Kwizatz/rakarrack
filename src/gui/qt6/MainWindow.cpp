@@ -7,19 +7,16 @@
 
 #include "MainWindow.hpp"
 #include "EngineController.hpp"
-#include "EffectSlotBar.hpp"
 #include "SystemTray.hpp"
 #include "ThemeManager.hpp"
 #include "TopBar.hpp"
-#include "panels/EffectPanel.hpp"
+#include "widgets/NodeEditor.hpp"
 
 // Dialogs
 #include "dialogs/AboutDialog.hpp"
 #include "dialogs/BankDialog.hpp"
 #include "dialogs/HelpBrowser.hpp"
 #include "dialogs/MidiLearnDialog.hpp"
-#include "dialogs/OrderDialog.hpp"
-#include "dialogs/NodeEditorDialog.hpp"
 #include "dialogs/SettingsDialog.hpp"
 #include "dialogs/TriggerDialog.hpp"
 
@@ -30,8 +27,6 @@
 #include <QIcon>
 #include <QMenuBar>
 #include <QShortcut>
-#include <QLabel>
-#include <QStackedWidget>
 #include <QStatusBar>
 #include <QVBoxLayout>
 
@@ -59,10 +54,6 @@ MainWindow::MainWindow(EngineController& engine, QWidget* parent)
 
     // Initial sync of GUI from engine state (FX On, sliders, preset info)
     m_topBar->syncFromEngine();
-    m_slotBar->syncFromEngine();
-    for (auto* panel : m_effectPanels)
-        if (panel)
-            panel->syncFromEngine();
 
     // 25 ms → 40 Hz GUI refresh
     m_guiTimer = new QTimer(this);
@@ -77,13 +68,13 @@ MainWindow::MainWindow(EngineController& engine, QWidget* parent)
 void MainWindow::setupUi()
 {
     setWindowTitle(QStringLiteral("Rakarrack"));
-    resize(1024, 768);
-    setMinimumSize(640, 480);
+    resize(1280, 800);
+    setMinimumSize(800, 520);
 
     setupMenuBar();
 
-    // Central widget with vertical layout:
-    //   TopBar  |  EffectSlotBar  |  EffectPanel stack
+    // Global controls stay above the routing workspace. The graph itself is
+    // the primary view rather than a secondary dialog.
     m_centralWidget = new QWidget(this);
     m_centralWidget->setObjectName(QStringLiteral("centralWidget"));
     auto* mainLayout = new QVBoxLayout(m_centralWidget);
@@ -94,27 +85,8 @@ void MainWindow::setupUi()
     m_topBar = new TopBar(m_engine, m_centralWidget);
     mainLayout->addWidget(m_topBar);
 
-    // --- Effect Slot Bar (up to 16 buttons) ---
-    m_slotBar = new EffectSlotBar(m_engine, m_centralWidget);
-    connect(m_slotBar, &EffectSlotBar::slotSelected,
-            this, &MainWindow::onSlotSelected);
-    mainLayout->addWidget(m_slotBar);
-
-    // --- Effect Panel Stack ---
-    // A node patch gives every node its own effect, so these per-type panels
-    // are no longer what is being heard. Saying so beats leaving the user to
-    // wonder why a slider does nothing.
-    m_patchNotice = new QLabel(
-        tr("A node patch is running. These panels edit the built-in effects, "
-           "not the patch \u2014 open Windows > Node Editor to change it."),
-        m_centralWidget);
-    m_patchNotice->setWordWrap(true);
-    m_patchNotice->setVisible(false);
-    mainLayout->addWidget(m_patchNotice);
-
-    m_panelStack = new QStackedWidget(m_centralWidget);
-    createEffectPanels();
-    mainLayout->addWidget(m_panelStack, 1);  // stretch factor 1
+    m_nodeEditor = new NodeEditor(m_engine, m_centralWidget);
+    mainLayout->addWidget(m_nodeEditor, 1);
 
     setCentralWidget(m_centralWidget);
 
@@ -130,7 +102,11 @@ void MainWindow::setupMenuBar()
     // ── File menu ──────────────────────────────────────────────────
     auto* fileMenu = menuBar()->addMenu(tr("&File"));
     fileMenu->addAction(tr("&New Preset"), QKeySequence(Qt::CTRL | Qt::Key_N),
-                        this, [this] { m_engine.newPreset(); });
+                        this, [this]
+                        {
+                            m_engine.newPreset();
+                            syncFromEngine();
+                        });
     fileMenu->addAction(tr("&Load Preset..."), QKeySequence(Qt::CTRL | Qt::Key_L),
                         this, &MainWindow::loadPreset);
     fileMenu->addAction(tr("&Save Preset..."), QKeySequence(Qt::CTRL | Qt::Key_S),
@@ -142,24 +118,12 @@ void MainWindow::setupMenuBar()
     // ── View menu ──────────────────────────────────────────────────
     auto* viewMenu = menuBar()->addMenu(tr("&View"));
     viewMenu->addAction(tr("Sync from Engine"), QKeySequence(Qt::Key_F5),
-                        this, [this]
-                        {
-                            m_slotBar->syncFromEngine();
-                            for (auto* panel : m_effectPanels)
-                            {
-                                if (panel)
-                                    panel->syncFromEngine();
-                            }
-                        });
+                        this, &MainWindow::syncFromEngine);
 
     // ── Windows menu ───────────────────────────────────────────────
     auto* windowsMenu = menuBar()->addMenu(tr("&Windows"));
     windowsMenu->addAction(tr("&Bank Manager"), QKeySequence(Qt::CTRL | Qt::Key_B),
                            this, &MainWindow::showBankDialog);
-    windowsMenu->addAction(tr("Effect &Order"), QKeySequence(Qt::CTRL | Qt::Key_O),
-                           this, &MainWindow::showOrderDialog);
-    windowsMenu->addAction(tr("&Node Editor"), QKeySequence(Qt::CTRL | Qt::Key_N),
-                           this, &MainWindow::showNodeEditorDialog);
     windowsMenu->addAction(tr("&MIDI Learn"),
                            this, &MainWindow::showMidiLearnDialog);
     windowsMenu->addAction(tr("&Trigger (ACI)"),
@@ -183,25 +147,11 @@ void MainWindow::setupMenuBar()
 }
 
 // ---------------------------------------------------------------------------
-// Keyboard shortcuts — effect slot selection (1-0) + navigation
+// Keyboard shortcuts
 // ---------------------------------------------------------------------------
 
 void MainWindow::setupShortcuts()
 {
-    // Keys 1-9 select effect slots 0-8, key 0 selects slot 9.
-    // Slots 10-15 have no keyboard shortcut (no natural key binding).
-    constexpr int kShortcutSlots = 10;
-    for (int i = 0; i < kShortcutSlots; ++i)
-    {
-        int key = (i < 9) ? (Qt::Key_1 + i) : Qt::Key_0;
-        auto* sc = new QShortcut(QKeySequence(key), this);
-        connect(sc, &QShortcut::activated, this, [this, i]
-        {
-            m_slotBar->setSelectedSlot(i);
-            onSlotSelected(i);
-        });
-    }
-
     // Ctrl+Right / Ctrl+Left — next / previous preset
     auto* scNext = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_Right), this);
     connect(scNext, &QShortcut::activated, this, &MainWindow::nextPreset);
@@ -219,47 +169,6 @@ void MainWindow::setupShortcuts()
 }
 
 // ---------------------------------------------------------------------------
-// Effect Panels — one per slot
-// ---------------------------------------------------------------------------
-
-void MainWindow::createEffectPanels()
-{
-    auto order = m_engine.getEffectOrder();
-
-    for (int i = 0; i < kMainEffectSlots; ++i)
-    {
-        int effectType = order[static_cast<std::size_t>(i)];
-        auto panel = EffectPanel::create(effectType, m_engine);
-
-        // When user toggles an effect on/off, refresh the slot bar LEDs
-        connect(panel.get(), &EffectPanel::bypassChanged, this,
-                [this](int /*effectIndex*/, bool /*active*/)
-                {
-                    m_slotBar->syncFromEngine();
-                });
-
-        m_effectPanels[static_cast<std::size_t>(i)] = panel.get();
-        m_panelStack->addWidget(panel.release());  // stack takes ownership
-    }
-}
-
-// ---------------------------------------------------------------------------
-// Slot selection
-// ---------------------------------------------------------------------------
-
-void MainWindow::onSlotSelected(int slotIndex)
-{
-    if (slotIndex >= 0 && slotIndex < kMainEffectSlots)
-    {
-        m_panelStack->setCurrentIndex(slotIndex);
-
-        auto* panel = m_effectPanels[static_cast<std::size_t>(slotIndex)];
-        if (panel)
-            panel->syncFromEngine();
-    }
-}
-
-// ---------------------------------------------------------------------------
 // Timer-driven engine polling (40 Hz)
 // ---------------------------------------------------------------------------
 
@@ -267,17 +176,6 @@ void MainWindow::onGuiTick()
 {
     // Delegate level/tuner/tap updates to the TopBar
     m_topBar->updateFromEngine();
-
-    // Disabled rather than merely annotated: with a patch running these
-    // controls reach effects that are not in the signal path, so letting them
-    // be moved would only mislead.
-    const bool patchRunning = m_engine.hasNodeInstances();
-    if (patchRunning != m_patchNotice->isVisible())
-    {
-        m_patchNotice->setVisible(patchRunning);
-        m_panelStack->setEnabled(!patchRunning);
-        m_slotBar->setEnabled(!patchRunning);
-    }
 
     // Update status bar with signal presence
     AudioLevels levels;
@@ -296,10 +194,14 @@ void MainWindow::onGuiTick()
 
 void MainWindow::connectTopBarSignals()
 {
+    connect(m_topBar, &TopBar::newPresetRequested, this,
+            [this]
+            {
+                m_engine.newPreset();
+                syncFromEngine();
+            });
     connect(m_topBar, &TopBar::bankWindowRequested,
             this, &MainWindow::showBankDialog);
-    connect(m_topBar, &TopBar::orderWindowRequested,
-            this, &MainWindow::showOrderDialog);
     connect(m_topBar, &TopBar::loadPresetRequested,
             this, &MainWindow::loadPreset);
     connect(m_topBar, &TopBar::savePresetRequested,
@@ -311,12 +213,14 @@ void MainWindow::connectTopBarSignals()
             {
                 auto& rkr = m_engine.engine();
                 rkr.Bank_to_Preset(index - 1);  // spinbox is 1-based, engine is 0-based
-                m_slotBar->syncFromEngine();
-                m_topBar->syncFromEngine();
-                for (auto* panel : m_effectPanels)
-                    if (panel)
-                        panel->syncFromEngine();
+                syncFromEngine();
             });
+}
+
+void MainWindow::syncFromEngine()
+{
+    m_topBar->syncFromEngine();
+    m_nodeEditor->syncFromEngine();
 }
 
 // ---------------------------------------------------------------------------
@@ -334,11 +238,7 @@ void MainWindow::loadPreset()
         auto& rkr = m_engine.engine();
         QByteArray pathBytes = path.toLocal8Bit();
         rkr.loadfile(pathBytes.data());
-        m_slotBar->syncFromEngine();
-        m_topBar->syncFromEngine();
-        for (auto* panel : m_effectPanels)
-            if (panel)
-                panel->syncFromEngine();
+        syncFromEngine();
     }
 }
 
@@ -363,11 +263,7 @@ void MainWindow::nextPreset()
     if (current < 60)
     {
         rkr.Bank_to_Preset(current + 1);
-        m_slotBar->syncFromEngine();
-        m_topBar->syncFromEngine();
-        for (auto* panel : m_effectPanels)
-            if (panel)
-                panel->syncFromEngine();
+        syncFromEngine();
     }
 }
 
@@ -378,11 +274,7 @@ void MainWindow::previousPreset()
     if (current > 1)
     {
         rkr.Bank_to_Preset(current - 1);
-        m_slotBar->syncFromEngine();
-        m_topBar->syncFromEngine();
-        for (auto* panel : m_effectPanels)
-            if (panel)
-                panel->syncFromEngine();
+        syncFromEngine();
     }
 }
 
@@ -427,30 +319,6 @@ void MainWindow::showBankDialog()
     m_bankDialog->show();
     m_bankDialog->raise();
     m_bankDialog->activateWindow();
-}
-
-void MainWindow::showOrderDialog()
-{
-    // OrderDialog is modal — each open gets a fresh copy with current state
-    OrderDialog dlg(m_engine, this);
-    if (dlg.exec() == QDialog::Accepted)
-    {
-        // Rebuild panels if order changed
-        createEffectPanels();
-        m_slotBar->syncFromEngine();
-    }
-}
-
-void MainWindow::showNodeEditorDialog()
-{
-    // Applying rewrites the effect order, so the panels and slot bar have to
-    // be rebuilt exactly as they are for the order dialog.
-    NodeEditorDialog dlg(m_engine, this);
-    connect(&dlg, &NodeEditorDialog::applied, this, [this] {
-        createEffectPanels();
-        m_slotBar->syncFromEngine();
-    });
-    dlg.exec();
 }
 
 void MainWindow::showSettingsDialog()

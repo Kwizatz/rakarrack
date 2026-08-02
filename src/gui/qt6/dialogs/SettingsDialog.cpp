@@ -132,26 +132,6 @@ QWidget* SettingsDialog::createAudioTab()
     m_updateTapOnPreset = new QCheckBox(tr("Update TapTempo on preset change"), page);
     layout->addRow(m_updateTapOnPreset);
 
-    // The node graph is the only routing that can branch, so it has to be
-    // reachable from the interface rather than from an environment variable.
-    auto* graphGroup = new QGroupBox(tr("Signal Path"), page);
-    auto* graphLayout = new QVBoxLayout(graphGroup);
-
-    m_effectGraphPath = new QCheckBox(tr("Route through the node graph"), graphGroup);
-    graphLayout->addWidget(m_effectGraphPath);
-
-    auto* graphNote = new QLabel(
-        tr("The node graph is the default. It runs the same effects as the "
-           "fixed chain and sounds identical for a plain chain, but lets them "
-           "split, merge, and repeat, each with its own settings. Edit patches "
-           "in Windows > Node Editor. Turning this off falls back to the older "
-           "fixed chain of up to sixteen effects in order, one of each kind."),
-        graphGroup);
-    graphNote->setWordWrap(true);
-    graphLayout->addWidget(graphNote);
-
-    layout->addRow(graphGroup);
-
     // Upsampling
     auto* upGroup = new QGroupBox(tr("Upsampling"), page);
     auto* upLayout = new QFormLayout(upGroup);
@@ -381,7 +361,6 @@ void SettingsDialog::loadFromEngine()
     m_dcOffset->setChecked(rkr.DC_Offset != 0);
     m_preserveGain->setChecked(rkr.actuvol != 0);
     m_updateTapOnPreset->setChecked(rkr.Tap_Updated != 0);
-    m_effectGraphPath->setChecked(rkr.use_effect_graph);
     // Upsampling amount is stored as (value-2) since range is 2-12
     if (rkr.UpAmo >= 2 && rkr.UpAmo <= 12)
         m_upsampleAmount->setCurrentIndex(rkr.UpAmo - 2);
@@ -449,10 +428,6 @@ void SettingsDialog::applyToEngine()
     rkr.DC_Offset    = m_dcOffset->isChecked()          ? 1 : 0;
     rkr.actuvol      = m_preserveGain->isChecked()      ? 1 : 0;
     rkr.Tap_Updated  = m_updateTapOnPreset->isChecked() ? 1 : 0;
-
-    // Through the engine rather than by assignment: switching path has to
-    // reset the graph's routing, and the choice is remembered.
-    m_engine.setGraphPathActive(m_effectGraphPath->isChecked());
     rkr.UpAmo        = m_upsampleAmount->currentData().toInt();
     rkr.UpQual       = m_upQuality->currentIndex();
     rkr.DownQual     = m_downQuality->currentIndex();

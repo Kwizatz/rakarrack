@@ -48,6 +48,13 @@ int EngineController::getEffectPreset(int effectIndex) const
     return 0;
 }
 
+EffectSettings EngineController::getEffectSettings(int effectIndex) const
+{
+    if (auto* effect = effectByIndex(const_cast<RKR&>(m_engine), effectIndex))
+        return captureEffectSettings(*effect);
+    return {};
+}
+
 // ─── Per-node Parameter Access ─────────────────────────────────────
 
 bool EngineController::hasNodeInstances() const
