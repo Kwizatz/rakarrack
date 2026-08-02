@@ -208,17 +208,6 @@ void format_csv_str(char* buf, std::size_t bufsize, const char* str, Args... arg
     *pos = '\0';
 }
 
-// Safe string copy into a sized buffer with newline termination.
-inline void copy_line(char* buf, std::size_t bufsize, const char* str)
-{
-    std::size_t len = std::strlen(str);
-    if (len >= bufsize - 1)
-        len = bufsize - 2;
-    std::memcpy(buf, str, len);
-    buf[len] = '\n';
-    buf[len + 1] = '\0';
-}
-
 } // anonymous namespace
 
 void RKR::putbuf(char *buf, int j)

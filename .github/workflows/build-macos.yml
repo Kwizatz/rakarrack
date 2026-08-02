@@ -10,10 +10,13 @@ jobs:
     runs-on: macos-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Install dependencies
       run: |
+        if brew tap | grep -qx 'aws/tap'; then
+          brew untap aws/tap
+        fi
         brew install fftw jack libsamplerate libsndfile nlohmann-json pkg-config qt@6
 
     - name: Configure CMake
